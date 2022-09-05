@@ -3,6 +3,7 @@ extends KinematicBody
 class_name Player
 
 enum State {IDLE, RUN, JUMP, FALL, DASH}
+enum Modifier {STANDARD, FLY}
 enum Attacks {NONE, ATTACK, DEFEND, DASH}
 enum Curves {LINEAR, EXPONENTIAL, INV_S}
 
@@ -28,6 +29,10 @@ export var gravity_max = -24 # max falling speed
 export var friction = 1.15 # how fast player stops when idle
 export var max_climb_angle = 0.6 # 0.0-1.0 based on normal of collision .5 for 45 degree slope
 export var angle_of_freedom = 80 # amount player may look up/down
+export var fly_speed = 14
+export var fly_acceleration = 2
+onready var standard_speed = air_speed
+onready var standard_acceleration = fly_acceleration
 
 # Multiplayer variables
 
@@ -49,10 +54,23 @@ func _input(event):
 
 
 var state = State.FALL
+var modifier = Modifier.STANDARD
 var on_floor = false
 var frames = 0 # frames jumping
 var input_dir = Vector3(0, 0, 0)
 func _process_input(delta):
+	# Toggle NoClip
+	if Input.is_action_just_pressed("no_clip"):
+		match modifier:
+			Modifier.FLY:
+				modifier = Modifier.STANDARD
+				air_acceleration = standard_acceleration
+				air_speed = standard_speed
+			Modifier.STANDARD:
+				modifier = Modifier.FLY
+				air_acceleration = fly_acceleration
+				air_speed = fly_speed
+	
 	# Toggle mouse capture
 	if Input.is_action_just_pressed("mouse_escape") && mouse_control:
 			if Input.get_mouse_mode() == Input.MOUSE_MODE_VISIBLE:
@@ -111,16 +129,21 @@ func _process_movement(delta):
 				state = State.IDLE
 	
 	# jump state
-	if state == State.JUMP && frames < jump_speed:
-		velocity.y = jump_height/(jump_speed * delta)
-		frames += 1 * delta * 60
-	elif state == State.JUMP:
-		state = State.FALL
+	if state == State.JUMP:
+		if frames < jump_speed:
+			velocity.y = jump_height/(jump_speed * delta)
+			frames += 1 * delta * 60
+		elif modifier == Modifier.STANDARD:
+			state = State.FALL
 
 	# fall state
 	if state == State.FALL:
-		velocity.y += gravity_accel * delta * 4
-		velocity.y = clamp(velocity.y, gravity_max, 9999)
+		match modifier:
+			Modifier.STANDARD:
+				velocity.y += gravity_accel * delta * 4
+				velocity.y = clamp(velocity.y, gravity_max, 9999)
+			Modifier.FLY:
+				state = State.IDLE
 	
 	# run state
 	if state == State.RUN:
@@ -142,7 +165,7 @@ func _process_movement(delta):
 			velocity.y = ((Vector3(velocity.x, 0, velocity.z).dot(collision.normal)) * -1) - .0001
 	
 	# air movement
-	if state == 2 or state == 3:
+	if state == State.JUMP or state == State.FALL:
 		velocity += input_dir.rotated(Vector3(0, 1, 0), rotation.y) * air_acceleration # add acceleration
 		if Vector2(velocity.x, velocity.z).length() > air_speed: # clamp speed to max airspeed
 			var velocity2d = Vector2(velocity.x, velocity.z).normalized() * air_speed

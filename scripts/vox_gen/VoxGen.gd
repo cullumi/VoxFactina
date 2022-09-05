@@ -72,7 +72,10 @@ func initialize_chunks():
 	render_queue.flood(chunks.values())
 	
 	# First Chunk (Where the Player Spawns)
-	force_render(spawn_chunk)
+	var chunk = force_render(spawn_chunk)
+	var vector = Vector3()
+	vector[spawn_axis] = spawn_dir
+	chunk.instance.translate(vector * -1)
 	
 	emit_signal("initialized")
 
@@ -94,23 +97,25 @@ func render():
 					yield(ThreadPool, "idling")
 		yield(get_tree(), "idle_frame")
 
-func force_render(pos:Vector3):
+func force_render(pos:Vector3) -> Chunk:
 	render_queue.erase(chunks[pos])
-	finish_render(render_chunk(chunks[pos]))
+	return finish_render(render_chunk(chunks[pos]))
 
-func finish_render(chunk):
+func finish_render(chunk) -> Chunk:
 	if chunk.instance != null:
 		chunk.instance.queue_free()
 	chunk.instance = chunk.new_instance
 	if chunk.instance != null:
 		add_child(chunk.instance)
+	return chunk
 
-func render_chunk(chunk:Chunk):
+func render_chunk(chunk:Chunk) -> Chunk:
 	var voxels:Dictionary = {}
 	add_voxels(chunk, from, to, voxels)
 	if not voxels.empty():
 		var s_tool:SurfaceTool = SurfaceTool.new()
 		chunk.new_instance = MeshInstance.new()
+		chunk.new_instance.translation = chunk.offset# * chunk_dims * voxel_size#(chunk_dims/2)
 		chunk.new_instance.use_in_baked_light = true
 		chunk.new_instance.generate_lightmap = true
 		chunk.new_instance.cast_shadow =GeometryInstance.SHADOW_CASTING_SETTING_DOUBLE_SIDED
@@ -136,7 +141,8 @@ func add_voxels(chunk:Chunk, start:Vector3, end:Vector3, voxels=null):
 	add_voxel(chunk, pos, voxels)
 
 func add_voxel(chunk:Chunk, base_pos:Vector3, voxels=null):
-	var pos = base_pos + chunk.offset
+#	var pos = base_pos + chunk.offset
+	var pos = base_pos
 	var color = get_voxel_color(pos)
 	VoxelFactory.add_voxel(pos, color, voxels)
 
