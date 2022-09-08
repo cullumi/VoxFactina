@@ -1,5 +1,5 @@
 extends Node
-tool
+#tool
 # ------ Voxel Factory -----
 #
 # I recommend putting this script in your autoloads

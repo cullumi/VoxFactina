@@ -20,6 +20,7 @@ enum {X, Y, Z}
 onready var chunk_dims:Vector3 = to - from
 onready var world_dims:Vector3 = chunk_dims * chunk_counts
 onready var world_radii:Vector3 = world_dims/2
+onready var chunk_size:Vector3 = chunk_dims * voxel_size
 
 # Locations
 onready var last_chunk:Vector3 = chunk_counts-Vector3(1,1,1)
@@ -27,9 +28,12 @@ onready var center_chunk:Vector3 = last_chunk/2
 onready var center_pos:Vector3 = center_chunk.floor()
 onready var spawn_height:float = (chunk_counts[spawn_axis]/2 * surface_level) * spawn_dir
 func calc_spawn_offset():
+	prints("center chunk:", center_chunk)
+	prints("center pos:", center_pos)
+	prints("spawn height:", spawn_height)
 	var off = center_pos[spawn_axis] + spawn_height
-	if spawn_height > 0: return ceil(off)
-	else: return floor(off)
+	off = floor(off) if spawn_height < 0 else ceil(off)
+	return clamp(off, 0, chunk_counts[spawn_axis]-1)
 onready var spawn_offset:float = calc_spawn_offset()
 func calc_spawn_chunk():
 	var pos = center_pos
@@ -41,7 +45,9 @@ onready var spawn_chunk:Vector3 = calc_spawn_chunk()
 onready var chunk_offset = (Vector3(chunk_dims.x, 0, chunk_dims.z)/2)
 func offset(pos:Vector3):
 	var pos_offset = pos - center_chunk
-	return (chunk_dims * pos_offset) + chunk_offset
+	var half_chunk_size = Vector3(chunk_size.x/2, 0, chunk_size.z/2)
+	var sorta_chunk_offset = (chunk_dims * pos_offset) + chunk_offset
+	return ((sorta_chunk_offset / chunk_size) * 0.5) - half_chunk_size
 
 # Surface Level Rects
 onready var front_radii = Vector2(world_radii.x, world_radii.y) * surface_level
@@ -75,7 +81,6 @@ func initialize_chunks():
 	var chunk = force_render(spawn_chunk)
 	var vector = Vector3()
 	vector[spawn_axis] = spawn_dir
-	chunk.instance.translate(vector * -1)
 	
 	emit_signal("initialized")
 
@@ -115,7 +120,7 @@ func render_chunk(chunk:Chunk) -> Chunk:
 	if not voxels.empty():
 		var s_tool:SurfaceTool = SurfaceTool.new()
 		chunk.new_instance = MeshInstance.new()
-		chunk.new_instance.translation = chunk.offset# * chunk_dims * voxel_size#(chunk_dims/2)
+		chunk.new_instance.translation = chunk.offset
 		chunk.new_instance.use_in_baked_light = true
 		chunk.new_instance.generate_lightmap = true
 		chunk.new_instance.cast_shadow =GeometryInstance.SHADOW_CASTING_SETTING_DOUBLE_SIDED

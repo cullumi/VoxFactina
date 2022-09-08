@@ -2,7 +2,7 @@ extends KinematicBody
 
 class_name Player
 
-enum State {IDLE, RUN, JUMP, FALL, DASH}
+enum State {IDLE, RUN, JUMP, FALL, DASH, CROUCH, FLY}
 enum Modifier {STANDARD, FLY}
 enum Attacks {NONE, ATTACK, DEFEND, DASH}
 enum Curves {LINEAR, EXPONENTIAL, INV_S}
@@ -29,10 +29,13 @@ export var gravity_max = -24 # max falling speed
 export var friction = 1.15 # how fast player stops when idle
 export var max_climb_angle = 0.6 # 0.0-1.0 based on normal of collision .5 for 45 degree slope
 export var angle_of_freedom = 80 # amount player may look up/down
-export var fly_speed = 14
-export var fly_acceleration = 2
+export (float, 1, 20) var fly_speed = 14
+export (float, 0.1, 2) var fly_acceleration = .5
+export (float, 1, 1.5) var fly_friction = 1.15
 onready var standard_speed = air_speed
 onready var standard_acceleration = fly_acceleration
+
+onready var camera = get_node("%Camera")
 
 # Multiplayer variables
 
@@ -58,6 +61,10 @@ var modifier = Modifier.STANDARD
 var on_floor = false
 var frames = 0 # frames jumping
 var input_dir = Vector3(0, 0, 0)
+
+var jump
+var crouch
+
 func _process_input(delta):
 	# Toggle NoClip
 	if Input.is_action_just_pressed("no_clip"):
@@ -79,9 +86,22 @@ func _process_input(delta):
 				Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
 	
 	# Jump
-	if Input.is_action_pressed("jump_%s" % id) && can_jump():
+	if Input.is_action_pressed("jump_%s" % id) && can_jump() and not crouch:
+		jump = true
 		frames = 0
 		state = State.JUMP
+	elif state == State.JUMP and modifier == Modifier.FLY:
+		state = State.FLY
+		jump = false
+	
+	# Crouch
+	if Input.is_action_pressed("crouch") and not jump:
+		if modifier == Modifier.FLY:
+			crouch = true
+			state = State.CROUCH
+	elif state == State.CROUCH and modifier == Modifier.FLY:
+		state = State.FLY
+		crouch = false
 	
 	# WASD
 	input_dir = Vector3(Input.get_action_strength("right_%s" % id) - Input.get_action_strength("left_%s" % id), 0,
@@ -109,24 +129,28 @@ var velocity := Vector3(0, 0, 0)
 var coyote_frames = 0
 func _process_movement(delta):
 	# state management
-	if !collision:
-		on_floor = false
-		coyote_frames += 1 * delta * 60
-		if state != State.JUMP:
-			state = State.FALL
+	if modifier == Modifier.FLY:
+		if state != State.JUMP and state != State.CROUCH:
+			state = State.FLY
 	else:
-		if state == State.JUMP:
-			on_floor = false # fixes wall climbing due to walls having y1 normal sometimes
-			coyote_frames = coyote_factor + 1
-		elif collision.normal.y < max_climb_angle:
-			state = State.FALL
+		if !collision:
+			on_floor = false
+			coyote_frames += 1 * delta * 60
+			if state != State.JUMP:
+				state = State.FALL
 		else:
-			on_floor = true
-			coyote_frames = 0
-			if input_dir.length() > .1 && (frames > jump_speed || frames == 0):
-				state = State.RUN
+			if state == State.JUMP:
+				on_floor = false # fixes wall climbing due to walls having y1 normal sometimes
+				coyote_frames = coyote_factor + 1
+			elif collision.normal.y < max_climb_angle:
+				state = State.FALL
 			else:
-				state = State.IDLE
+				on_floor = true
+				coyote_frames = 0
+				if input_dir.length() > .1 && (frames > jump_speed || frames == 0):
+					state = State.RUN
+				else:
+					state = State.IDLE
 	
 	# jump state
 	if state == State.JUMP:
@@ -136,6 +160,10 @@ func _process_movement(delta):
 		elif modifier == Modifier.STANDARD:
 			state = State.FALL
 
+	if state == State.CROUCH:
+		if modifier == Modifier.FLY:
+			velocity.y = jump_height/(-jump_speed * delta)
+
 	# fall state
 	if state == State.FALL:
 		match modifier:
@@ -143,14 +171,15 @@ func _process_movement(delta):
 				velocity.y += gravity_accel * delta * 4
 				velocity.y = clamp(velocity.y, gravity_max, 9999)
 			Modifier.FLY:
-				state = State.IDLE
+				state = State.FLY
 	
 	# run state
 	if state == State.RUN:
 		velocity += input_dir.rotated(Vector3(0, 1, 0), rotation.y) * acceleration
 		if Vector2(velocity.x, velocity.z).length() > move_speed:
 			velocity = velocity.normalized() * move_speed # clamp move speed
-		velocity.y = ((Vector3(velocity.x, 0, velocity.z).dot(collision.normal)) * -1)
+		if collision:
+			velocity.y = ((Vector3(velocity.x, 0, velocity.z).dot(collision.normal)) * -1)
 		
 		# fake gravity to keep character on the ground
 		# increase if player is falling down slopes instead of running
@@ -162,10 +191,17 @@ func _process_movement(delta):
 	elif state == State.IDLE:
 		if velocity.length() > .5:
 			velocity /= friction
-			velocity.y = ((Vector3(velocity.x, 0, velocity.z).dot(collision.normal)) * -1) - .0001
+			if collision:
+				velocity.y = ((Vector3(velocity.x, 0, velocity.z).dot(collision.normal)) * -1) - .0001
+	
+	# fly state
+	if state == State.FLY:
+		velocity.y = 0
+		if velocity.length() > .5:
+			velocity /= fly_friction
 	
 	# air movement
-	if state == State.JUMP or state == State.FALL:
+	if state == State.JUMP or state == State.FALL or State.FLY:
 		velocity += input_dir.rotated(Vector3(0, 1, 0), rotation.y) * air_acceleration # add acceleration
 		if Vector2(velocity.x, velocity.z).length() > air_speed: # clamp speed to max airspeed
 			var velocity2d = Vector2(velocity.x, velocity.z).normalized() * air_speed
@@ -174,6 +210,7 @@ func _process_movement(delta):
 	
 	#apply
 	if velocity.length() >= .5:
+#		var formed = transform.basis.xform_inv(velocity)
 		collision = move_and_collide(velocity * delta)
 	else:
 		velocity = Vector3(0, velocity.y, 0)
@@ -190,15 +227,25 @@ func enable_mouse():
 	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 
 func cam_rotate(vect, sens):
+#	prints(vect.x, "/", vect.y)
+#	var yformed = transform.xform(Vector3(0, vect.x, 0))
+#	var xformed = camera.transform.xform(Vector3(vect.y, 0, 0))
+#	var ydif = rotation_degrees - yformed
+#	var xdif = camera.rotation_degrees - xformed
+#	prints(ydif, "/", xdif)
+#	rotate(ydif.normalized(), ydif.length() * -sens.y)
+#	camera.rotate(xdif.normalized(), xdif.length() * -sens.x)
 	rotate_y(deg2rad(vect.x * sens.y * -1))
-	$Collider/Camera.rotate_x(deg2rad(vect.y * sens.x * -1))
+	camera.rotate_x(deg2rad(vect.y * sens.x * -1))
 	
-	var camera_rot = $Collider/Camera.rotation_degrees
-	camera_rot.x = clamp(camera_rot.x, 90 + angle_of_freedom * -1, 90 + angle_of_freedom)
-	$Collider/Camera.rotation_degrees = camera_rot # I don't understand this function
+	var camera_rot = camera.rotation_degrees
+	camera_rot.x = clamp(camera_rot.x, 90 - angle_of_freedom, 90 + angle_of_freedom)
+	camera.rotation_degrees = camera_rot # I don't understand this function
 
 func can_jump():
-	if on_floor && state != State.FALL && (frames == 0 || frames > jump_speed):
+	if modifier == Modifier.FLY:
+		return true
+	elif on_floor && state != State.FALL && (frames == 0 || frames > jump_speed):
 		return true
 	elif state != State.JUMP && coyote_frames < coyote_factor:
 		return true # allows the player to jump after leaving platforms
