@@ -83,12 +83,12 @@ func create_mesh(voxels=Voxels, s_tool=Surfacetool) -> ArrayMesh:
 	
 	s_tool.begin(Mesh.PRIMITIVE_TRIANGLES)
 	
-	DefaultMaterial.vertex_color_use_as_albedo = true
-	DefaultMaterial.vertex_color_is_srgb = true
-	DefaultMaterial.flags_vertex_lighting = true
-	DefaultMaterial.params_depth_draw_mode = SpatialMaterial.DEPTH_DRAW_ALPHA_OPAQUE_PREPASS
-	DefaultMaterial.metallic = 0.25
-	DefaultMaterial.roughness = 0.75
+#	DefaultMaterial.vertex_color_use_as_albedo = true
+#	DefaultMaterial.vertex_color_is_srgb = true
+#	DefaultMaterial.flags_vertex_lighting = true
+#	DefaultMaterial.params_depth_draw_mode = SpatialMaterial.DEPTH_DRAW_ALPHA_OPAQUE_PREPASS
+#	DefaultMaterial.metallic = 0.25
+#	DefaultMaterial.roughness = 0.75
 	s_tool.set_material(DefaultMaterial)
 	
 	# Creating the mesh...

@@ -9,6 +9,7 @@ export (Vector3) var chunk_counts:Vector3 = Vector3(3, 3, 3)
 export (float, 0, 1, 0.05) var surface_level:float = 0.75
 export (float, 0.1, 1, 0.05) var voxel_size:float = 1
 export (float, EXP, 1000, 1000000, 1000) var voxel_rate:int = 10000
+export (SpatialMaterial) var voxel_material
 
 # Spawn Orientation
 enum AXES {X, Y, Z}
@@ -66,6 +67,7 @@ func _ready():
 	randomize()
 	VoxelFactory.VoxelSize = voxel_size
 	VoxelFactory.update_vertices()
+	VoxelFactory.DefaultMaterial = voxel_material
 
 func start():
 	initialize_chunks()
