@@ -1,10 +1,11 @@
-[gd_scene load_steps=8 format=2]
+[gd_scene load_steps=9 format=2]
 
 [ext_resource path="res://scenes/Main.gd" type="Script" id=1]
 [ext_resource path="res://scripts/vox_gen/VoxGen.gd" type="Script" id=2]
 [ext_resource path="res://addons/simple_fps_controller/Player.tscn" type="PackedScene" id=3]
 [ext_resource path="res://scenes/Reorient.gd" type="Script" id=4]
 [ext_resource path="res://scenes/Move.gd" type="Script" id=5]
+[ext_resource path="res://scenes/MoveUpAndDown.gd" type="Script" id=6]
 
 [sub_resource type="Curve3D" id=2]
 _data = {
@@ -17,7 +18,7 @@ size = Vector3( 2, 1, 3 )
 
 [node name="Main" type="Spatial"]
 script = ExtResource( 1 )
-spawn_buffer = 1.0
+spawn_buffer = 0.5
 
 [node name="VoxGen" type="Spatial" parent="."]
 unique_name_in_owner = true
@@ -28,9 +29,13 @@ chunk_counts = Vector3( 5, 5, 5 )
 voxel_size = 0.1
 voxel_rate = 1e+06
 
-[node name="Player" parent="." instance=ExtResource( 3 )]
+[node name="PlayerPivot" type="Spatial" parent="."]
 unique_name_in_owner = true
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 5, 0 )
+transform = Transform( -1, 0, 0, 0, 0, -1, 0, -1, 0, 0, 0, 0 )
+
+[node name="Player" parent="PlayerPivot" instance=ExtResource( 3 )]
+unique_name_in_owner = true
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.84733, 0 )
 move_speed = 4
 friction = 2.5
 fly_acceleration = 1.0
@@ -56,3 +61,8 @@ script = ExtResource( 5 )
 mesh = SubResource( 1 )
 skeleton = NodePath("../../..")
 script = ExtResource( 4 )
+
+[node name="Orb" type="Spatial" parent="."]
+script = ExtResource( 6 )
+
+[connection signal="initialized" from="VoxGen" to="." method="_on_VoxGen_initialized"]

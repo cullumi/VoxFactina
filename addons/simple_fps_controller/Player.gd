@@ -210,7 +210,8 @@ func _process_movement(delta):
 	
 	#apply
 	if velocity.length() >= .5:
-#		var formed = transform.basis.xform_inv(velocity)
+#		var formed = get_parent().transform.basis.xform_inv(velocity)
+#		collision = move_and_collide(formed * delta)
 		collision = move_and_collide(velocity * delta)
 	else:
 		velocity = Vector3(0, velocity.y, 0)
@@ -227,14 +228,6 @@ func enable_mouse():
 	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 
 func cam_rotate(vect, sens):
-#	prints(vect.x, "/", vect.y)
-#	var yformed = transform.xform(Vector3(0, vect.x, 0))
-#	var xformed = camera.transform.xform(Vector3(vect.y, 0, 0))
-#	var ydif = rotation_degrees - yformed
-#	var xdif = camera.rotation_degrees - xformed
-#	prints(ydif, "/", xdif)
-#	rotate(ydif.normalized(), ydif.length() * -sens.y)
-#	camera.rotate(xdif.normalized(), xdif.length() * -sens.x)
 	rotate_y(deg2rad(vect.x * sens.y * -1))
 	camera.rotate_x(deg2rad(vect.y * sens.x * -1))
 	

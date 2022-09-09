@@ -32,7 +32,7 @@ func set_state(id, val):
 ### Worker Management
 
 func _enter_tree():
-	for i in range(count):
+	for _i in range(count):
 		var thread = Thread.new()
 		workers.append(thread)
 		thread.start(self, "worker", {"thread":thread})
@@ -50,7 +50,7 @@ func report_done():
 	mutex.lock()
 	done += 1
 	mutex.unlock()
-	semaphore.post()
+#	semaphore.post()
 
 func num_done():
 	mutex.lock()
