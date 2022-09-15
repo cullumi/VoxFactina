@@ -1,24 +1,26 @@
-class_name PlayerRun # Replace this with your state's name
+class_name Run # Replace this with your state's name
 extends State
 
-onready var p
+onready var p:Player
 onready var mv:FSM = get_node("%Movement")
 
-onready var st_fall:NodePath = "%PlayerFall"
-onready var st_idle:NodePath = "%PlayerIdle"
+onready var st_fall:NodePath = "%Fall"
+onready var st_idle:NodePath = "%Idle"
 
 # Called when a state enters the finite state machine
 func _enter_state():
 	print("Run")
 
-
 # Called every frame by the finite state machine's process method
-func _process_state(delta: float):
+func _process_state(_delta: float):
 	pass
 
 
 # Called every frame by the finite state machine's physics process method
 func _physics_process_state(delta: float):
+	# Input
+	p._process_grounded_input(delta)
+	
 	# State Management
 	if !p.collision:
 		p.on_floor = false
@@ -37,12 +39,11 @@ func _physics_process_state(delta: float):
 	p.velocity += p.input_dir.rotated(Vector3(0, 1, 0), p.rotation.y) * p.acceleration
 	if Vector2(p.velocity.x, p.velocity.z).length() > p.move_speed:
 		p.velocity = p.velocity.normalized() * p.move_speed # clamp move speed
-		print(p.velocity.length())
 	if p.collision:
 		var rel_vel = p.relative(p.velocity)
 		var rel_xz = rel_vel - (rel_vel * p.collision.normal.abs().normalized())
 		var rel_adj = ((rel_xz.dot(p.collision.normal)) * -1)
-		p.velocity.y = rel_adj
+		p.velocity.y = -rel_adj
 	
 	# fake gravity to keep character on the ground
 	# increase if player is falling down slopes instead of running

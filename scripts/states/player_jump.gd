@@ -1,24 +1,26 @@
-class_name PlayerJump # Replace this with your state's name
+class_name Jump # Replace this with your state's name
 extends State
 
-onready var p
+onready var p:Player
 onready var mv:FSM = get_node("%Movement")
 
-onready var st_fall:NodePath = "%PlayerFall"
+onready var st_fall:NodePath = "%Fall"
 
 # Called when a state enters the finite state machine
 func _enter_state():
 	p.jumping = true
 	print("Jump")
 
-
 # Called every frame by the finite state machine's process method
-func _process_state(delta: float):
+func _process_state(_delta: float):
 	pass
 
 
 # Called every frame by the finite state machine's physics process method
 func _physics_process_state(delta: float):
+	# Input
+	p._process_grounded_input(delta)
+	
 	# State Management
 	if !p.collision:
 		p.on_floor = false

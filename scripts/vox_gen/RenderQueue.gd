@@ -25,7 +25,7 @@ func higher_priority(a:Chunk, b:Chunk):
 
 func dequeues(num:int) -> Array:
 	var chunks:Array = []
-	for i in range(num):
+	for _i in range(num):
 		chunks.append(dequeue())
 	return chunks
 

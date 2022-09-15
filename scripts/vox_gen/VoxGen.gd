@@ -8,7 +8,7 @@ onready var from:Vector3 = -chunk_dims/2
 onready var to:Vector3 = chunk_dims/2
 export (Vector3) var chunk_counts:Vector3 = Vector3(3, 3, 3)
 export (float, 0, 1, 0.05) var surface_level:float = 0.75
-export (float, 0.1, 1, 0.05) var voxel_size:float = 1
+export (float, 0.1, 2, 0.05) var voxel_size:float = 1
 export (float, EXP, 1000, 1000000, 1000) var voxel_rate:int = 10000
 export (SpatialMaterial) var voxel_material
 
@@ -44,8 +44,9 @@ func calc_spawn_chunk():
 onready var spawn_chunk:Vector3 = calc_spawn_chunk()
 
 # Offsets
-func offset(pos:Vector3): return (pos - center_pos) * chunk_size
-func unoffset(off:Vector3): return (off / chunk_size) + center_pos
+onready var voxset:Vector3 = Vector3.ONE * (voxel_size/2)
+func offset(pos:Vector3): return ((pos - center_pos) * chunk_size) - voxset
+func unoffset(off:Vector3): return ((off+voxset) / chunk_size) + center_pos
 
 # Surface Level Rects
 onready var front_radii = Vector2(world_radii.x, world_radii.y) * surface_level
@@ -153,8 +154,7 @@ func add_voxels(chunk:Chunk, start:Vector3, end:Vector3, voxels=null):
 			yield(get_tree(), "idle_frame")
 	add_voxel(chunk, pos, voxels)
 
-func add_voxel(chunk:Chunk, base_pos:Vector3, voxels=null):
-#	var pos = base_pos + chunk.offset
+func add_voxel(_chunk:Chunk, base_pos:Vector3, voxels=null):
 	var pos = base_pos
 	var color = get_voxel_color(pos)
 	VoxelFactory.add_voxel(pos, color, voxels)
@@ -187,7 +187,3 @@ func gravity_dir(pos:Vector3) -> Vector3:
 		return Vector3.UP
 	else:
 		return final
-
-## Conversions
-func pos_to_chunk(pos:Vector3) -> Vector3:
-	return Vector3()

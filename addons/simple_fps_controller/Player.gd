@@ -1,6 +1,6 @@
 extends KinematicBody
 
-class_name Player
+class_name NoFSMPlayer
 
 enum State {IDLE, RUN, JUMP, FALL, DASH, CROUCH, FLY}
 enum Modifier {STANDARD, FLY, WALK, SPRINT, NONE}

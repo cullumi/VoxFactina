@@ -1,13 +1,14 @@
-[gd_scene load_steps=10 format=2]
+[gd_scene load_steps=11 format=2]
 
-[ext_resource path="res://scenes/PlayerFSM.gd" type="Script" id=1]
+[ext_resource path="res://scenes/FSM Testing/PlayerFSM.gd" type="Script" id=1]
 [ext_resource path="res://addons/hexagon-fsm/fsm.gd" type="Script" id=2]
 [ext_resource path="res://addons/simple_fps_controller/Crosshair.png" type="Texture" id=3]
-[ext_resource path="res://scripts/states/player_fly.gd" type="Script" id=4]
+[ext_resource path="res://scripts/states/player_float.gd" type="Script" id=4]
 [ext_resource path="res://scripts/states/player_run.gd" type="Script" id=5]
 [ext_resource path="res://scripts/states/player_idle.gd" type="Script" id=6]
 [ext_resource path="res://scripts/states/player_jump.gd" type="Script" id=7]
 [ext_resource path="res://scripts/states/player_fall.gd" type="Script" id=8]
+[ext_resource path="res://scripts/states/player_fly.gd" type="Script" id=11]
 
 [sub_resource type="CapsuleShape" id=1]
 radius = 0.5
@@ -45,22 +46,26 @@ texture = ExtResource( 3 )
 unique_name_in_owner = true
 script = ExtResource( 2 )
 
-[node name="PlayerIdle" type="Node" parent="Movement"]
+[node name="Idle" type="Node" parent="Movement"]
 unique_name_in_owner = true
 script = ExtResource( 6 )
 
-[node name="PlayerFall" type="Node" parent="Movement"]
+[node name="Run" type="Node" parent="Movement"]
 unique_name_in_owner = true
-script = ExtResource( 8 )
+script = ExtResource( 5 )
 
-[node name="PlayerFly" type="Node" parent="Movement"]
-unique_name_in_owner = true
-script = ExtResource( 4 )
-
-[node name="PlayerJump" type="Node" parent="Movement"]
+[node name="Jump" type="Node" parent="Movement"]
 unique_name_in_owner = true
 script = ExtResource( 7 )
 
-[node name="PlayerRun" type="Node" parent="Movement"]
+[node name="Fall" type="Node" parent="Movement"]
 unique_name_in_owner = true
-script = ExtResource( 5 )
+script = ExtResource( 8 )
+
+[node name="Float" type="Node" parent="Movement"]
+unique_name_in_owner = true
+script = ExtResource( 4 )
+
+[node name="Fly" type="Node" parent="Movement"]
+unique_name_in_owner = true
+script = ExtResource( 11 )

@@ -1,6 +1,6 @@
 extends KinematicBody
 
-class_name PlayerFSM
+class_name Player
 
 ### Properties
 
@@ -37,13 +37,13 @@ export var friction = 1.15 # how fast player stops when idle
 export var max_climb_angle = 0.6 # 0.0-1.0 based on normal of collision .5 for 45 degree slope
 export var angle_of_freedom = 80 # amount player may look up/down
 # Flying
-export (float, EXP, 1, 1000) var fly_speed = 14
+export (float, EXP, 1, 1000) var fly_speed = 14.0
 export (float, EXP, 0.1, 10) var fly_acceleration = .5
 export (float, 1, 1.5) var fly_friction = 1.15
-export (float, EXP, 1, 1000) var fly_jump_speed = 10
-export (float, EXP, 1, 10) var fly_jump_height = 1
+export (float, EXP, 1, 1000) var fly_jump_speed = 10.0
+export (float, EXP, 1, 10) var fly_jump_height = 1.0
 # Sprint
-export (float, EXP, 1, 10) var sprint_multiplier = 14
+export (float, EXP, 1, 10) var sprint_multiplier = 14.0
 # Non-Flight
 onready var standard_jump_speed = jump_speed
 onready var standard_jump_height = jump_height
@@ -54,11 +54,14 @@ onready var standard_acceleration = fly_acceleration
 ### Nodes
 onready var camera = get_node("%Camera")
 onready var mv:FSM = get_node("%Movement")
-var st_default:NodePath = "%PlayerFall"
-var st_jump:NodePath = "%PlayerJump"
+var st_default:NodePath = "%Fall"
+var st_jump:NodePath = "%Jump"
+enum st {idle, run, jump, fall, floatt, fly, ascend, descend}
 var sts:Array = [
-	"%PlayerIdle", "%PlayerFall", "%PlayerFly", "%PlayerJump", "%PlayerRun"
+	"%Idle", "%Run", "%Jump", "%Fall",
+	"%Float", "%Fly",
 ]
+var sts_nodes:Array = []
 
 
 ### Variables
@@ -70,6 +73,7 @@ var velocity:Vector3 = Vector3()
 var coyote_frames:float = 0
 var falling = false
 var jumping = false
+var flying = false
 
 
 ### Events
@@ -79,9 +83,10 @@ func _physics_process(delta):
 
 func _ready():
 	# state
+	sts_nodes.resize(sts.size())
 	for i in range(sts.size()):
-		sts[i] = get_node_or_null(sts[i])
-		sts[i].p = self
+		sts_nodes[i] = get_node_or_null(sts[i])
+		sts_nodes[i].p = self
 	mv.change_state(st_default)
 	# might need to disable for multiplayer
 	if mouse_control: Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
@@ -94,17 +99,13 @@ func _input(event):
 
 
 ### Inputs
-func _process_input(delta):
+func _process_input(_delta):
 	# Toggle mouse capture
 	if Input.is_action_just_pressed("mouse_escape") && mouse_control:
 			if Input.get_mouse_mode() == Input.MOUSE_MODE_VISIBLE:
 				Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 			else:
 				Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
-	# Jump
-	if Input.is_action_pressed("jump_%s" % id) && can_jump():
-		frames = 0
-		mv.change_state(st_jump)
 	# WASD
 	input_dir = Vector3(Input.get_action_strength("right_%s" % id) - Input.get_action_strength("left_%s" % id), 0,
 			Input.get_action_strength("back_%s" % id) - Input.get_action_strength("forward_%s" % id)).normalized()
@@ -122,12 +123,31 @@ func _process_input(delta):
 	look_vec *= signs # Return inputs to original signs
 	cam_rotate(look_vec, gamepad_sens)
 
+func _process_grounded_input(_delta):
+	# Jump
+	if Input.is_action_pressed("jump_%s" % id) && can_jump():
+		frames = 0
+		mv.change_state(sts[st.jump])
+	# Fly
+	if Input.is_action_just_pressed("no_clip"):
+		mv.change_state(sts[st.floatt])
+
+func _process_flying_input(_delta):
+	# Ascend
+	var ascend = Input.is_action_pressed("jump_%s" % id)
+	var descend = Input.is_action_pressed("crouch")
+	input_dir.y = 0 if ascend and descend else (
+		-1 if descend else 1 if ascend else 0
+	)
+	# Ground
+	if Input.is_action_just_pressed("no_clip"):
+		mv.change_state(sts[st.fall])
 
 ### Helpers
 
 ## Conversions
 func relative(vector:Vector3):
-	var formed = global_transform.basis.xform(velocity)
+	var formed = global_transform.basis.xform(vector)
 	var roted = formed.rotated(global_transform.basis.y.normalized(), -rotation.y)
 	return roted
 func collision_angle(): return global_transform.basis.y.normalized().dot(collision.normal)
@@ -149,10 +169,8 @@ func apply(delta):
 	if collision:
 		if collision_angle() < .5: # if collision is 50% not from below aka if on slope
 			velocity.y += delta * gravity_accel
-			clamp(velocity.y, gravity_max, 9999)
+			velocity.y = clamp(velocity.y, gravity_max, 9999)
 			velocity = velocity.slide(collision_relative().normalized()).normalized() * velocity.length()
-		else:
-			velocity = velocity
 
 func cam_rotate(vect, sens):
 	rotate_y(deg2rad(vect.x * sens.y * -1))
@@ -169,10 +187,12 @@ func enable_mouse():
 
 ## States
 func can_jump():
-	if on_floor && not falling && (frames == 0 || frames > jump_speed):
-		return true
-	elif not jumping && coyote_frames < coyote_factor:
-		return true # allows the player to jump after leaving platforms
-	else:
-		return false
+	if not flying:
+		if on_floor && not falling && (frames == 0 || frames > jump_speed):
+			return true
+		elif not jumping && coyote_frames < coyote_factor:
+			return true # allows the player to jump after leaving platforms
+		else:
+			return false
+	return false
 
