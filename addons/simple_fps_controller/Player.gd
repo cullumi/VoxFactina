@@ -3,7 +3,8 @@ extends KinematicBody
 class_name Player
 
 enum State {IDLE, RUN, JUMP, FALL, DASH, CROUCH, FLY}
-enum Modifier {STANDARD, FLY}
+enum Modifier {STANDARD, FLY, WALK, SPRINT, NONE}
+enum Mod {MOVE, SPEED}
 enum Attacks {NONE, ATTACK, DEFEND, DASH}
 enum Curves {LINEAR, EXPONENTIAL, INV_S}
 
@@ -29,9 +30,14 @@ export var gravity_max = -24 # max falling speed
 export var friction = 1.15 # how fast player stops when idle
 export var max_climb_angle = 0.6 # 0.0-1.0 based on normal of collision .5 for 45 degree slope
 export var angle_of_freedom = 80 # amount player may look up/down
-export (float, 1, 20) var fly_speed = 14
-export (float, 0.1, 2) var fly_acceleration = .5
+export (float, EXP, 1, 1000) var fly_speed = 14
+export (float, EXP, 0.1, 10) var fly_acceleration = .5
 export (float, 1, 1.5) var fly_friction = 1.15
+export (float, EXP, 1, 1000) var fly_jump_speed = 10
+export (float, EXP, 1, 10) var fly_jump_height = 1
+export (float, EXP, 1, 10) var sprint_multiplier = 14
+onready var standard_jump_speed = jump_speed
+onready var standard_jump_height = jump_height
 onready var standard_speed = air_speed
 onready var standard_acceleration = fly_acceleration
 
@@ -57,7 +63,7 @@ func _input(event):
 
 
 var state = State.FALL
-var modifier = Modifier.STANDARD
+var mods = [Modifier.STANDARD, Modifier.NONE]
 var on_floor = false
 var frames = 0 # frames jumping
 var input_dir = Vector3(0, 0, 0)
@@ -68,15 +74,35 @@ var crouch
 func _process_input(delta):
 	# Toggle NoClip
 	if Input.is_action_just_pressed("no_clip"):
-		match modifier:
+		match mods[Mod.MOVE]:
 			Modifier.FLY:
-				modifier = Modifier.STANDARD
+				mods[Mod.MOVE] = Modifier.STANDARD
 				air_acceleration = standard_acceleration
 				air_speed = standard_speed
+#				jump_speed = standard_jump_speed
+#				jump_height = standard_jump_height
 			Modifier.STANDARD:
-				modifier = Modifier.FLY
+				mods[Mod.MOVE] = Modifier.FLY
 				air_acceleration = fly_acceleration
 				air_speed = fly_speed
+#				jump_speed = fly_jump_speed
+#				jump_height = fly_jump_height
+	
+	# Sprint
+	if Input.is_action_just_pressed("sprint"):
+		if mods[Mod.SPEED] != Modifier.SPRINT:
+			print("Sprint")
+			mods[Mod.SPEED] = Modifier.SPRINT
+			move_speed *= sprint_multiplier
+			acceleration *= sprint_multiplier
+			prints(move_speed, acceleration)
+	elif Input.is_action_just_released("sprint"):
+		if mods[Mod.SPEED] == Modifier.SPRINT:
+			print("Walk")
+			mods[Mod.SPEED] = Modifier.WALK
+			move_speed /= sprint_multiplier
+			acceleration /= sprint_multiplier
+			prints(move_speed, acceleration)
 	
 	# Toggle mouse capture
 	if Input.is_action_just_pressed("mouse_escape") && mouse_control:
@@ -88,18 +114,19 @@ func _process_input(delta):
 	# Jump
 	if Input.is_action_pressed("jump_%s" % id) && can_jump() and not crouch:
 		jump = true
+		
 		frames = 0
 		state = State.JUMP
-	elif state == State.JUMP and modifier == Modifier.FLY:
+	elif state == State.JUMP and mods[Mod.MOVE] == Modifier.FLY:
 		state = State.FLY
 		jump = false
 	
 	# Crouch
 	if Input.is_action_pressed("crouch") and not jump:
-		if modifier == Modifier.FLY:
+		if mods[Mod.MOVE] == Modifier.FLY:
 			crouch = true
 			state = State.CROUCH
-	elif state == State.CROUCH and modifier == Modifier.FLY:
+	elif state == State.CROUCH and mods[Mod.MOVE] == Modifier.FLY:
 		state = State.FLY
 		crouch = false
 	
@@ -123,13 +150,20 @@ func _process_input(delta):
 	
 	cam_rotate(look_vec, gamepad_sens)
 
+func relative(vector:Vector3):
+	var formed = global_transform.basis.xform(velocity)
+	var roted = formed.rotated(global_transform.basis.y.normalized(), -rotation.y)
+	return roted
+
+func collision_angle(): return global_transform.basis.y.normalized().dot(collision.normal)
+func collision_relative(): return relative(collision.normal)
 
 var collision : KinematicCollision  # Stores the collision from move_and_collide
 var velocity := Vector3(0, 0, 0)
 var coyote_frames = 0
 func _process_movement(delta):
 	# state management
-	if modifier == Modifier.FLY:
+	if mods[Mod.MOVE] == Modifier.FLY:
 		if state != State.JUMP and state != State.CROUCH:
 			state = State.FLY
 	else:
@@ -142,7 +176,7 @@ func _process_movement(delta):
 			if state == State.JUMP:
 				on_floor = false # fixes wall climbing due to walls having y1 normal sometimes
 				coyote_frames = coyote_factor + 1
-			elif collision.normal.y < max_climb_angle:
+			elif collision_angle() < max_climb_angle:
 				state = State.FALL
 			else:
 				on_floor = true
@@ -157,16 +191,16 @@ func _process_movement(delta):
 		if frames < jump_speed:
 			velocity.y = jump_height/(jump_speed * delta)
 			frames += 1 * delta * 60
-		elif modifier == Modifier.STANDARD:
+		elif mods[Mod.MOVE] == Modifier.STANDARD:
 			state = State.FALL
 
 	if state == State.CROUCH:
-		if modifier == Modifier.FLY:
+		if mods[Mod.MOVE] == Modifier.FLY:
 			velocity.y = jump_height/(-jump_speed * delta)
 
 	# fall state
 	if state == State.FALL:
-		match modifier:
+		match mods[Mod.MOVE]:
 			Modifier.STANDARD:
 				velocity.y += gravity_accel * delta * 4
 				velocity.y = clamp(velocity.y, gravity_max, 9999)
@@ -178,8 +212,13 @@ func _process_movement(delta):
 		velocity += input_dir.rotated(Vector3(0, 1, 0), rotation.y) * acceleration
 		if Vector2(velocity.x, velocity.z).length() > move_speed:
 			velocity = velocity.normalized() * move_speed # clamp move speed
+			print(velocity.length())
 		if collision:
-			velocity.y = ((Vector3(velocity.x, 0, velocity.z).dot(collision.normal)) * -1)
+			var rel_vel = relative(velocity)
+			var rel_xz = rel_vel - (rel_vel * collision.normal.abs().normalized())
+			var rel_adj = ((rel_xz.dot(collision.normal)) * -1)
+			velocity.y = rel_adj
+#			prints(velocity, "->", rel_vel, "->", rel_xz, "->", rel_adj, "?", adj, "<-", collision.normal)
 		
 		# fake gravity to keep character on the ground
 		# increase if player is falling down slopes instead of running
@@ -192,7 +231,11 @@ func _process_movement(delta):
 		if velocity.length() > .5:
 			velocity /= friction
 			if collision:
-				velocity.y = ((Vector3(velocity.x, 0, velocity.z).dot(collision.normal)) * -1) - .0001
+				var rel_vel = relative(velocity)
+				var rel_xz = rel_vel - (rel_vel * collision.normal.abs().normalized())
+				var rel_adj = ((rel_xz.dot(collision.normal)) * -1) - .0001
+				velocity.y = rel_adj
+#				prints(velocity, "->", rel_vel, "->", rel_xz, "->", rel_adj, "?", adj)
 	
 	# fly state
 	if state == State.FLY:
@@ -210,16 +253,14 @@ func _process_movement(delta):
 	
 	#apply
 	if velocity.length() >= .5:
-#		var formed = get_parent().transform.basis.xform_inv(velocity)
-#		collision = move_and_collide(formed * delta)
-		collision = move_and_collide(velocity * delta)
+		collision = move_and_collide(relative(velocity) * delta)
 	else:
 		velocity = Vector3(0, velocity.y, 0)
 	if collision:
-		if collision.normal.y < .5: # if collision is 50% not from below aka if on slope
+		if collision_angle() < .5: # if collision is 50% not from below aka if on slope
 			velocity.y += delta * gravity_accel
 			clamp(velocity.y, gravity_max, 9999)
-			velocity = velocity.slide(collision.normal).normalized() * velocity.length()
+			velocity = velocity.slide(collision_relative().normalized()).normalized() * velocity.length()
 		else:
 			velocity = velocity
 
@@ -236,7 +277,7 @@ func cam_rotate(vect, sens):
 	camera.rotation_degrees = camera_rot # I don't understand this function
 
 func can_jump():
-	if modifier == Modifier.FLY:
+	if mods[Mod.MOVE] == Modifier.FLY:
 		return true
 	elif on_floor && state != State.FALL && (frames == 0 || frames > jump_speed):
 		return true

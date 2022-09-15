@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=2]
+[gd_scene load_steps=13 format=2]
 
 [ext_resource path="res://scenes/Main.gd" type="Script" id=1]
 [ext_resource path="res://scripts/vox_gen/VoxGen.gd" type="Script" id=2]
@@ -7,6 +7,8 @@
 [ext_resource path="res://scenes/Move.gd" type="Script" id=5]
 [ext_resource path="res://scenes/MoveUpAndDown.gd" type="Script" id=6]
 [ext_resource path="res://resources/voxel_mat.tres" type="Material" id=7]
+[ext_resource path="res://scenes/Planet.gd" type="Script" id=8]
+[ext_resource path="res://scenes/PlayerPivot.gd" type="Script" id=9]
 
 [sub_resource type="Curve3D" id=2]
 _data = {
@@ -22,31 +24,37 @@ size = Vector3( 2, 100, 2 )
 
 [node name="Main" type="Spatial"]
 script = ExtResource( 1 )
+
+[node name="Planet" type="Spatial" parent="."]
+transform = Transform( 0.615263, 0.430297, 0.660528, 0, 0.83789, -0.545839, -0.788322, 0.335834, 0.515522, 0, 0, 0 )
+script = ExtResource( 8 )
 spawn_buffer = 0.5
 
-[node name="VoxGen" type="Spatial" parent="."]
+[node name="VoxGen" type="Spatial" parent="Planet"]
 unique_name_in_owner = true
 script = ExtResource( 2 )
-from = Vector3( -25, -25, -25 )
-to = Vector3( 25, 25, 25 )
-chunk_counts = Vector3( 5, 5, 5 )
-voxel_size = 0.1
+chunk_dims = Vector3( 16, 16, 16 )
+surface_level = 1.0
 voxel_rate = 1e+06
 voxel_material = ExtResource( 7 )
 
-[node name="PlayerPivot" type="Spatial" parent="."]
+[node name="PlayerPivot" type="Spatial" parent="Planet"]
 unique_name_in_owner = true
-transform = Transform( 1, 0, 0, 0, 0, 1, 0, -1, 0, 0, 0, 0 )
+script = ExtResource( 9 )
 
-[node name="Player" parent="PlayerPivot" instance=ExtResource( 3 )]
+[node name="Player" parent="Planet/PlayerPivot" instance=ExtResource( 3 )]
 unique_name_in_owner = true
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.84733, 0 )
-move_speed = 4
-friction = 2.5
-fly_acceleration = 1.0
+move_speed = 10
+jump_speed = 10
+friction = 1.5
+fly_speed = 50.0
+fly_acceleration = 10.0
 fly_friction = 1.04
+fly_jump_speed = 50.0
+fly_jump_height = 10.0
+sprint_multiplier = 5.0
 
-[node name="SpawnCast" type="RayCast" parent="."]
+[node name="SpawnCast" type="RayCast" parent="Planet"]
 unique_name_in_owner = true
 
 [node name="DirectionalLight" type="DirectionalLight" parent="."]
@@ -74,6 +82,4 @@ script = ExtResource( 6 )
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -15.2658 )
 mesh = SubResource( 3 )
 
-[connection signal="initialized" from="VoxGen" to="." method="_on_VoxGen_initialized"]
-
-[editable path="PlayerPivot/Player"]
+[connection signal="initialized" from="Planet/VoxGen" to="Planet" method="_on_VoxGen_initialized"]

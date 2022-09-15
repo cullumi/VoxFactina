@@ -2,7 +2,7 @@ extends Reference
 
 class_name Vectors
 
-enum {X, Y, Z}
+enum {X, Y, Z, OOB}
 
 static func all(to:Vector3, from:Vector3=Vector3(), order:Array=[X,Y,Z]):
 	var combos = []
@@ -32,4 +32,10 @@ static func count_to(cur:Vector3, toward:Vector3, base:Vector3=Vector3()):
 		if cur.y > toward.y:
 			cur.x += 1
 			cur.y = base.y
+	return cur
+
+static func clamp_to(cur:Vector3, minv:Vector3, maxv:Vector3):
+	cur.x = clamp(cur.x, minv.x, maxv.x)
+	cur.y = clamp(cur.y, minv.y, maxv.y)
+	cur.z = clamp(cur.z, minv.z, maxv.z)
 	return cur

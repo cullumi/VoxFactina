@@ -15,12 +15,13 @@ func enqueue(chunk:Chunk):
 		queue.erase(chunk)
 	var idx = queue.bsearch_custom(chunk, self, "higher_priority", true)
 	queue.insert(idx, chunk)
+#	print(idx)
 
 func flood(chunks:Array):
 	queue.append_array(chunks)
 
 func higher_priority(a:Chunk, b:Chunk):
-	return a.priority > b.priority
+	return a.priority < b.priority
 
 func dequeues(num:int) -> Array:
 	var chunks:Array = []

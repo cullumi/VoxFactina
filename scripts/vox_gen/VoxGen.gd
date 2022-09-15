@@ -3,8 +3,9 @@ extends Spatial
 class_name VoxGen
 
 # Properties
-export (Vector3) var from:Vector3 = Vector3(-10, -10, -10)
-export (Vector3) var to:Vector3 = Vector3(10, 10, 10)
+export (Vector3) var chunk_dims = Vector3(10, 10, 10)
+onready var from:Vector3 = -chunk_dims/2
+onready var to:Vector3 = chunk_dims/2
 export (Vector3) var chunk_counts:Vector3 = Vector3(3, 3, 3)
 export (float, 0, 1, 0.05) var surface_level:float = 0.75
 export (float, 0.1, 1, 0.05) var voxel_size:float = 1
@@ -18,10 +19,10 @@ export (int, -1, 1, 2) var spawn_dir = 1
 
 # Dimensions
 enum {X, Y, Z}
-onready var chunk_dims:Vector3 = to - from
+#onready var chunk_dims:Vector3 = to - from
 onready var world_dims:Vector3 = chunk_dims * chunk_counts
 onready var world_radii:Vector3 = world_dims/2
-onready var chunk_size:Vector3 = chunk_dims * voxel_size
+onready var chunk_size:Vector3 = (chunk_dims+Vector3(1,1,1)) * voxel_size
 
 # Locations
 onready var last_chunk:Vector3 = chunk_counts-Vector3(1,1,1)
@@ -43,12 +44,8 @@ func calc_spawn_chunk():
 onready var spawn_chunk:Vector3 = calc_spawn_chunk()
 
 # Offsets
-onready var chunk_offset = (Vector3(chunk_dims.x, 0, chunk_dims.z)/2)
-func offset(pos:Vector3):
-	var pos_offset = pos - center_chunk
-	var half_chunk_size = Vector3(chunk_size.x/2, 0, chunk_size.z/2)
-	var sorta_chunk_offset = (chunk_dims * pos_offset) + chunk_offset
-	return ((sorta_chunk_offset / chunk_size) * 0.5) - half_chunk_size
+func offset(pos:Vector3): return (pos - center_pos) * chunk_size
+func unoffset(off:Vector3): return (off / chunk_size) + center_pos
 
 # Surface Level Rects
 onready var front_radii = Vector2(world_radii.x, world_radii.y) * surface_level
@@ -81,39 +78,48 @@ func initialize_chunks():
 	
 	# First Chunk (Where the Player Spawns)
 	var chunk = force_render(spawn_chunk)
+	prints("First Chunk:", unoffset(chunk.offset))
 	var vector = Vector3()
 	vector[spawn_axis] = spawn_dir
 	
 	emit_signal("initialized")
 
-
 ### Rendering
+
+func enqueue_pos(pos:Vector3):
+	var chunk = chunks[pos]
+	chunk.priority = 1
+	render_queue.enqueue(chunk)
 
 func render():
 	while true:
-		if not render_queue.empty():
+		while not render_queue.empty():
 			var chunk:Chunk = render_queue.dequeue()
-			while true:
-				var res = ThreadPool.start_job(
-					self, "render_chunk", [chunk],
-					self, "finish_render"
-				)
-				if res:
-					break
-				else:
-					yield(ThreadPool, "idling")
+			if chunk and not chunk.in_render:
+				chunk.in_render = true
+				while true:
+					var res = ThreadPool.start_job(
+						self, "render_chunk", [chunk],
+						self, "finish_render"
+					)
+					if res:
+						break
+					else:
+						yield(ThreadPool, "idling")
 		yield(get_tree(), "idle_frame")
 
 func force_render(pos:Vector3) -> Chunk:
 	render_queue.erase(chunks[pos])
 	return finish_render(render_chunk(chunks[pos]))
 
-func finish_render(chunk) -> Chunk:
-	if chunk.instance != null:
-		chunk.instance.queue_free()
-	chunk.instance = chunk.new_instance
-	if chunk.instance != null:
-		add_child(chunk.instance)
+func finish_render(chunk:Chunk) -> Chunk:  
+	if chunk.instance != chunk.new_instance:
+		if chunk.instance != null: 
+			chunk.instance.queue_free()
+		chunk.instance = chunk.new_instance
+		if chunk.instance != null:
+			add_child(chunk.instance) 
+	chunk.in_render = false
 	return chunk
 
 func render_chunk(chunk:Chunk) -> Chunk:
@@ -177,7 +183,10 @@ func gravity_dir(pos:Vector3) -> Vector3:
 	axis = axis if norm[axis] > norm.z else Z
 	var final = Vector3()
 	final[axis] = -sign(pos[axis])
-	return final
+	if final == Vector3():
+		return Vector3.UP
+	else:
+		return final
 
 ## Conversions
 func pos_to_chunk(pos:Vector3) -> Vector3:

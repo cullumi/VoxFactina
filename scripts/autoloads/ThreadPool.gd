@@ -1,6 +1,6 @@
 extends Node
 
-const count:int = 10
+const count:int = 16
 var workers:Array = []
 
 enum {WORK, DONE, IDLE, EXIT}

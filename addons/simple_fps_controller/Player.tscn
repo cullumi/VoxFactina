@@ -20,6 +20,7 @@ unique_name_in_owner = true
 transform = Transform( 1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, 0, -2.11571e-08, 0.484018 )
 current = true
 fov = 90.0
+far = 1000.0
 
 [node name="RayCast" type="RayCast" parent="Collider/Camera"]
 enabled = true
