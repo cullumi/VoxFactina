@@ -2,8 +2,8 @@
 
 [ext_resource path="res://scripts/states/char_state_test.gd" type="Script" id=1]
 [ext_resource path="res://addons/hexagon-fsm/fsm.gd" type="Script" id=2]
-[ext_resource path="res://player_idle.gd" type="Script" id=3]
-[ext_resource path="res://player_walk.gd" type="Script" id=4]
+[ext_resource path="res://scripts/states/player_idle.gd" type="Script" id=3]
+[ext_resource path="res://scripts/states/player_walk.gd" type="Script" id=4]
 
 [node name="StateTest" type="Node"]
 script = ExtResource( 1 )

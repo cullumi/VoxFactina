@@ -1,6 +1,7 @@
 tool
 extends Node
 
+class_name FSM
 
 # Controls wether this state machine is running or not
 # The current state can be paused and resumed by setting this value

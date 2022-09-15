@@ -1,0 +1,66 @@
+[gd_scene load_steps=10 format=2]
+
+[ext_resource path="res://scenes/PlayerFSM.gd" type="Script" id=1]
+[ext_resource path="res://addons/hexagon-fsm/fsm.gd" type="Script" id=2]
+[ext_resource path="res://addons/simple_fps_controller/Crosshair.png" type="Texture" id=3]
+[ext_resource path="res://scripts/states/player_fly.gd" type="Script" id=4]
+[ext_resource path="res://scripts/states/player_run.gd" type="Script" id=5]
+[ext_resource path="res://scripts/states/player_idle.gd" type="Script" id=6]
+[ext_resource path="res://scripts/states/player_jump.gd" type="Script" id=7]
+[ext_resource path="res://scripts/states/player_fall.gd" type="Script" id=8]
+
+[sub_resource type="CapsuleShape" id=1]
+radius = 0.5
+
+[node name="Player" type="KinematicBody"]
+script = ExtResource( 1 )
+
+[node name="Collider" type="CollisionShape" parent="."]
+transform = Transform( 1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 0.25, 0 )
+shape = SubResource( 1 )
+
+[node name="Camera" type="Camera" parent="Collider"]
+unique_name_in_owner = true
+transform = Transform( 1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, 0, -2.11571e-08, 0.484018 )
+current = true
+fov = 90.0
+far = 1000.0
+
+[node name="RayCast" type="RayCast" parent="Collider/Camera"]
+enabled = true
+cast_to = Vector3( 0, 0, -500 )
+
+[node name="HUD" type="CenterContainer" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="Crosshair_Tex" type="TextureRect" parent="HUD"]
+margin_left = 476.0
+margin_top = 264.0
+margin_right = 548.0
+margin_bottom = 336.0
+texture = ExtResource( 3 )
+
+[node name="Movement" type="Node" parent="."]
+unique_name_in_owner = true
+script = ExtResource( 2 )
+
+[node name="PlayerIdle" type="Node" parent="Movement"]
+unique_name_in_owner = true
+script = ExtResource( 6 )
+
+[node name="PlayerFall" type="Node" parent="Movement"]
+unique_name_in_owner = true
+script = ExtResource( 8 )
+
+[node name="PlayerFly" type="Node" parent="Movement"]
+unique_name_in_owner = true
+script = ExtResource( 4 )
+
+[node name="PlayerJump" type="Node" parent="Movement"]
+unique_name_in_owner = true
+script = ExtResource( 7 )
+
+[node name="PlayerRun" type="Node" parent="Movement"]
+unique_name_in_owner = true
+script = ExtResource( 5 )

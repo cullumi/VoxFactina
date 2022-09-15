@@ -1,10 +1,15 @@
-class_name PlayerIdle # Replace this with your state's name
+class_name PlayerFly # Replace this with your state's name
 extends State
 
+onready var p
+onready var mv:FSM = get_node("%Movement")
+
+onready var st_fall:NodePath = "%PlayerFall"
+onready var st_idle:NodePath = "%PlayerIdle"
 
 # Called when a state enters the finite state machine
 func _enter_state():
-	pass
+	print("Fly")
 
 
 # Called every frame by the finite state machine's process method

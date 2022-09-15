@@ -114,7 +114,6 @@ func _process_input(delta):
 	# Jump
 	if Input.is_action_pressed("jump_%s" % id) && can_jump() and not crouch:
 		jump = true
-		
 		frames = 0
 		state = State.JUMP
 	elif state == State.JUMP and mods[Mod.MOVE] == Modifier.FLY:
@@ -194,6 +193,7 @@ func _process_movement(delta):
 		elif mods[Mod.MOVE] == Modifier.STANDARD:
 			state = State.FALL
 
+	# crouch state
 	if state == State.CROUCH:
 		if mods[Mod.MOVE] == Modifier.FLY:
 			velocity.y = jump_height/(-jump_speed * delta)
@@ -252,6 +252,26 @@ func _process_movement(delta):
 			velocity.z = velocity2d.y
 	
 	#apply
+	if velocity.length() >= .5:
+		collision = move_and_collide(relative(velocity) * delta)
+	else:
+		velocity = Vector3(0, velocity.y, 0)
+	if collision:
+		if collision_angle() < .5: # if collision is 50% not from below aka if on slope
+			velocity.y += delta * gravity_accel
+			clamp(velocity.y, gravity_max, 9999)
+			velocity = velocity.slide(collision_relative().normalized()).normalized() * velocity.length()
+		else:
+			velocity = velocity
+
+func air_movement():
+	velocity += input_dir.rotated(Vector3(0, 1, 0), rotation.y) * air_acceleration # add acceleration
+	if Vector2(velocity.x, velocity.z).length() > air_speed: # clamp speed to max airspeed
+		var velocity2d = Vector2(velocity.x, velocity.z).normalized() * air_speed
+		velocity.x = velocity2d.x
+		velocity.z = velocity2d.y
+
+func apply(delta):
 	if velocity.length() >= .5:
 		collision = move_and_collide(relative(velocity) * delta)
 	else:
