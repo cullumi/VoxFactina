@@ -9,7 +9,7 @@ onready var st_fall:NodePath = "%Fall"
 # Called when a state enters the finite state machine
 func _enter_state():
 	p.jumping = true
-	print("Jump")
+#	print("Jump")
 
 # Called every frame by the finite state machine's process method
 func _process_state(_delta: float):

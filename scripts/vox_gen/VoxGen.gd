@@ -3,14 +3,7 @@ extends Spatial
 class_name VoxGen
 
 # Properties
-export (Vector3) var chunk_dims = Vector3(10, 10, 10)
-onready var from:Vector3 = -chunk_dims/2
-onready var to:Vector3 = chunk_dims/2
-export (Vector3) var chunk_counts:Vector3 = Vector3(3, 3, 3)
-export (float, 0, 1, 0.05) var surface_level:float = 0.75
-export (float, 0.1, 2, 0.05) var voxel_size:float = 1
-export (float, EXP, 1000, 1000000, 1000) var voxel_rate:int = 10000
-export (SpatialMaterial) var voxel_material
+export (Resource) var props
 
 # Spawn Orientation
 enum AXES {X, Y, Z}
@@ -19,40 +12,25 @@ export (int, -1, 1, 2) var spawn_dir = 1
 
 # Dimensions
 enum {X, Y, Z}
-#onready var chunk_dims:Vector3 = to - from
-onready var world_dims:Vector3 = chunk_dims * chunk_counts
-onready var world_radii:Vector3 = world_dims/2
-onready var chunk_size:Vector3 = (chunk_dims+Vector3(1,1,1)) * voxel_size
 
-# Locations
-onready var last_chunk:Vector3 = chunk_counts-Vector3(1,1,1)
-onready var center_chunk:Vector3 = last_chunk/2
-onready var center_pos:Vector3 = center_chunk.floor()
-onready var spawn_height:float = (chunk_counts[spawn_axis]/2 * surface_level) * spawn_dir
+# Spawn Math
+func vector_spawn():
+	var vector = Vector3()
+	vector[spawn_axis] = spawn_dir
+	return vector
+onready var spawn_vector = vector_spawn()
+onready var spawn_height:float = (props.chunk_counts[spawn_axis]/2 * props.surface_level) * spawn_dir
 func calc_spawn_offset():
-	prints("center chunk:", center_chunk)
-	prints("center pos:", center_pos)
-	prints("spawn height:", spawn_height)
-	var off = center_pos[spawn_axis] + spawn_height
+	var off = props.center_pos[spawn_axis] + spawn_height
 	off = floor(off) if spawn_height < 0 else ceil(off)
-	return clamp(off, 0, chunk_counts[spawn_axis]-1)
+	return clamp(off, 0, props.chunk_counts[spawn_axis]-1)
 onready var spawn_offset:float = calc_spawn_offset()
 func calc_spawn_chunk():
-	var pos = center_pos
+	var pos = props.center_pos
 	pos[spawn_axis] = spawn_offset
 	return pos
 onready var spawn_chunk:Vector3 = calc_spawn_chunk()
 
-# Offsets
-onready var voxset:Vector3 = Vector3.ONE * (voxel_size/2)
-func offset(pos:Vector3): return ((pos - center_pos) * chunk_size) - voxset
-func unoffset(off:Vector3): return ((off+voxset) / chunk_size) + center_pos
-
-# Surface Level Rects
-onready var front_radii = Vector2(world_radii.x, world_radii.y) * surface_level
-onready var top_radii = Vector2(world_radii.x, world_radii.z) * surface_level
-onready var front = Rect2(-front_radii, front_radii*2)
-onready var top = Rect2(-top_radii, top_radii*2)
 
 signal initialized()
 var chunks:Dictionary = {}
@@ -63,9 +41,10 @@ var render_queue:RenderQueue = RenderQueue.new()
 
 func _ready():
 	randomize()
-	VoxelFactory.VoxelSize = voxel_size
+	print(props)
+	VoxelFactory.VoxelSize = props.voxel_size
 	VoxelFactory.update_vertices()
-	VoxelFactory.DefaultMaterial = voxel_material
+	VoxelFactory.DefaultMaterial = props.voxel_material
 
 func start():
 	initialize_chunks()
@@ -73,13 +52,21 @@ func start():
 
 func initialize_chunks():
 	# Add all chunks to Dictionary
-	for pos in Vectors.all(last_chunk, Vector3(), [Y,Z,X]):
-		chunks[pos] = Chunk.new(offset(pos))
+	var vectors = Vectors.all(props.last_chunk, Vector3(), [Y,Z,X])
+	prints(props.last_chunk, "-->", vectors.size())
+	for pos in vectors:
+		chunks[pos] = Chunk.new(pos, props.offset(pos))
 	render_queue.flood(chunks.values())
 	
 	# First Chunk (Where the Player Spawns)
+	prints("chunk counts:", props.chunk_counts)
+	prints("center chunk:", props.center_chunk)
+	prints("center pos:", props.center_pos)
+	prints("spawn height:", spawn_height)
+	prints("spawn pos:", spawn_chunk)
 	var chunk = force_render(spawn_chunk)
-	prints("First Chunk:", unoffset(chunk.offset))
+	chunk = force_render(spawn_chunk - spawn_vector)
+	prints("First Chunk:", props.unoffset(chunk.offset))
 	var vector = Vector3()
 	vector[spawn_axis] = spawn_dir
 	
@@ -125,7 +112,7 @@ func finish_render(chunk:Chunk) -> Chunk:
 
 func render_chunk(chunk:Chunk) -> Chunk:
 	var voxels:Dictionary = {}
-	add_voxels(chunk, from, to, voxels)
+	add_voxels(chunk, props.from, props.to, voxels)
 	if not voxels.empty():
 		var s_tool:SurfaceTool = SurfaceTool.new()
 		chunk.new_instance = MeshInstance.new()
@@ -149,41 +136,12 @@ func add_voxels(chunk:Chunk, start:Vector3, end:Vector3, voxels=null):
 	while pos != end:
 		count += 1
 		add_voxel(chunk, pos, voxels)
-		pos = Vectors.count_to(pos, end, from)
-		if count % voxel_rate == 0:
+		pos = Vectors.count_to(pos, end, props.from)
+		if count % props.voxel_rate == 0:
 			yield(get_tree(), "idle_frame")
 	add_voxel(chunk, pos, voxels)
 
-func add_voxel(_chunk:Chunk, base_pos:Vector3, voxels=null):
-	var pos = base_pos
-	var color = get_voxel_color(pos)
-	VoxelFactory.add_voxel(pos, color, voxels)
-
-## Content Queries
-
-func get_voxel_color(pos:Vector3) -> Color:
-	if voxel_is_air(pos):
-		return Color(0,0,0,0)
-	else:
-		var rand = randi()
-		return Color.forestgreen if rand % 2 else Color.darkolivegreen
-
-func voxel_is_air(pos:Vector3) -> bool:
-	var in_front = front.has_point(Vector2(pos.x, pos.y))
-	var in_top = top.has_point(Vector2(pos.x, pos.z))
-	return not in_front or not in_top
-
-
-### Calculations
-
-## Gravity Direction
-func gravity_dir(pos:Vector3) -> Vector3:
-	var norm = pos.normalized().abs()
-	var axis = X if norm.x > norm.y else Y
-	axis = axis if norm[axis] > norm.z else Z
-	var final = Vector3()
-	final[axis] = -sign(pos[axis])
-	if final == Vector3():
-		return Vector3.UP
-	else:
-		return final
+func add_voxel(chunk:Chunk, base_pos:Vector3, voxels=null):
+	var pos = props.voxoff(chunk.pos, base_pos)
+	var color = props.type().get_voxel_color(pos)
+	VoxelFactory.add_voxel(base_pos, color, voxels)

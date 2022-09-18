@@ -12,7 +12,7 @@ onready var st_run:NodePath = "%Run"
 # Called when a state enters the finite state machine
 func _enter_state():
 	p.falling = true
-	print("Fall")
+#	print("Fall")
 
 # Called every frame by the finite state machine's process method
 func _process_state(_delta: float):

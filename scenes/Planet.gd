@@ -1,48 +1,103 @@
-extends Spatial
+extends Area
+
+class_name Planet
 
 # Properties
 export (float, 0, 3) var spawn_buffer:float = 0
+export (bool) var use_spawn = false
+export (Resource) var props
+export (bool) var orbiting = false
 
 # Nodes
-onready var vox_gen:VoxGen = get_node("%VoxGen")
-onready var player:Player = get_node("%Player")
-onready var pivot:Spatial = get_node("%PlayerPivot")
-onready var spawn_cast:RayCast = get_node("%SpawnCast")
+onready var vox_gen:VoxGen = $VoxGen
+onready var pivot:PlayerPivot
+onready var collider:CollisionShape = get_node("%CollisionShape")
+onready var spawn_cast:RayCast = $SpawnCast
 
 # Xforms
-func player_xform(): return global_transform.xform_inv(player.global_translation)
+func xformed(spatial:Spatial): return global_transform.xform_inv(spatial.global_translation)
 var player_pos = Vector3()
+
+# Signals
+signal player_entered
+signal player_exited
+var exiting = false
+
 
 ### Triggers
 
+func _on_Planet_child_entered_tree(node):
+	if node is VoxGen:
+		node.props = props
+
 func _ready():
-	if vox_gen:
-		vox_gen.start()
+	collider.shape.extents = props.world_dims * props.voxel_size
 
 func _physics_process(_delta):
-	if player:
-		player_pos = player_xform()
+	if pivot and orbiting:
+		player_pos = xformed(pivot.player)
 		prioritize()
 		if pivot:
 			reorient_player()
 
+func generate():
+	if vox_gen:
+		vox_gen.start()
+
 func _on_VoxGen_initialized():
-	if player and pivot:
+	if pivot and use_spawn:
 		spawn_player()
+
+func _on_Planet_body_entered(body):
+	if body is Player:
+		emit_signal("player_entered", self)
+
+func _on_Planet_body_exited(body):
+	if body is Player:
+		emit_signal("player_exited", self)
+
+
+### Player Planet Transfers
+
+func remove_child(node:Node):
+	if node is PlayerPivot:
+		orbiting = false
+	.remove_child(node)
+
+func add_child(node:Node, lun:bool=false):
+	if node is PlayerPivot:
+		orbiting = true
+	.add_child(node, lun)
+
+func reparent_player():
+	print("Reparent")
+	var parent = get_parent()
+	if parent.is_a_parent_of(pivot):
+		parent.remove_child(pivot)
+	else:
+		remove_player()
+	if not pivot.get_parent():
+		add_child(pivot)
+	orbiting = true
+
+func remove_player():
+	print("Remove Player")
+	var parent = pivot.get_parent()
+	print(parent)
+#	parent.remove_child(pivot)
+#	pivot.get_parent().remove_child(pivot)
 
 
 ### Render Queue
 var last_chunk_pos = null
 func prioritize():
-	var chunk_pos = vox_gen.unoffset(player_pos).round()
+	var chunk_pos = props.unoffset(player_pos).round()
 	if chunk_pos != last_chunk_pos:
-#		prints("Entered Chunk:", chunk_pos)
 		last_chunk_pos = chunk_pos
-		var start = chunk_pos-Vector3.ONE
-		var end = chunk_pos+Vector3.ONE
-		start = Vectors.clamp_to(start, Vector3.ZERO, vox_gen.last_chunk)
-		end = Vectors.clamp_to(end, Vector3.ZERO, vox_gen.last_chunk)
-#		prints(start, "->", end)
+		var start:Vector3 = chunk_pos-Vector3.ONE
+		var end:Vector3 = chunk_pos+Vector3.ONE
+		start = Vectors.clamp_to(start, Vector3.ZERO, props.last_chunk)
+		end = Vectors.clamp_to(end, Vector3.ZERO, props.last_chunk)
 		var cur = start
 		vox_gen.enqueue_pos(cur)
 		while cur != end:
@@ -53,12 +108,13 @@ func prioritize():
 ### Player Spawn
 func spawn_player():
 	print("Spawn")
+	var player = pivot.player
 	var spawn_axis = vox_gen.spawn_axis
 	var spawn_dir = vox_gen.spawn_dir
-	var dim:float = vox_gen.chunk_dims[spawn_axis]
-	var top:float = vox_gen.chunk_counts[spawn_axis] * dim / 2
+	var dim:float = props.chunk_dims[spawn_axis]
+	var top:float = props.chunk_counts[spawn_axis] * dim
 	var cast_vector = Vector3(0,0,0)
-	cast_vector[spawn_axis] = top*2 * spawn_dir
+	cast_vector[spawn_axis] = top * spawn_dir
 	spawn_cast.translation = cast_vector
 	spawn_cast.cast_to = -cast_vector
 	spawn_cast.enabled = true
@@ -76,41 +132,20 @@ func spawn_player():
 # Get the gravity based on the player's location; reorient the player if needed.
 var cur_gravity = Vector3()
 func reorient_player():
-	var gravity = vox_gen.gravity_dir(player_pos).normalized()
-	if gravity != cur_gravity:
-		orient_player(gravity, cur_gravity)
-		cur_gravity = gravity
+	var gravity = props.type().gravity_dir(player_pos).normalized()
+	pivot.reorient_player(gravity)
+#	if (gravity - cur_gravity).length() >= 0.001:
+#		orient_player(gravity, cur_gravity)
+#		cur_gravity = gravity
 
 # Orient the Player based on a given gravity vector
 func orient_player(gravity, last_gravity):
-	var angle = 90 - (gravity.dot(last_gravity) * 90)
-	var axis = gravity.cross(last_gravity).normalized()
-	if axis:
-		# Roll the basis
-		var basis = pivot.target.basis.rotated(axis, -deg2rad(angle))
-		pivot.target.basis = basis.orthonormalized()
-
-### Basis Debugging
-
-# Used to see if the player has the same global "up" as it's pivot point.
-var last_cross = null
-func cross_debug():
-	var new_cross = player.global_transform.basis.y.cross(pivot.transform.basis.y)
-	if new_cross != last_cross:
-		last_cross = new_cross
-		prints("Y Cross:", last_cross)
-
-# Prints out the whole basis matrix.
-func bprint(basis:Basis):
-	prints("\tbasis:\t| %2.f, %2.f, %2.f |" % [basis.x.x, basis.y.x, basis.z.x])
-	prints("\t      \t| %2.f, %2.f, %2.f |" % [basis.x.y, basis.y.y, basis.z.y])
-	prints("\t      \t| %2.f, %2.f, %2.f |" % [basis.x.z, basis.y.z, basis.z.z])
-
-# Prints out the components for gravity-based orientation.
-func bdebug(basis:Basis, vecs:Dictionary, gravity:Vector3):
-	prints("\tgrav:", gravity)
-	prints("\tx:", vecs.x)
-	prints("\ty:", vecs.y)
-	prints("\tz:", vecs.z)
-	prints("\tx:", basis.x, "y:", basis.y, "z:", basis.z)
-	bprint(basis)
+	var angle:float = -gravity.angle_to(last_gravity)
+	var axis:Vector3 = gravity.cross(last_gravity).normalized()
+	if axis and axis.is_normalized():
+		if angle != 0 and angle != -0:
+			# Roll the basis
+			var basis = pivot.target.basis.rotated(axis, angle)
+			pivot.target.basis = basis.orthonormalized()
+	else:
+		prints("Axis not normalized...", axis, "[%.2f]" % angle)

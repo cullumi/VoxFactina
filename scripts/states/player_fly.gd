@@ -14,6 +14,7 @@ onready var st_descend:NodePath = "%Fall"
 # Called when a state enters the finite state machine
 func _enter_state():
 	p.flying = true
+	p.toggle_general_collision()
 
 # Called every frame by the finite state machine's process method
 func _process_state(_delta: float):
@@ -48,3 +49,4 @@ func _physics_process_state(delta: float):
 # Called when a state exits the finte state machine
 func _exit_state():
 	p.flying = false
+	p.toggle_general_collision()

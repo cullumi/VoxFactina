@@ -52,7 +52,8 @@ onready var standard_acceleration = fly_acceleration
 
 
 ### Nodes
-onready var camera = get_node("%Camera")
+onready var camera:Camera = get_node("%Camera")
+onready var collider:CollisionShape = get_node("%Collider")
 onready var mv:FSM = get_node("%Movement")
 var st_default:NodePath = "%Fall"
 var st_jump:NodePath = "%Jump"
@@ -153,6 +154,11 @@ func relative(vector:Vector3):
 func collision_angle(): return global_transform.basis.y.normalized().dot(collision.normal)
 func collision_relative(): return relative(collision.normal)
 
+## Collisions
+func toggle_general_collision():
+	collision_layer = collision_layer ^ 1
+	collision_mask = collision_mask ^ 1
+
 ## Movement
 func air_movement():
 	velocity += input_dir.rotated(Vector3(0, 1, 0), rotation.y) * air_acceleration # add acceleration
@@ -180,7 +186,7 @@ func cam_rotate(vect, sens):
 	camera_rot.x = clamp(camera_rot.x, 90 - angle_of_freedom, 90 + angle_of_freedom)
 	camera.rotation_degrees = camera_rot # I don't understand this function
 
-## Inputes
+## Inputs
 func enable_mouse():
 	mouse_control = true
 	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)

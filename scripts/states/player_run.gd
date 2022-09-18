@@ -9,7 +9,8 @@ onready var st_idle:NodePath = "%Idle"
 
 # Called when a state enters the finite state machine
 func _enter_state():
-	print("Run")
+#	print("Run")
+	pass
 
 # Called every frame by the finite state machine's process method
 func _process_state(_delta: float):

@@ -1,0 +1,14 @@
+[gd_resource type="Resource" load_steps=3 format=2]
+
+[ext_resource path="res://scripts/planets/planet_props.gd" type="Script" id=1]
+[ext_resource path="res://resources/voxel_mat.tres" type="Material" id=2]
+
+[resource]
+script = ExtResource( 1 )
+planet_type = 0
+chunk_dims = Vector3( 16, 16, 16 )
+chunk_counts = Vector3( 8, 8, 8 )
+surface_level = 0.75
+voxel_size = 0.5
+voxel_rate = 1e+06
+voxel_material = ExtResource( 2 )
