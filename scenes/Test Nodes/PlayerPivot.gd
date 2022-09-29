@@ -11,13 +11,15 @@ onready var target:Transform = transform
 ### Triggers
 
 func _physics_process(delta):
-	# Save the player's global position
+	# Save the player's global position.
 	var player_pos = player.global_translation
 	
+	# Interpolate the pivot toward's it's target orientation.
 	transform = transform.interpolate_with(target, delta * ease_rate)
-
-	# Keep the player in their original global position.
-	player.global_translation = player_pos
+	
+	# Keep Pivot and Player at same global position
+	player.translation = Vector3()
+	global_translation = player_pos
 
 
 ### Player Orientation

@@ -16,3 +16,4 @@ air_speed = 14
 jump_speed = 10
 jump_height = 2
 friction = 1.75
+fly_speed = 28.0

@@ -5,7 +5,7 @@ extends Spatial
 ## Nodes
 onready var pivot:PlayerPivot = get_node("%PlayerPivot")
 onready var planets:Array = get_tree().get_nodes_in_group("Planet")
-
+var cur_planet:Planet
 
 ### Triggers
 
@@ -25,31 +25,15 @@ func _unhandled_input(event):
 
 ### Region Transfers
 
-var moving:bool = false # Used to ignore enter/exit signals while reparenting.
-
 func _on_Planet_player_entered(planet:Planet):
-	if not moving:
-		prints("Entered", planet)
-		var parent = pivot.get_parent()
-		assert(parent)
-		if parent != planet:
-			moving = true
-			var player_pos = pivot.player.global_translation
-			parent.remove_child(pivot)
-			planet.add_child(pivot)
-			pivot.translation = Vector3()
-			pivot.player.global_translation = player_pos
-			moving = false
-
+	assert(cur_planet != planet) # Should never reenter same planet
+	if cur_planet:
+		cur_planet.orbiting = false
+	cur_planet = planet
+	cur_planet.orbiting = true
 
 func _on_Planet_player_exited(planet:Planet):
-	if not moving:
-		prints("Exited:", planet)
-		if pivot.get_parent() == planet:
-			moving = true
-			var player_pos = pivot.player.global_translation
-			planet.remove_child(pivot)
-			planet.get_parent().add_child(pivot)
-			pivot.translation = Vector3()
-			pivot.player.global_translation = player_pos
-			moving = false
+	assert(cur_planet == planet) # Should not exit when not current
+	if cur_planet == planet:
+		cur_planet.orbiting = false
+		cur_planet = null

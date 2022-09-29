@@ -35,7 +35,7 @@ func _ready():
 
 func _physics_process(_delta):
 	if pivot and orbiting:
-		player_pos = xformed(pivot.player)
+		player_pos = xformed(pivot) #xformed(pivot.player)
 		prioritize()
 		if pivot:
 			reorient_player()
@@ -55,37 +55,6 @@ func _on_Planet_body_entered(body):
 func _on_Planet_body_exited(body):
 	if body is Player:
 		emit_signal("player_exited", self)
-
-
-### Player Planet Transfers
-
-func remove_child(node:Node):
-	if node is PlayerPivot:
-		orbiting = false
-	.remove_child(node)
-
-func add_child(node:Node, lun:bool=false):
-	if node is PlayerPivot:
-		orbiting = true
-	.add_child(node, lun)
-
-func reparent_player():
-	print("Reparent")
-	var parent = get_parent()
-	if parent.is_a_parent_of(pivot):
-		parent.remove_child(pivot)
-	else:
-		remove_player()
-	if not pivot.get_parent():
-		add_child(pivot)
-	orbiting = true
-
-func remove_player():
-	print("Remove Player")
-	var parent = pivot.get_parent()
-	print(parent)
-#	parent.remove_child(pivot)
-#	pivot.get_parent().remove_child(pivot)
 
 
 ### Render Queue
@@ -108,7 +77,7 @@ func prioritize():
 ### Player Spawn
 func spawn_player():
 	print("Spawn")
-	var player = pivot.player
+	var _player = pivot.player
 	var spawn_axis = vox_gen.spawn_axis
 	var spawn_dir = vox_gen.spawn_dir
 	var dim:float = props.chunk_dims[spawn_axis]
@@ -120,10 +89,10 @@ func spawn_player():
 	spawn_cast.enabled = true
 	spawn_cast.force_raycast_update()
 	if spawn_cast.is_colliding():
-		player.global_translation = spawn_cast.get_collision_point()
-		player.global_translation[spawn_axis] += (spawn_buffer * spawn_dir)
+		pivot.global_translation = spawn_cast.get_collision_point()
+		pivot.global_translation[spawn_axis] += (spawn_buffer * spawn_dir)
 	spawn_cast.enabled = false
-	prints("Spawned at:", player.global_translation)
+	prints("Spawned at:", pivot.global_translation)
 	reorient_player()
 
 
@@ -134,9 +103,6 @@ var cur_gravity = Vector3()
 func reorient_player():
 	var gravity = props.type().gravity_dir(player_pos).normalized()
 	pivot.reorient_player(gravity)
-#	if (gravity - cur_gravity).length() >= 0.001:
-#		orient_player(gravity, cur_gravity)
-#		cur_gravity = gravity
 
 # Orient the Player based on a given gravity vector
 func orient_player(gravity, last_gravity):

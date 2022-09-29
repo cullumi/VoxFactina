@@ -38,10 +38,10 @@ transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 )
 use_spawn = true
 
 [node name="Planet2" parent="Sun" instance=ExtResource( 10 )]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 213.043, 95.7117, -377.382 )
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 200, 50, -50 )
 
 [node name="Planet3" parent="Sun" instance=ExtResource( 10 )]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -70.5014, -59.3312, 548.8 )
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -50, -200, 50 )
 
 [node name="PlayerPivot" parent="." instance=ExtResource( 2 )]
 
