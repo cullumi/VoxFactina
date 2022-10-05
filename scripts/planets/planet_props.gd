@@ -27,6 +27,7 @@ var to:Vector3
 var world_dims:Vector3
 var world_radii:Vector3
 var chunk_size:Vector3
+var radius:float
 
 # Locations
 var last_chunk:Vector3
@@ -73,6 +74,8 @@ func set_vox_size(size):
 func update_world_dims():
 	world_dims = chunk_dims * chunk_counts
 	world_radii = world_dims/2
+	var wr = world_radii
+	radius = min(wr.x, min(wr.y, wr.z))
 	update_rects()
 
 func update_rects():
