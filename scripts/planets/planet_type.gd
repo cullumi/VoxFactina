@@ -13,9 +13,9 @@ func _init(new_props=null):
 	props = new_props
 	
 	noise.seed = randi()
-	noise.octaves = 4
-	noise.period = 400
-	noise.persistence = 0.5
+	noise.octaves = 8
+	noise.period = 100
+	noise.persistence = .5
 	noise.lacunarity = 2
 
 ## Content Queries

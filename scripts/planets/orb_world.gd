@@ -12,14 +12,21 @@ func get_voxel_color(pos:Vector3) -> Color:
 	else:
 		var rand = noise.get_noise_3dv(pos)
 		var max_height = props.surface_level * props.radius
-		var height = max_height * ((rand + 1) / 2)
+		var min_height = max_height * 0.5
+		var height_range = max_height-min_height
+		var water_height = min_height + (height_range*0.60)
+		var scale = clamp(((rand + 1) / 2) + .15, 0, 1)
+		var height = (height_range * scale) + min_height
 		if pos.length() > height:
-			if pos.length() < max_height/2:
+			if pos.length() < water_height:
 				return Color.cornflower
 			else:
 				return Color(0,0,0,0)
 		else:
-			return Color.forestgreen if rand >= 0 else Color.darkolivegreen
+			if rand >= 0: return Color.forestgreen
+			elif rand < 0 and rand > -.25: return Color.cornsilk
+			elif rand <= -.25: return Color.cadetblue
+			else: return Color.brown
 
 func voxel_is_air(pos:Vector3) -> bool:
 	return pos.length() > props.radius * props.surface_level

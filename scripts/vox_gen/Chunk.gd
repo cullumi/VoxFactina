@@ -9,6 +9,10 @@ var instance:MeshInstance = null
 var priority:int = 0
 var in_render:bool = false
 
+var render_collision:bool = false
+var all_air:bool = true
+var has_air:bool = false
+
 func _init(pos_init:Vector3=Vector3(), offset_init:Vector3=Vector3(), instance_init:MeshInstance=null):
 	pos = pos_init
 	offset = offset_init

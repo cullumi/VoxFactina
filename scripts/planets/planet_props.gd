@@ -22,6 +22,7 @@ func type():
 # Ranges
 var from:Vector3
 var to:Vector3
+var vox_count:int
 
 # Dimensions
 var world_dims:Vector3
@@ -52,6 +53,7 @@ func set_dims(dims):
 	chunk_dims = dims
 	from = -chunk_dims/2
 	to = chunk_dims/2
+	vox_count = chunk_dims.x * chunk_dims.y * chunk_dims.z
 	update_world_dims()
 	chunk_size = (chunk_dims+Vector3(1,1,1)) * voxel_size
 

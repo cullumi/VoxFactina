@@ -70,6 +70,7 @@ func initialize_chunks():
 func enqueue_pos(pos:Vector3):
 	var chunk = chunks[pos]
 	chunk.priority = 1
+	chunk.render_collision = true
 	render_queue.enqueue(chunk)
 
 func render():
@@ -115,9 +116,14 @@ func render_chunk(chunk:Chunk) -> Chunk:
 		chunk.new_instance.cast_shadow =GeometryInstance.SHADOW_CASTING_SETTING_DOUBLE_SIDED
 		chunk.new_instance.mesh = VoxelFactory.create_mesh(voxels, s_tool)
 		assert(chunk.new_instance.mesh != null)
-		chunk.new_instance.create_trimesh_collision()
+		if chunk.render_collision:
+			chunk.new_instance.create_trimesh_collision()
+		chunk.all_air = false
+		chunk.has_air = voxels.size() < props.vox_count
 	else:
 		chunk.new_instance = null
+		chunk.all_air = true
+		chunk.has_air = true
 	return chunk
 
 
