@@ -23,7 +23,8 @@ var Vertices = [
 	Vector3(0,0,0), Vector3(VoxelSize,0,0),
 	Vector3(VoxelSize,0,VoxelSize), Vector3(0,0,VoxelSize),
 	Vector3(0,VoxelSize,0), Vector3(VoxelSize,VoxelSize,0),
-	Vector3(VoxelSize,VoxelSize,VoxelSize), Vector3(0,VoxelSize,VoxelSize) ]
+	Vector3(VoxelSize,VoxelSize,VoxelSize), Vector3(0,VoxelSize,VoxelSize)
+]
 
 func update_vertices():
 	Vertices = [
@@ -100,6 +101,43 @@ func create_mesh(voxels=Voxels, s_tool=Surfacetool) -> ArrayMesh:
 
 # Decides where to put faces on the mesh.
 # Checks if there is an adjacent block before place a face.
+#var sides:Dictionary = {
+#	TOP:[4,5,7,5,6,7],
+#	BOTTOM:[1,3,2,1,0,3],
+#	RIGHT:[2,5,1,2,6,5],
+#	LEFT:[0,7,3,0,4,7],
+#	FRONT:[6,2,3,3,7,6],
+#	BACK:[0,1,5,5,4,0],
+#}
+enum {TOP, BOTTOM, 
+	  LEFT, RIGHT, 
+	  FRONT, BACK
+	  
+	  TOP_LEFT, TOP_RIGHT, TOP_FRONT, TOP_BACK,
+	  BOTTOM_LEFT, BOTTOM_RIGHT, BOTTOM_FRONT, BOTTOM_BACK
+	  LEFT_DOWN, LEFT_UP, LEFT_FRONT, LEFT_BACK,
+	  RIGHT_DOWN, RIGHT_UP, RIGHT_FRONT, RIGHT_BACK,
+	  FRONT_UP, FRONT_DOWN, FRONT_LEFT, FRONT_RIGHT,
+	  BACK_UP, BACK_DOWN, BACK_LEFT, BACK_RIGHT
+}
+#	{LBB=0, RBB=1, RBF=2, LBF=3, LTB=4, RTB=5, RTF=6, LTF=7}
+# LBB | RBB
+# RBF | LBF
+# 
+# LTB | RTB
+# RTF | LTF
+enum {LBB, RBB, RBF, LBF, LTB, RTB, RTF, LTF}
+var sides:Dictionary = {
+	TOP:[LTB,RTB,LTF,RTB,RTF,LTF],
+	BOTTOM:[RBB,LBF,RBF,RBB,LBB,LBF],
+	RIGHT:[RBF,RTB,RBB,RBF,RTF,RTB],
+	LEFT:[LBB,LTF,LBF,LBB,LTB,LTF],
+	FRONT:[RTF,RBF,LBF,LBF,LTF,RTF],
+	BACK:[LBB,RBB,RTB,RTB,LTB,LBB],
+	
+	TOP_LEFT:[]
+}
+
 func create_voxel(color, position, voxels=Voxels, s_tool=SurfaceTool):
 	voxels = Voxels if voxels == null else voxels
 	s_tool = Surfacetool if s_tool == null else s_tool
@@ -110,6 +148,21 @@ func create_voxel(color, position, voxels=Voxels, s_tool=SurfaceTool):
 	var front = voxels.get(position + Vector3(0, 0, 1)) == null
 	var bottom = voxels.get(position - Vector3(0, 1, 0)) == null
 	var top = voxels.get(position + Vector3(0, 1, 0)) == null
+	
+	var lt = voxels.get(position + Vector3(-1, 1, 0)) != null
+	var rt = voxels.get(position + Vector3(1, 1, 0)) != null
+	var ft = voxels.get(position + Vector3(0, 1, 1)) != null
+	var bt = voxels.get(position + Vector3(0, 1, -1)) != null
+	
+	var lb = voxels.get(position + Vector3(-1, -1, 0)) != null
+	var rb = voxels.get(position + Vector3(1, -1, 0)) != null
+	var fb = voxels.get(position + Vector3(0, -1, 1)) != null
+	var bb = voxels.get(position + Vector3(0, -1, -1)) != null
+	
+#	var lft = voxels.get(position + Vector3(-1, 1, 1)) == null
+#	var rft = voxels.get(position + Vector3(1, -1, 1)) == null
+#	var lbb = voxels.get(position + Vector3(-1, 1, -1)) == null
+#	var rbb = voxels.get(position + Vector3(1, -1, -1)) == null
 	
 	# Stop if the block is completly hidden.
 	if(!left and !right and !top and !bottom and !front and !back):
