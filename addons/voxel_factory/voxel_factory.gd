@@ -101,24 +101,25 @@ func create_mesh(voxels=Voxels, s_tool=Surfacetool) -> ArrayMesh:
 
 # Decides where to put faces on the mesh.
 # Checks if there is an adjacent block before place a face.
+
 #var sides:Dictionary = {
-#	TOP:[4,5,7,5,6,7],
-#	BOTTOM:[1,3,2,1,0,3],
-#	RIGHT:[2,5,1,2,6,5],
-#	LEFT:[0,7,3,0,4,7],
-#	FRONT:[6,2,3,3,7,6],
-#	BACK:[0,1,5,5,4,0],
+#	TOP:[LTB,RTB,LTF,RTB,RTF,LTF],
+#	BOTTOM:[RBB,LBF,RBF,RBB,LBB,LBF],
+#	RIGHT:[RBF,RTB,RBB,RBF,RTF,RTB],
+#	LEFT:[LBB,LTF,LBF,LBB,LTB,LTF],
+#	FRONT:[RTF,RBF,LBF,LBF,LTF,RTF],
+#	BACK:[LBB,RBB,RTB,RTB,LTB,LBB],
 #}
 enum {TOP, BOTTOM, 
 	  LEFT, RIGHT, 
 	  FRONT, BACK
 	  
-	  TOP_LEFT, TOP_RIGHT, TOP_FRONT, TOP_BACK,
-	  BOTTOM_LEFT, BOTTOM_RIGHT, BOTTOM_FRONT, BOTTOM_BACK
-	  LEFT_DOWN, LEFT_UP, LEFT_FRONT, LEFT_BACK,
-	  RIGHT_DOWN, RIGHT_UP, RIGHT_FRONT, RIGHT_BACK,
-	  FRONT_UP, FRONT_DOWN, FRONT_LEFT, FRONT_RIGHT,
-	  BACK_UP, BACK_DOWN, BACK_LEFT, BACK_RIGHT
+	  TOP_SLANT_0, TOP_SLANT_1, TOP_SLANT_2, TOP_SLANT_3,
+	  BOTTOM_SLANT_0, BOTTOM_SLANT_1, BOTTOM_SLANT_2, BOTTOM_SLANT_3
+	  LEFT_SLANT_0, LEFT_SLANT_1, LEFT_SLANT_2, LEFT_SLANT_3,
+	  RIGHT_SLANT_0, RIGHT_SLANT_1, RIGHT_SLANT_2, RIGHT_SLANT_3,
+	  FRONT_SLANT_0, FRONT_SLANT_1, FRONT_SLANT_2, FRONT_SLANT_3,
+	  BACK_SLANT_0, BACK_SLANT_1, BACK_SLANT_2, BACK_SLANT_3,
 }
 #	{LBB=0, RBB=1, RBF=2, LBF=3, LTB=4, RTB=5, RTF=6, LTF=7}
 # LBB | RBB
@@ -128,14 +129,30 @@ enum {TOP, BOTTOM,
 # RTF | LTF
 enum {LBB, RBB, RBF, LBF, LTB, RTB, RTF, LTF}
 var sides:Dictionary = {
-	TOP:[LTB,RTB,LTF,RTB,RTF,LTF],
-	BOTTOM:[RBB,LBF,RBF,RBB,LBB,LBF],
-	RIGHT:[RBF,RTB,RBB,RBF,RTF,RTB],
-	LEFT:[LBB,LTF,LBF,LBB,LTB,LTF],
-	FRONT:[RTF,RBF,LBF,LBF,LTF,RTF],
-	BACK:[LBB,RBB,RTB,RTB,LTB,LBB],
+	TOP:[4,5,7,5,6,7],
+	BOTTOM:[1,3,2,1,0,3],
+	RIGHT:[2,5,1,2,6,5],
+	LEFT:[0,7,3,0,4,7],
+	FRONT:[6,2,3,3,7,6],
+	BACK:[0,1,5,5,4,0],
 	
-	TOP_LEFT:[]
+	TOP_SLANT_0:[4,5,7], TOP_SLANT_1:[5,6,7],
+	TOP_SLANT_2:[4,5,6], TOP_SLANT_3:[4,6,7],
+	
+	BOTTOM_SLANT_0:[1,3,2], BOTTOM_SLANT_1:[1,0,3],
+	BOTTOM_SLANT_2:[0,3,2], BOTTOM_SLANT_3:[0,2,1],
+	
+	LEFT_SLANT_0:[0,7,3], LEFT_SLANT_1:[0,4,7],
+	LEFT_SLANT_2:[4,3,0], LEFT_SLANT_3:[4,7,3],
+	
+	RIGHT_SLANT_0:[2,5,1], RIGHT_SLANT_1:[2,6,5],
+	RIGHT_SLANT_2:[6,1,2], RIGHT_SLANT_3:[6,5,1],
+	
+	FRONT_SLANT_0:[6,2,3], FRONT_SLANT_1:[3,7,6],
+	FRONT_SLANT_2:[2,3,7], FRONT_SLANT_3:[2,7,6],
+	
+	BACK_SLANT_0:[0,1,5], BACK_SLANT_1:[5,4,0],
+	BACK_SLANT_2:[4,5,1], BACK_SLANT_3:[4,1,0],
 }
 
 func create_voxel(color, position, voxels=Voxels, s_tool=SurfaceTool):
@@ -172,49 +189,61 @@ func create_voxel(color, position, voxels=Voxels, s_tool=SurfaceTool):
 	
 	if top:
 		s_tool.add_normal(Vector3.UP)
-		s_tool.add_vertex(Vertices[4] + position * VoxelSize)
-		s_tool.add_vertex(Vertices[5] + position * VoxelSize)
-		s_tool.add_vertex(Vertices[7] + position * VoxelSize)
-		s_tool.add_vertex(Vertices[5] + position * VoxelSize)
-		s_tool.add_vertex(Vertices[6] + position * VoxelSize)
-		s_tool.add_vertex(Vertices[7] + position * VoxelSize)
+		for vert in sides[TOP]:
+			s_tool.add_vertex(Vertices[vert] + position * VoxelSize)
+#		s_tool.add_vertex(Vertices[4] + position * VoxelSize)
+#		s_tool.add_vertex(Vertices[5] + position * VoxelSize)
+#		s_tool.add_vertex(Vertices[7] + position * VoxelSize)
+#		s_tool.add_vertex(Vertices[5] + position * VoxelSize)
+#		s_tool.add_vertex(Vertices[6] + position * VoxelSize)
+#		s_tool.add_vertex(Vertices[7] + position * VoxelSize)
 	if right:
 		s_tool.add_normal(Vector3.RIGHT)
-		s_tool.add_vertex(Vertices[2] + position * VoxelSize)
-		s_tool.add_vertex(Vertices[5] + position * VoxelSize)
-		s_tool.add_vertex(Vertices[1] + position * VoxelSize)
-		s_tool.add_vertex(Vertices[2] + position * VoxelSize)
-		s_tool.add_vertex(Vertices[6] + position * VoxelSize)
-		s_tool.add_vertex(Vertices[5] + position * VoxelSize)
+		for vert in sides[RIGHT]:
+			s_tool.add_vertex(Vertices[vert] + position * VoxelSize)
+#		s_tool.add_vertex(Vertices[2] + position * VoxelSize)
+#		s_tool.add_vertex(Vertices[5] + position * VoxelSize)
+#		s_tool.add_vertex(Vertices[1] + position * VoxelSize)
+#		s_tool.add_vertex(Vertices[2] + position * VoxelSize)
+#		s_tool.add_vertex(Vertices[6] + position * VoxelSize)
+#		s_tool.add_vertex(Vertices[5] + position * VoxelSize)
 	if left:
 		s_tool.add_normal(Vector3.LEFT)
-		s_tool.add_vertex(Vertices[0] + position * VoxelSize)
-		s_tool.add_vertex(Vertices[7] + position * VoxelSize)
-		s_tool.add_vertex(Vertices[3] + position * VoxelSize)
-		s_tool.add_vertex(Vertices[0] + position * VoxelSize)
-		s_tool.add_vertex(Vertices[4] + position * VoxelSize)
-		s_tool.add_vertex(Vertices[7] + position * VoxelSize)
+		for vert in sides[LEFT]:
+			s_tool.add_vertex(Vertices[vert] + position * VoxelSize)
+#		s_tool.add_vertex(Vertices[0] + position * VoxelSize)
+#		s_tool.add_vertex(Vertices[7] + position * VoxelSize)
+#		s_tool.add_vertex(Vertices[3] + position * VoxelSize)
+#		s_tool.add_vertex(Vertices[0] + position * VoxelSize)
+#		s_tool.add_vertex(Vertices[4] + position * VoxelSize)
+#		s_tool.add_vertex(Vertices[7] + position * VoxelSize)
 	if front:
 		s_tool.add_normal(Vector3.FORWARD)
-		s_tool.add_vertex(Vertices[6] + position * VoxelSize)
-		s_tool.add_vertex(Vertices[2] + position * VoxelSize)
-		s_tool.add_vertex(Vertices[3] + position * VoxelSize)
-		s_tool.add_vertex(Vertices[3] + position * VoxelSize)
-		s_tool.add_vertex(Vertices[7] + position * VoxelSize)
-		s_tool.add_vertex(Vertices[6] + position * VoxelSize)
+		for vert in sides[FRONT]:
+			s_tool.add_vertex(Vertices[vert] + position * VoxelSize)
+#		s_tool.add_vertex(Vertices[6] + position * VoxelSize)
+#		s_tool.add_vertex(Vertices[2] + position * VoxelSize)
+#		s_tool.add_vertex(Vertices[3] + position * VoxelSize)
+#		s_tool.add_vertex(Vertices[3] + position * VoxelSize)
+#		s_tool.add_vertex(Vertices[7] + position * VoxelSize)
+#		s_tool.add_vertex(Vertices[6] + position * VoxelSize)
 	if back:
 		s_tool.add_normal(Vector3.BACK)
-		s_tool.add_vertex(Vertices[0] + position * VoxelSize)
-		s_tool.add_vertex(Vertices[1] + position * VoxelSize)
-		s_tool.add_vertex(Vertices[5] + position * VoxelSize)
-		s_tool.add_vertex(Vertices[5] + position * VoxelSize)
-		s_tool.add_vertex(Vertices[4] + position * VoxelSize)
-		s_tool.add_vertex(Vertices[0] + position * VoxelSize)
+		for vert in sides[BACK]:
+			s_tool.add_vertex(Vertices[vert] + position * VoxelSize)
+#		s_tool.add_vertex(Vertices[0] + position * VoxelSize)
+#		s_tool.add_vertex(Vertices[1] + position * VoxelSize)
+#		s_tool.add_vertex(Vertices[5] + position * VoxelSize)
+#		s_tool.add_vertex(Vertices[5] + position * VoxelSize)
+#		s_tool.add_vertex(Vertices[4] + position * VoxelSize)
+#		s_tool.add_vertex(Vertices[0] + position * VoxelSize)
 	if bottom:
 		s_tool.add_normal(Vector3.DOWN)
-		s_tool.add_vertex(Vertices[1] + position * VoxelSize)
-		s_tool.add_vertex(Vertices[3] + position * VoxelSize)
-		s_tool.add_vertex(Vertices[2] + position * VoxelSize)
-		s_tool.add_vertex(Vertices[1] + position * VoxelSize)
-		s_tool.add_vertex(Vertices[0] + position * VoxelSize)
-		s_tool.add_vertex(Vertices[3] + position * VoxelSize)
+		for vert in sides[BOTTOM]:
+			s_tool.add_vertex(Vertices[vert] + position * VoxelSize)
+#		s_tool.add_vertex(Vertices[1] + position * VoxelSize)
+#		s_tool.add_vertex(Vertices[3] + position * VoxelSize)
+#		s_tool.add_vertex(Vertices[2] + position * VoxelSize)
+#		s_tool.add_vertex(Vertices[1] + position * VoxelSize)
+#		s_tool.add_vertex(Vertices[0] + position * VoxelSize)
+#		s_tool.add_vertex(Vertices[3] + position * VoxelSize)
