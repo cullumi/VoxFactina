@@ -11,12 +11,15 @@ var noise = OpenSimplexNoise.new()
 
 func _init(new_props=null):
 	props = new_props
-	
-	noise.seed = randi()
-	noise.octaves = 8
-	noise.period = 100
-	noise.persistence = .5
-	noise.lacunarity = 2
+	if props:
+		noise = props.noise
+	if not noise:
+		noise = OpenSimplexNoise.new()
+		noise.seed = randi()
+		noise.octaves = 8
+		noise.period = 100
+		noise.persistence = .5
+		noise.lacunarity = 2
 
 ## Content Queries
 func get_voxel_color(pos:Vector3) -> Color:

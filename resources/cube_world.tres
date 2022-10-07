@@ -5,4 +5,8 @@
 [resource]
 script = ExtResource( 1 )
 planet_type = 1
+chunk_dims = Vector3( 10, 10, 10 )
 chunk_counts = Vector3( 9, 9, 9 )
+surface_level = 0.75
+voxel_size = 1.0
+voxel_rate = 10000.0
