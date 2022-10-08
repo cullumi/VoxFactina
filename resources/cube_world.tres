@@ -1,6 +1,8 @@
-[gd_resource type="Resource" load_steps=2 format=2]
+[gd_resource type="Resource" load_steps=3 format=2]
 
 [ext_resource path="res://scripts/planets/planet_props.gd" type="Script" id=1]
+
+[sub_resource type="OpenSimplexNoise" id=1]
 
 [resource]
 script = ExtResource( 1 )
@@ -10,3 +12,4 @@ chunk_counts = Vector3( 9, 9, 9 )
 surface_level = 0.75
 voxel_size = 1.0
 voxel_rate = 10000.0
+noise = SubResource( 1 )

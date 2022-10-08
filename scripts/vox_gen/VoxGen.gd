@@ -58,8 +58,8 @@ func initialize_chunks():
 	render_queue.flood(chunks.values())
 	
 	# First Chunk (Where the Player Spawns)
-	var chunk = force_render(spawn_chunk)
-	chunk = force_render(spawn_chunk - spawn_vector)
+	var _chunk = force_render(spawn_chunk - spawn_vector)
+#	_chunk = force_render(spawn_chunk - spawn_vector)
 	var vector = Vector3()
 	vector[spawn_axis] = spawn_dir
 	
@@ -114,7 +114,8 @@ func render_chunk(chunk:Chunk) -> Chunk:
 		chunk.new_instance.use_in_baked_light = true
 		chunk.new_instance.generate_lightmap = true
 		chunk.new_instance.cast_shadow =GeometryInstance.SHADOW_CASTING_SETTING_DOUBLE_SIDED
-		chunk.new_instance.mesh = VoxelFactory.create_mesh(voxels, s_tool)
+		chunk.new_instance.mesh = MarchingCubes.create_mesh(voxels, props, s_tool)
+#		chunk.new_instance.mesh = VoxelFactory.create_mesh(voxels, s_tool)
 		assert(chunk.new_instance.mesh != null)
 		if chunk.render_collision:
 			chunk.new_instance.create_trimesh_collision()
@@ -143,4 +144,7 @@ func add_voxels(chunk:Chunk, start:Vector3, end:Vector3, voxels=null):
 func add_voxel(chunk:Chunk, base_pos:Vector3, voxels=null):
 	var pos = props.voxoff(chunk.pos, base_pos)
 	var color = props.type().get_voxel_color(pos)
-	VoxelFactory.add_voxel(base_pos, color, voxels)
+	if color.a == 0:
+		color = Color.black
+	voxels[pos] = color
+#	VoxelFactory.add_voxel(base_pos, color, voxels)

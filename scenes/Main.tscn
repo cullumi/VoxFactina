@@ -1,7 +1,8 @@
-[gd_scene load_steps=13 format=2]
+[gd_scene load_steps=14 format=2]
 
 [ext_resource path="res://scenes/Main.gd" type="Script" id=1]
 [ext_resource path="res://scenes/PlayerPivot.tscn" type="PackedScene" id=2]
+[ext_resource path="res://resources/cube_world.tres" type="Resource" id=3]
 [ext_resource path="res://scenes/Test Nodes/Reorient.gd" type="Script" id=4]
 [ext_resource path="res://scenes/Test Nodes/Move.gd" type="Script" id=5]
 [ext_resource path="res://scenes/Test Nodes/MoveUpAndDown.gd" type="Script" id=6]
@@ -36,6 +37,7 @@ script = ExtResource( 1 )
 [node name="Planet" parent="Sun" instance=ExtResource( 10 )]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 )
 use_spawn = true
+props = ExtResource( 3 )
 
 [node name="PlayerPivot" parent="." instance=ExtResource( 2 )]
 
