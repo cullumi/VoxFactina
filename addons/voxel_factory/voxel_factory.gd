@@ -34,6 +34,9 @@ func update_vertices():
 		Vector3(VoxelSize,VoxelSize,VoxelSize), Vector3(0,VoxelSize,VoxelSize) 
 	]
 
+func _init():
+	init_normals()
+
 func _ready():
 	# Making sure that vertex color are used
 	DefaultMaterial.vertex_color_use_as_albedo = true
@@ -110,24 +113,67 @@ func create_mesh(voxels=Voxels, s_tool=Surfacetool) -> ArrayMesh:
 #	FRONT:[RTF,RBF,LBF,LBF,LTF,RTF],
 #	BACK:[LBB,RBB,RTB,RTB,LTB,LBB],
 #}
-enum {TOP, BOTTOM, 
-	  LEFT, RIGHT, 
-	  FRONT, BACK
-	  
-	  TOP_SLANT_0, TOP_SLANT_1, TOP_SLANT_2, TOP_SLANT_3,
-	  BOTTOM_SLANT_0, BOTTOM_SLANT_1, BOTTOM_SLANT_2, BOTTOM_SLANT_3
-	  LEFT_SLANT_0, LEFT_SLANT_1, LEFT_SLANT_2, LEFT_SLANT_3,
-	  RIGHT_SLANT_0, RIGHT_SLANT_1, RIGHT_SLANT_2, RIGHT_SLANT_3,
-	  FRONT_SLANT_0, FRONT_SLANT_1, FRONT_SLANT_2, FRONT_SLANT_3,
-	  BACK_SLANT_0, BACK_SLANT_1, BACK_SLANT_2, BACK_SLANT_3,
+enum {
+	# Square Sides
+	TOP, BOTTOM, 
+	LEFT, RIGHT, 
+	FRONT, BACK
+	# Triangle Sides
+	TOP_SLANT_0, TOP_SLANT_1, TOP_SLANT_2, TOP_SLANT_3,
+	BOTTOM_SLANT_0, BOTTOM_SLANT_1, BOTTOM_SLANT_2, BOTTOM_SLANT_3
+	LEFT_SLANT_0, LEFT_SLANT_1, LEFT_SLANT_2, LEFT_SLANT_3,
+	RIGHT_SLANT_0, RIGHT_SLANT_1, RIGHT_SLANT_2, RIGHT_SLANT_3,
+	FRONT_SLANT_0, FRONT_SLANT_1, FRONT_SLANT_2, FRONT_SLANT_3,
+	BACK_SLANT_0, BACK_SLANT_1, BACK_SLANT_2, BACK_SLANT_3,
+	# Slopes
+	SLOPE_DL_UR, SLOPE_UL_DR,
+	SLOPE_DF_UB, SLOPE_UF_DB,
+	SLOPE_FL_BR, SLOPE_BL_FR,
 }
+
+func slopes(one, two):
+	for key in slopes.keys():
+		var ops:Array = slopes[key]
+		for op in ops:
+			if op.has(one) and op.has(two):
+				return key
+	return -1
+
+var slopes:Dictionary = {
+	SLOPE_DL_UR:[[TOP,LEFT],[BOTTOM,RIGHT]],
+	SLOPE_UL_DR:[[TOP,RIGHT],[BOTTOM,LEFT]],
+	
+	SLOPE_DF_UB:[[TOP,FRONT], [BOTTOM,BACK]],
+	SLOPE_UF_DB:[[TOP,BACK], [BOTTOM,FRONT]],
+	
+	SLOPE_FL_BR:[[FRONT,RIGHT], [BACK,LEFT]],
+	SLOPE_BL_FR:[[FRONT,LEFT], [BACK,RIGHT]],
+}
+var normals:Dictionary = {
+	# Sides
+	TOP:Vector3.UP, BOTTOM:Vector3.DOWN,
+	LEFT:Vector3.LEFT, RIGHT:Vector3.RIGHT,
+	FRONT:Vector3.FORWARD, BACK:Vector3.BACK,
+	# Slopes
+	SLOPE_DL_UR:[TOP,LEFT], SLOPE_UL_DR:[TOP,RIGHT],
+	SLOPE_DF_UB:[TOP,FRONT], SLOPE_UF_DB:[TOP,BACK],
+	SLOPE_FL_BR:[FRONT,RIGHT], SLOPE_BL_FR:[FRONT,LEFT],
+}
+func init_normals():
+	for key in normals.keys():
+		var val = normals[key]
+		if val is Array:
+			normals[key] = Vector3.ZERO
+			for side in val:
+				normals[key] += normals[side]
+			normals[key] = normals[key].normalized()
 #	{LBB=0, RBB=1, RBF=2, LBF=3, LTB=4, RTB=5, RTF=6, LTF=7}
 # LBB | RBB
 # RBF | LBF
 # 
 # LTB | RTB
 # RTF | LTF
-enum {LBB, RBB, RBF, LBF, LTB, RTB, RTF, LTF}
+#enum {LBB, RBB, RBF, LBF, LTB, RTB, RTF, LTF}
 var sides:Dictionary = {
 	TOP:[4,5,7,5,6,7],
 	BOTTOM:[1,3,2,1,0,3],
@@ -153,9 +199,13 @@ var sides:Dictionary = {
 	
 	BACK_SLANT_0:[0,1,5], BACK_SLANT_1:[5,4,0],
 	BACK_SLANT_2:[4,5,1], BACK_SLANT_3:[4,1,0],
+	
+	SLOPE_DL_UR:[0,6,3, 0,5,6], SLOPE_UL_DR:[2,7,4, 2,4,1],
+	SLOPE_DF_UB:[2,4,3, 2,5,4], SLOPE_UF_DB:[6,0,1, 6,7,1],
+	SLOPE_FL_BR:[7,1,3, 7,5,1], SLOPE_BL_FR:[6,2,0, 6,0,4],
 }
 
-func create_voxel(color, position, voxels=Voxels, s_tool=SurfaceTool):
+func create_voxel(color:Color, position:Vector3, voxels:Dictionary=Voxels, s_tool:SurfaceTool=Surfacetool):
 	voxels = Voxels if voxels == null else voxels
 	s_tool = Surfacetool if s_tool == null else s_tool
 	
@@ -191,59 +241,28 @@ func create_voxel(color, position, voxels=Voxels, s_tool=SurfaceTool):
 		s_tool.add_normal(Vector3.UP)
 		for vert in sides[TOP]:
 			s_tool.add_vertex(Vertices[vert] + position * VoxelSize)
-#		s_tool.add_vertex(Vertices[4] + position * VoxelSize)
-#		s_tool.add_vertex(Vertices[5] + position * VoxelSize)
-#		s_tool.add_vertex(Vertices[7] + position * VoxelSize)
-#		s_tool.add_vertex(Vertices[5] + position * VoxelSize)
-#		s_tool.add_vertex(Vertices[6] + position * VoxelSize)
-#		s_tool.add_vertex(Vertices[7] + position * VoxelSize)
 	if right:
 		s_tool.add_normal(Vector3.RIGHT)
 		for vert in sides[RIGHT]:
 			s_tool.add_vertex(Vertices[vert] + position * VoxelSize)
-#		s_tool.add_vertex(Vertices[2] + position * VoxelSize)
-#		s_tool.add_vertex(Vertices[5] + position * VoxelSize)
-#		s_tool.add_vertex(Vertices[1] + position * VoxelSize)
-#		s_tool.add_vertex(Vertices[2] + position * VoxelSize)
-#		s_tool.add_vertex(Vertices[6] + position * VoxelSize)
-#		s_tool.add_vertex(Vertices[5] + position * VoxelSize)
 	if left:
 		s_tool.add_normal(Vector3.LEFT)
 		for vert in sides[LEFT]:
 			s_tool.add_vertex(Vertices[vert] + position * VoxelSize)
-#		s_tool.add_vertex(Vertices[0] + position * VoxelSize)
-#		s_tool.add_vertex(Vertices[7] + position * VoxelSize)
-#		s_tool.add_vertex(Vertices[3] + position * VoxelSize)
-#		s_tool.add_vertex(Vertices[0] + position * VoxelSize)
-#		s_tool.add_vertex(Vertices[4] + position * VoxelSize)
-#		s_tool.add_vertex(Vertices[7] + position * VoxelSize)
 	if front:
 		s_tool.add_normal(Vector3.FORWARD)
 		for vert in sides[FRONT]:
 			s_tool.add_vertex(Vertices[vert] + position * VoxelSize)
-#		s_tool.add_vertex(Vertices[6] + position * VoxelSize)
-#		s_tool.add_vertex(Vertices[2] + position * VoxelSize)
-#		s_tool.add_vertex(Vertices[3] + position * VoxelSize)
-#		s_tool.add_vertex(Vertices[3] + position * VoxelSize)
-#		s_tool.add_vertex(Vertices[7] + position * VoxelSize)
-#		s_tool.add_vertex(Vertices[6] + position * VoxelSize)
 	if back:
 		s_tool.add_normal(Vector3.BACK)
 		for vert in sides[BACK]:
 			s_tool.add_vertex(Vertices[vert] + position * VoxelSize)
-#		s_tool.add_vertex(Vertices[0] + position * VoxelSize)
-#		s_tool.add_vertex(Vertices[1] + position * VoxelSize)
-#		s_tool.add_vertex(Vertices[5] + position * VoxelSize)
-#		s_tool.add_vertex(Vertices[5] + position * VoxelSize)
-#		s_tool.add_vertex(Vertices[4] + position * VoxelSize)
-#		s_tool.add_vertex(Vertices[0] + position * VoxelSize)
 	if bottom:
 		s_tool.add_normal(Vector3.DOWN)
 		for vert in sides[BOTTOM]:
 			s_tool.add_vertex(Vertices[vert] + position * VoxelSize)
-#		s_tool.add_vertex(Vertices[1] + position * VoxelSize)
-#		s_tool.add_vertex(Vertices[3] + position * VoxelSize)
-#		s_tool.add_vertex(Vertices[2] + position * VoxelSize)
-#		s_tool.add_vertex(Vertices[1] + position * VoxelSize)
-#		s_tool.add_vertex(Vertices[0] + position * VoxelSize)
-#		s_tool.add_vertex(Vertices[3] + position * VoxelSize)
+
+func add_vertices(side:int, position:Vector3, s_tool:SurfaceTool=Surfacetool):
+	s_tool.add_normal(normals[side])
+	for vert in sides[side]:
+		s_tool.add_vertex(Vertices[vert] + position + VoxelSize)

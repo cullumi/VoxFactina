@@ -1,6 +1,6 @@
 extends Node
 
-const count:int = 16
+var count:int = (OS.get_processor_count() * 2)
 var workers:Array = []
 
 enum {WORK, DONE, IDLE, EXIT}
