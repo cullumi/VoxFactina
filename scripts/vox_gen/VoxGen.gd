@@ -53,13 +53,16 @@ func start():
 func initialize_chunks():
 	# Add all chunks to Dictionary
 	var vectors = Vectors.all(props.last_chunk, Vector3(), [Y,Z,X])
+	print(vectors)
 	for pos in vectors:
 		chunks[pos] = Chunk.new(pos, props.offset(pos))
 	render_queue.flood(chunks.values())
 	
 	# First Chunk (Where the Player Spawns)
-	var _chunk = force_render(spawn_chunk - spawn_vector)
-#	_chunk = force_render(spawn_chunk - spawn_vector)
+	var _chunk = force_render(spawn_chunk)
+	var under = spawn_chunk-spawn_vector
+	if (under.x >= 0 and under.y >= 0 and under.z >= 0):
+		_chunk = force_render(under)
 	var vector = Vector3()
 	vector[spawn_axis] = spawn_dir
 	

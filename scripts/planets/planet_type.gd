@@ -32,6 +32,10 @@ func get_voxel_color(pos:Vector3) -> Color:
 func voxel_is_air(_pos:Vector3) -> bool:
 	return false
 
+func test_vox(pos:Vector3) -> bool:
+	print("Default Test")
+	return noise.get_noise_3dv(pos) < props.iso_level
+
 ## Gravity Direction
 func gravity_dir(_pos:Vector3) -> Vector3:
 	return Vector3.UP

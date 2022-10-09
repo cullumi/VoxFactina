@@ -89,7 +89,7 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://script_templates/player_state_template.gd"
 }, {
-"base": "State",
+"base": "Reference",
 "class": "PlayerWalk",
 "language": "GDScript",
 "path": "res://scripts/states/player_walk.gd"
@@ -117,7 +117,7 @@ _global_script_classes=[ {
 "base": "Reference",
 "class": "TriTable",
 "language": "GDScript",
-"path": "res://TriangulationTable.gd"
+"path": "res://scripts/autoloads/TriangulationTable.gd"
 }, {
 "base": "Reference",
 "class": "Vectors",
@@ -166,7 +166,7 @@ config/icon="res://icon.png"
 
 VoxelFactory="*res://addons/voxel_factory/voxel_factory.gd"
 ThreadPool="*res://scripts/autoloads/ThreadPool.gd"
-MarchingCubes="*res://MarchingCubes.gd"
+MarchingCubes="*res://scripts/autoloads/MarchingCubes.gd"
 
 [editor_plugins]
 

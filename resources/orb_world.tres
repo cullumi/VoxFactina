@@ -14,6 +14,7 @@ chunk_dims = Vector3( 16, 16, 16 )
 chunk_counts = Vector3( 36, 36, 36 )
 surface_level = 0.95
 voxel_size = 0.25
+iso_level = 0.0
 voxel_rate = 1e+06
 voxel_material = ExtResource( 2 )
 noise = SubResource( 1 )

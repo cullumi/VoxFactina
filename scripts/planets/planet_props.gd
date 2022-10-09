@@ -8,6 +8,7 @@ export (Vector3) var chunk_dims = Vector3(10, 10, 10) setget set_dims
 export (Vector3) var chunk_counts:Vector3 = Vector3(3, 3, 3) setget set_counts
 export (float, 0, 1, 0.05) var surface_level:float = 0.75 setget set_level
 export (float, 0.005, 2, 0.005) var voxel_size:float = 1 setget set_vox_size
+export (float, -1, 1, 0.005) var iso_level:float = 0
 export (float, EXP, 1000, 1000000, 1000) var voxel_rate:int = 10000
 export (SpatialMaterial) var voxel_material
 export (OpenSimplexNoise) var noise
@@ -19,6 +20,9 @@ func type():
 	if not _type:
 		_type = types[planet_type].new(self)
 	return _type
+
+func test_vox(val):
+	return type().test_vox(val)
 
 # Ranges
 var from:Vector3

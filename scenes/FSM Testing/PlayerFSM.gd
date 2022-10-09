@@ -13,6 +13,9 @@ var CURVES_RES = [
 	load(CURVES_DIR + "Inverse_S.tres")
 ]
 
+## Initialization Properties
+export var start_out_flying:bool = false
+
 ## Input Properties
 export var mouse_sens = Vector2(.1,.1) # sensitivities for each
 export var gamepad_sens = Vector2(2,2) # axis + input
@@ -88,7 +91,10 @@ func _ready():
 	for i in range(sts.size()):
 		sts_nodes[i] = get_node_or_null(sts[i])
 		sts_nodes[i].p = self
-	mv.change_state(st_default)
+	if start_out_flying:
+		mv.change_state(sts[st.floatt])
+	else:
+		mv.change_state(st_default)
 	# might need to disable for multiplayer
 	if mouse_control: Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 

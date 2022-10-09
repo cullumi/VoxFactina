@@ -19,7 +19,10 @@ func create_mesh(voxels:Dictionary, props, s_tool:SurfaceTool=Surfacetool, iso_l
 	
 	s_tool.begin(Mesh.PRIMITIVE_TRIANGLES)
 	
-	s_tool.set_material(DefaultMaterial)
+	if props.voxel_material:
+		s_tool.set_material(props.voxel_material)
+	else:
+		s_tool.set_material(DefaultMaterial)
 	
 	# Creating the mesh...
 	for vox in voxels:
@@ -63,15 +66,23 @@ func march(color:Color, position:Vector3, props, s_tool:SurfaceTool, vox_size:fl
 		noise.get_noise_3dv(cube_corners[6]),
 		noise.get_noise_3dv(cube_corners[7]),
 	]
+#	var cube_positions:Array = [
+#		cube_corners[0], cube_corners[1],
+#		cube_corners[2], cube_corners[3],
+#		cube_corners[4], cube_corners[5],
+#		cube_corners[6], cube_corners[7],
+#	]
 	
 	# Calculate the index of the current cube configuration as follows:
 	#   Loop over each of the 8 corners of the cube.
 	#   Set the corresponding bit to 1 if its value is below the surface level.
 	#   This will result in a value between 0 and 255.
+#	iso_level = -0
 	var cubeIndex = 0
 	for i in range(8):
-		if cube_vals[i] < iso_level:
-			cubeIndex = 1 << i
+#		if cube_vals[i] < iso_level:
+		if props.test_vox(cube_corners[i]):
+			cubeIndex = cubeIndex + (1 << i)
 	
 	# Look up triangulation for current cubeIndex.
 	# Each entry is the index of an edge.
@@ -81,7 +92,8 @@ func march(color:Color, position:Vector3, props, s_tool:SurfaceTool, vox_size:fl
 	s_tool.add_color(color)
 	
 	var rand = int(rand_range(0, 50))
-	prints("Adding:", rand)
+	prints(rand, "| Adding:", position, "<-", "idx:", cubeIndex)
+	prints(rand, "| vals:", cube_vals)
 	var vertices:Array = []
 	for edgeIndex in triangulation:
 		if edgeIndex >= 0:
@@ -92,11 +104,24 @@ func march(color:Color, position:Vector3, props, s_tool:SurfaceTool, vox_size:fl
 			# Find midpoint of edge
 			var vertexPos:Vector3 = (cube_corners[indexA] + cube_corners[indexB]) / 2
 			
-			prints(rand, "| ", vertexPos, "<-", "(", edgeIndex, "[", indexA, "/", indexB, "] )")
+#			prints(rand, "|", vertexPos, "<-", "idx:", edgeIndex, "[", indexA, "/", indexB, "]")
 			vertices.append(vertexPos)
 	
 	var normals:Array = []
+	var i = 0
+	var last:Vector3
+	var prev_vector:Vector3
 	for vertex in vertices:
-		# Add position to vertex list
-		s_tool.add_vertex(vertex*vox_size)
+		i = (i+1) % 3
+		match i:
+			0: last = vertex
+			1: prev_vector = last-vertex
+			2: normals.append(prev_vector.cross(last-vertex))
+	
+	for n in range(normals.size()):
+		s_tool.add_normal(-normals[n])
+#		prints(rand, "|", normals[n])
+		for v in range(3):
+			var vertex = vertices[(n*3)+v]
+			s_tool.add_vertex(vertex*vox_size)
 
