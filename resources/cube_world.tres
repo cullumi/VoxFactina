@@ -5,15 +5,17 @@
 
 [sub_resource type="OpenSimplexNoise" id=1]
 seed = 100
-period = 12.0
+octaves = 4
+period = 150.0
+lacunarity = 2.65
 
 [resource]
 script = ExtResource( 1 )
 planet_type = 0
-chunk_dims = Vector3( 16, 16, 16 )
+chunk_dims = Vector3( 8, 8, 8 )
 chunk_counts = Vector3( 10, 10, 10 )
-surface_level = 1.0
-voxel_size = 0.125
+surface_level = 0.75
+voxel_size = 0.5
 iso_level = 0.0
 voxel_rate = 10000.0
 voxel_material = ExtResource( 2 )

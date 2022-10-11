@@ -31,33 +31,22 @@ func get_voxel_color(pos:Vector3) -> Color:
 func voxel_is_air(pos:Vector3) -> bool:
 	return pos.length() > props.radius * props.surface_level
 
-func test_vox(pos:Vector3) -> bool:
-#	print("Test?")
-#	return .test_vox(pos)
-#	print("Testing for real...")
+func test_vox(pos:Vector3) -> int:
 	var val:float = noise.get_noise_3dv(pos)
 	
 	var max_height = props.surface_level * props.radius
 	var min_height = max_height * 0.5
 	var height_range = max_height-min_height
-	var water_height = min_height + (height_range*0.60)
 	
 	var scale = clamp(((val + 1) / 2) + .15, 0, 1)
 	var height = (height_range * scale) + min_height
 	
-	prints(val < props.iso_level, "(", val, "<", props.iso_level, ")")
 	if voxel_is_air(pos):
-		return false
+		return EXEMPT
+	elif pos.length() <= height:
+		return LAND if val < props.iso_level else AIR
 	else:
-		if val < props.iso_level:
-			return true
-		elif pos.length() > height:
-			if pos.length() < water_height:
-				return true
-			else:
-				return false
-		else:
-			return false
+		return AIR
 
 ## Gravity Direction
 var last_grav = Vector3()

@@ -4,6 +4,7 @@ class_name PlanetType
 
 enum AXES {X, Y, Z}
 enum {X, Y, Z}
+enum {EXEMPT, AIR, LAND}
 
 var props
 
@@ -32,9 +33,8 @@ func get_voxel_color(pos:Vector3) -> Color:
 func voxel_is_air(_pos:Vector3) -> bool:
 	return false
 
-func test_vox(pos:Vector3) -> bool:
-	print("Default Test")
-	return noise.get_noise_3dv(pos) < props.iso_level
+func test_vox(pos:Vector3) -> int:
+	return LAND if noise.get_noise_3dv(pos) < props.iso_level else AIR
 
 ## Gravity Direction
 func gravity_dir(_pos:Vector3) -> Vector3:

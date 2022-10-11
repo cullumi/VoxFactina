@@ -41,7 +41,6 @@ var render_queue:RenderQueue = RenderQueue.new()
 
 func _ready():
 	randomize()
-	print(props)
 	VoxelFactory.VoxelSize = props.voxel_size
 	VoxelFactory.update_vertices()
 	VoxelFactory.DefaultMaterial = props.voxel_material
@@ -53,7 +52,6 @@ func start():
 func initialize_chunks():
 	# Add all chunks to Dictionary
 	var vectors = Vectors.all(props.last_chunk, Vector3(), [Y,Z,X])
-	print(vectors)
 	for pos in vectors:
 		chunks[pos] = Chunk.new(pos, props.offset(pos))
 	render_queue.flood(chunks.values())
@@ -147,7 +145,6 @@ func add_voxels(chunk:Chunk, start:Vector3, end:Vector3, voxels=null):
 func add_voxel(chunk:Chunk, base_pos:Vector3, voxels=null):
 	var pos = props.voxoff(chunk.pos, base_pos)
 	var color = props.type().get_voxel_color(pos)
-	if color.a == 0:
-		color = Color.black
-	voxels[pos] = color
+	if color.a != 0:
+		voxels[pos] = color
 #	VoxelFactory.add_voxel(base_pos, color, voxels)

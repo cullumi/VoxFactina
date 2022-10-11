@@ -30,13 +30,13 @@ func _physics_process_state(delta: float):
 		if p.collision_angle() >= p.max_climb_angle:
 			p.on_floor = true
 			p.coyote_frames = 0
-	if p.input_dir.length() <= .1 || (p.frames <= p.jump_speed && p.frames != 0):
+	if p.input_dir.length() <= .1 || (p.frames <= (p.fly_jump_speed-1) && p.frames != 0):
 		mv.change_state(st_float)
 	
 	# Run
-	p.velocity += p.input_dir.rotated(Vector3(0, 1, 0), p.rotation.y) * p.acceleration
-	if Vector2(p.velocity.x, p.velocity.z).length() > p.move_speed:
-		p.velocity = p.velocity.normalized() * p.move_speed # clamp move speed
+	p.velocity += p.input_dir.rotated(Vector3(0, 1, 0), p.rotation.y) * p.fly_acceleration
+	if Vector2(p.velocity.x, p.velocity.z).length() > p.fly_speed:
+		p.velocity = p.velocity.normalized() * p.fly_speed # clamp move speed
 	if p.collision:
 		var rel_vel = p.relative(p.velocity)
 		var rel_xz = rel_vel - (rel_vel * p.collision.normal.abs().normalized())

@@ -42,8 +42,8 @@ var center_pos:Vector3
 
 # Offsets
 var vox_piv:Vector3
-func offset(pos:Vector3): return ((pos - center_pos) * chunk_size) - vox_piv
-func unoffset(off:Vector3): return ((off+vox_piv) / chunk_size) + center_pos
+func offset(pos:Vector3): return (((pos - center_pos) * chunk_size) - vox_piv)/chunk_size*voxel_size
+func unoffset(off:Vector3): return ((((off/voxel_size)*chunk_size)+vox_piv) / chunk_size) + center_pos
 func voxoff(c_pos, v_pos): return (c_pos * chunk_dims) + v_pos - (center_pos * chunk_dims)
 
 # Surface Level Rects

@@ -43,16 +43,10 @@ export var angle_of_freedom = 80 # amount player may look up/down
 export (float, EXP, 1, 1000) var fly_speed = 14.0
 export (float, EXP, 0.1, 10) var fly_acceleration = .5
 export (float, 1, 1.5) var fly_friction = 1.15
-export (float, EXP, 1, 1000) var fly_jump_speed = 10.0
-export (float, EXP, 1, 10) var fly_jump_height = 1.0
+export (float, EXP, 1, 2) var fly_jump_speed = 10.0
+export (float, EXP, 0, 10) var fly_jump_height = 1.0
 # Sprint
 export (float, EXP, 1, 10) var sprint_multiplier = 14.0
-# Non-Flight
-onready var standard_jump_speed = jump_speed
-onready var standard_jump_height = jump_height
-onready var standard_speed = air_speed
-onready var standard_acceleration = fly_acceleration
-
 
 ### Nodes
 onready var camera:Camera = get_node("%Camera")
