@@ -4,10 +4,11 @@
 [ext_resource path="res://resources/voxel_mat.tres" type="Material" id=2]
 
 [sub_resource type="OpenSimplexNoise" id=1]
-seed = 100
+seed = 150
 octaves = 4
-period = 150.0
-lacunarity = 2.65
+period = 7.0
+persistence = 0.7
+lacunarity = 0.5
 
 [resource]
 script = ExtResource( 1 )

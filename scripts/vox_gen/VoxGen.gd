@@ -59,8 +59,9 @@ func initialize_chunks():
 	# First Chunk (Where the Player Spawns)
 	var _chunk = force_render(spawn_chunk)
 	var under = spawn_chunk-spawn_vector
-	if (under.x >= 0 and under.y >= 0 and under.z >= 0):
+	while under.x >= 0 and under.y >= 0 and under.z >= 0:
 		_chunk = force_render(under)
+		under = under-spawn_vector
 	var vector = Vector3()
 	vector[spawn_axis] = spawn_dir
 	
@@ -117,8 +118,8 @@ func render_chunk(chunk:Chunk) -> Chunk:
 		chunk.new_instance.cast_shadow =GeometryInstance.SHADOW_CASTING_SETTING_DOUBLE_SIDED
 		chunk.new_instance.mesh = MarchingCubes.create_mesh(voxels, props, s_tool)
 #		chunk.new_instance.mesh = VoxelFactory.create_mesh(voxels, s_tool)
-		assert(chunk.new_instance.mesh != null)
-		if chunk.render_collision:
+		chunk.render_collision = true
+		if chunk.render_collision and chunk.new_instance.mesh.get_surface_count():
 			chunk.new_instance.create_trimesh_collision()
 		chunk.all_air = false
 		chunk.has_air = voxels.size() < props.vox_count

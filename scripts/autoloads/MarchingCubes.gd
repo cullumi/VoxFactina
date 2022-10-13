@@ -67,6 +67,7 @@ func march(color:Color, position:Vector3, props, s_tool:SurfaceTool):
 		var test = props.test_vox(cube_corners[i])
 		match test:
 			EXEMPT: return
+			AIR: pass
 			LAND: cubeIndex = cubeIndex + (1 << i)
 	
 	# Look up triangulation for current cubeIndex.
@@ -76,7 +77,6 @@ func march(color:Color, position:Vector3, props, s_tool:SurfaceTool):
 	# Set a Color
 	s_tool.add_color(color)
 	
-	var rand = int(rand_range(0, 50))
 	var i = -1
 	var vertices:Array = []
 	for edgeIndex in triangulation:
@@ -92,7 +92,7 @@ func march(color:Color, position:Vector3, props, s_tool:SurfaceTool):
 			vertices.append(vertexPos*vox_size)
 			i = (i+1) % 3
 			if i == 2:
-				prints("Add Tri", vertices)
+#				prints("Add Tri", vertices)
 				var prev = vertices[0] - vertices[1]
 				var cur = vertices[1] - vertices[2]
 				var normal = prev.cross(cur)
