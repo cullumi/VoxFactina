@@ -4,7 +4,7 @@
 [ext_resource path="res://resources/voxel_mat.tres" type="Material" id=2]
 
 [sub_resource type="OpenSimplexNoise" id=1]
-seed = 150
+seed = 175
 octaves = 4
 period = 7.0
 persistence = 0.7
@@ -14,9 +14,9 @@ lacunarity = 0.5
 script = ExtResource( 1 )
 planet_type = 0
 chunk_dims = Vector3( 8, 8, 8 )
-chunk_counts = Vector3( 10, 10, 10 )
+chunk_counts = Vector3( 30, 30, 30 )
 surface_level = 0.75
-voxel_size = 0.5
+voxel_size = 0.25
 iso_level = 0.0
 voxel_rate = 10000.0
 voxel_material = ExtResource( 2 )
