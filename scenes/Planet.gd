@@ -30,6 +30,9 @@ func _on_Planet_child_entered_tree(node):
 	if node is VoxGen:
 		node.props = props
 
+func _init():
+	init_neighbors()
+
 func _ready():
 	collider.shape.extents = props.world_dims * props.voxel_size
 
@@ -58,20 +61,27 @@ func _on_Planet_body_exited(body):
 
 
 ### Render Queue
+var neighbors:Array = []
+func init_neighbors():
+	var start:Vector3 = -Vector3.ONE
+	var end:Vector3 = Vector3.ONE
+	var cur = start
+	neighbors.append(cur)
+	while cur != end:
+		cur = Vectors.count_to(cur, end, start)
+		neighbors.append(cur)
+
 var last_chunk_pos = null
 func prioritize():
 	var chunk_pos = props.unoffset(player_pos).round()
 	if chunk_pos != last_chunk_pos:
 		last_chunk_pos = chunk_pos
-		var start:Vector3 = chunk_pos-Vector3.ONE
-		var end:Vector3 = chunk_pos+Vector3.ONE
-		start = Vectors.clamp_to(start, Vector3.ZERO, props.last_chunk)
-		end = Vectors.clamp_to(end, Vector3.ZERO, props.last_chunk)
-		var cur = start
-		vox_gen.enqueue_pos(cur)
-		while cur != end:
-			cur = Vectors.count_to(cur, end, start)
-			vox_gen.enqueue_pos(cur)
+		for neighbor in neighbors:
+			var cur = chunk_pos + neighbor
+			if cur >= Vector3.ZERO and cur <= props.last_chunk:
+				vox_gen.enqueue_pos(cur)
+				yield(get_tree(), "idle_frame")
+
 
 
 ### Player Spawn
