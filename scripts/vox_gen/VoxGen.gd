@@ -52,7 +52,13 @@ func start():
 func initialize_chunks():
 	# Add all chunks to Dictionary
 	var vectors = Vectors.all(props.last_chunk, Vector3(), [Y,Z,X])
+	var temp = null
 	for pos in vectors:
+		var off = props.offset(pos)
+		var orig = props.unoffset(off)
+		if temp != off:
+			temp = off
+			prints(pos, "->", off, "->", orig)
 		chunks[pos] = Chunk.new(pos, props.offset(pos))
 	render_queue.flood(chunks.values())
 	
@@ -112,7 +118,7 @@ func render_chunk(chunk:Chunk) -> Chunk:
 	if not voxels.empty():
 		var s_tool:SurfaceTool = SurfaceTool.new()
 		chunk.new_instance = MeshInstance.new()
-		chunk.new_instance.translation = chunk.offset
+		chunk.new_instance.translation = Vector3() #chunk.offset
 		chunk.new_instance.use_in_baked_light = true
 		chunk.new_instance.generate_lightmap = true
 		chunk.new_instance.cast_shadow =GeometryInstance.SHADOW_CASTING_SETTING_DOUBLE_SIDED

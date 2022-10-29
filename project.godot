@@ -167,6 +167,7 @@ config/icon="res://icon.png"
 VoxelFactory="*res://addons/voxel_factory/voxel_factory.gd"
 ThreadPool="*res://scripts/autoloads/ThreadPool.gd"
 MarchingCubes="*res://scripts/autoloads/MarchingCubes.gd"
+Count="*res://scripts/autoloads/Counters.gd"
 
 [editor_plugins]
 
