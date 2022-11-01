@@ -34,6 +34,7 @@ var world_dims:Vector3
 var world_radii:Vector3
 var chunk_size:Vector3
 var radius:float
+var vox_per_chunk:Vector3
 
 # Locations
 var last_chunk:Vector3
@@ -43,9 +44,10 @@ var center_pos:Vector3
 # Offsets
 var vox_piv:Vector3
 func offset(pos:Vector3): # Chunk Position to World Position
-	return Vector3()
-#	var vox_per_chunk = (Vector3() * voxel_size) / chunk_size
-#	return ((center_pos - pos) * vox_per_chunk) - vox_piv
+#	return Vector3()
+#	prints("Center Pos:", center_pos)
+#	prints("World Radii:", world_radii)
+	return ((pos - center_pos) * chunk_size) - vox_piv
 #	var dist_from_center = pos - center_pos
 #	var chunk_scaled_dfc = dist_from_center * chunk_size
 #	var voxel_shifted_cs_dfc = chunk_scaled_dfc - vox_piv
@@ -54,9 +56,9 @@ func offset(pos:Vector3): # Chunk Position to World Position
 #	return voxel_scale_vs_cs_dfc
 #	return (((pos - center_pos) * chunk_size) - vox_piv)/chunk_size*voxel_size
 func unoffset(off:Vector3): # World Position to Chunk Position
-	return Vector3()
-#	var vox_per_chunk = (Vector3() * voxel_size) / chunk_size
-#	return center_pos - ((off + vox_piv) / vox_per_chunk)
+#	return Vector3()
+#	print(vox_per_chunk)
+	return ((off + vox_piv) / chunk_size) + center_pos
 #	var voxel_scale_vs_cs_dfc = off
 #	var voxels_per_chunk = chunk_size / voxel_size
 #	var voxel_shifted_cs_dfc = voxel_scale_vs_cs_dfc / voxels_per_chunk
@@ -65,7 +67,13 @@ func unoffset(off:Vector3): # World Position to Chunk Position
 #	var pos = dist_from_center + center_pos
 #	return pos
 #	return ((((off/voxel_size)*chunk_size)+vox_piv) / chunk_size) + center_pos
-func voxoff(c_pos, v_pos): return ((c_pos-center_pos) * chunk_dims) + v_pos
+func voxoff(c_pos, v_pos):
+#	print(v_pos * voxel_size)
+#	print(v_pos)
+#	return v_pos * voxel_size
+#	return v_pos - (chunk_dims/2)
+#	prints(chunk_dims, v_pos)
+	return ((c_pos-center_pos) * chunk_dims) + v_pos
 
 # Surface Level Rects
 var front_radii:Vector2
@@ -98,6 +106,7 @@ func set_vox_size(size):
 	voxel_size = size
 	chunk_size = (chunk_dims+Vector3(1,1,1)) * voxel_size
 	vox_piv = Vector3.ONE * (voxel_size/2)
+	vox_per_chunk = chunk_size / voxel_size
 
 func update_world_dims():
 	world_dims = chunk_dims * chunk_counts

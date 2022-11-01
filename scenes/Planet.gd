@@ -75,15 +75,15 @@ var last_chunk_pos = null
 func prioritize():
 	var chunk_pos = props.unoffset(player_pos).round()
 	if chunk_pos != last_chunk_pos:
-		if chunk_pos.x < 0 or chunk_pos.y < 0 or chunk_pos.z < 0:
-			prints(player_pos, "->", chunk_pos)
+#		if chunk_pos.x < 0 or chunk_pos.y < 0 or chunk_pos.z < 0:
+#			prints(player_pos, "->", chunk_pos)
 		last_chunk_pos = chunk_pos
 		for neighbor in neighbors:
 			var cur = chunk_pos + neighbor
 			var greater = Vectors.lesser(cur, Vector3.ZERO)
 			var lesser = Vectors.greater(cur, props.last_chunk)
 			if not greater and not lesser:
-				print("Enqueued")
+#				print("Enqueued")
 #			if cur >= Vector3.ZERO and cur <= props.last_chunk:
 				vox_gen.enqueue_pos(cur)
 				yield(get_tree(), "idle_frame")

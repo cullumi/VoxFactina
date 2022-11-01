@@ -108,6 +108,8 @@ func finish_render(chunk:Chunk) -> Chunk:
 			chunk.instance.queue_free()
 		chunk.instance = chunk.new_instance
 		if chunk.instance != null:
+			assert(chunk.instance.mesh != null)
+#			assert(chunk.instance.mesh.get_surface_count())
 			add_child(chunk.instance) 
 	chunk.in_render = false
 	return chunk
@@ -118,7 +120,7 @@ func render_chunk(chunk:Chunk) -> Chunk:
 	if not voxels.empty():
 		var s_tool:SurfaceTool = SurfaceTool.new()
 		chunk.new_instance = MeshInstance.new()
-		chunk.new_instance.translation = Vector3() #chunk.offset
+		chunk.new_instance.translation = chunk.offset
 		chunk.new_instance.use_in_baked_light = true
 		chunk.new_instance.generate_lightmap = true
 		chunk.new_instance.cast_shadow =GeometryInstance.SHADOW_CASTING_SETTING_DOUBLE_SIDED
@@ -153,5 +155,5 @@ func add_voxel(chunk:Chunk, base_pos:Vector3, voxels=null):
 	var pos = props.voxoff(chunk.pos, base_pos)
 	var color = props.type().get_voxel_color(pos)
 	if color.a != 0:
-		voxels[pos] = color
+		voxels[pos] = Voxel.new(base_pos, pos, color)#color
 #	VoxelFactory.add_voxel(base_pos, color, voxels)

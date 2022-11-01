@@ -39,15 +39,27 @@ func create_mesh(voxels:Dictionary, props, s_tool:SurfaceTool=Surfacetool) -> Ar
 	return mesh 
 
 # Add voxel to mesh
-func march(color:Color, position:Vector3, props, s_tool:SurfaceTool):
+func march(voxel:Voxel, position:Vector3, props, s_tool:SurfaceTool):
 	
 	var noise = props.noise
 	var vox_size = props.voxel_size
 	assert(noise)
-	var pos = position - Vector3.ONE*0.5
 	
-	# Get The Cube
+	# Get The Cube in World Coords
+	var offset = voxel.offset - Vector3.ONE*0.5
 	var cube_corners:Array = [
+		(offset),
+		(offset + Vector3(1,0,0)),
+		(offset + Vector3(1,0,1)),
+		(offset + Vector3(0,0,1)),
+		(offset + Vector3(0,1,0)),
+		(offset + Vector3(1,1,0)),
+		(offset + Vector3(1,1,1)),
+		(offset + Vector3(0,1,1)),
+	]
+	# Get the Cube in Chunk Coords
+	var pos = voxel.pos - Vector3.ONE*0.5
+	var base_corners:Array = [
 		(pos),
 		(pos + Vector3(1,0,0)),
 		(pos + Vector3(1,0,1)),
@@ -75,7 +87,7 @@ func march(color:Color, position:Vector3, props, s_tool:SurfaceTool):
 	var triangulation:Array = TriTable.triangulation[cubeIndex]
 	
 	# Set a Color
-	s_tool.add_color(color)
+	s_tool.add_color(voxel.color)
 	
 	var i = -1
 	var vertices:Array = []
@@ -86,7 +98,7 @@ func march(color:Color, position:Vector3, props, s_tool:SurfaceTool):
 			var indexB:int = TriTable.cornerIndexBFromEdge[edgeIndex]
 			
 			# Find midpoint of edge
-			var vertexPos:Vector3 = (cube_corners[indexA] + cube_corners[indexB]) / 2
+			var vertexPos:Vector3 = (base_corners[indexA] + base_corners[indexB]) / 2
 			
 			# Add
 			vertices.append(vertexPos*vox_size)
