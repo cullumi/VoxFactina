@@ -44,35 +44,10 @@ var center_pos:Vector3
 # Offsets
 var vox_piv:Vector3
 func offset(pos:Vector3): # Chunk Position to World Position
-#	return Vector3()
-#	prints("Center Pos:", center_pos)
-#	prints("World Radii:", world_radii)
 	return ((pos - center_pos) * chunk_size) - vox_piv
-#	var dist_from_center = pos - center_pos
-#	var chunk_scaled_dfc = dist_from_center * chunk_size
-#	var voxel_shifted_cs_dfc = chunk_scaled_dfc - vox_piv
-#	var voxels_per_chunk = chunk_size / voxel_size
-#	var voxel_scale_vs_cs_dfc = voxel_shifted_cs_dfc * voxels_per_chunk
-#	return voxel_scale_vs_cs_dfc
-#	return (((pos - center_pos) * chunk_size) - vox_piv)/chunk_size*voxel_size
 func unoffset(off:Vector3): # World Position to Chunk Position
-#	return Vector3()
-#	print(vox_per_chunk)
 	return ((off + vox_piv) / chunk_size) + center_pos
-#	var voxel_scale_vs_cs_dfc = off
-#	var voxels_per_chunk = chunk_size / voxel_size
-#	var voxel_shifted_cs_dfc = voxel_scale_vs_cs_dfc / voxels_per_chunk
-#	var chunk_scaled_dfc = voxel_shifted_cs_dfc + vox_piv
-#	var dist_from_center = chunk_scaled_dfc / chunk_size
-#	var pos = dist_from_center + center_pos
-#	return pos
-#	return ((((off/voxel_size)*chunk_size)+vox_piv) / chunk_size) + center_pos
-func voxoff(c_pos, v_pos):
-#	print(v_pos * voxel_size)
-#	print(v_pos)
-#	return v_pos * voxel_size
-#	return v_pos - (chunk_dims/2)
-#	prints(chunk_dims, v_pos)
+func voxoff(c_pos, v_pos): # Voxel Chunk Position to Voxel World Position
 	return ((c_pos-center_pos) * chunk_dims) + v_pos
 
 # Surface Level Rects
