@@ -24,8 +24,9 @@ func create_mesh(voxels:Dictionary, props, s_tool:SurfaceTool=Surfacetool) -> Ar
 		s_tool.set_material(DefaultMaterial)
 	
 	# Creating the mesh...
+	var corner_tests:Dictionary = {} # For reusing corner tests between voxels
 	for vox in voxels:
-		march(voxels[vox], vox, props, s_tool)
+		march(voxels[vox], vox, props, s_tool, corner_tests)
 
 	# Finalise the mesh and return.
 	s_tool.index()
@@ -39,7 +40,7 @@ func create_mesh(voxels:Dictionary, props, s_tool:SurfaceTool=Surfacetool) -> Ar
 	return mesh 
 
 # Add voxel to mesh
-func march(voxel:Voxel, position:Vector3, props, s_tool:SurfaceTool):
+func march(voxel:Voxel, position:Vector3, props, s_tool:SurfaceTool, c_tests:Dictionary):
 	
 	var noise = props.noise
 	var vox_size = props.voxel_size
@@ -76,7 +77,9 @@ func march(voxel:Voxel, position:Vector3, props, s_tool:SurfaceTool):
 	#   This will result in a value between 0 and 255.
 	var cubeIndex = 0
 	for i in range(8):
-		var test = props.test_vox(cube_corners[i])
+		var test = c_tests.get(cube_corners[i]) # Avoids recomputation
+		if test == null:
+			test = props.test_vox(cube_corners[i])
 		match test:
 			EXEMPT: return
 			AIR: pass
