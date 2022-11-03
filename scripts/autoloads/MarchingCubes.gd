@@ -1,6 +1,8 @@
 extends Node
 
 # Based on Sebastian Lague's "Coding Adventure: Marching Cubes"
+# https://www.youtube.com/watch?v=M3iI2l0ltbE
+# https://github.com/SebLague/Marching-Cubes/blob/master/Assets/Scripts/Compute/MarchingCubes.compute
 
 var DefaultMaterial = SpatialMaterial.new()
 var Surfacetool = SurfaceTool.new()
@@ -102,6 +104,9 @@ func march(voxel:Voxel, position:Vector3, props, s_tool:SurfaceTool, c_tests:Dic
 			
 			# Find midpoint of edge
 			var vertexPos:Vector3 = (base_corners[indexA] + base_corners[indexB]) / 2
+#			var v1:Vector3 = base_corners[indexA]
+#			var v2:Vector3 = base_corners[indexB]
+#			var vertexPos:Vector3 = interpolate_vertices(v1, v2, 0, 0, props)
 			
 			# Add
 			vertices.append(vertexPos*vox_size)
@@ -116,3 +121,6 @@ func march(voxel:Voxel, position:Vector3, props, s_tool:SurfaceTool, c_tests:Dic
 					s_tool.add_vertex(vertex)
 				vertices.clear()
 
+func interpolate_vertices(v1:Vector3, v2:Vector3, i1:float, i2:float, props):
+	var t = (props.iso_level - i1) / (i2 - i1)
+	return v1 + (t * (v2 - v1))
