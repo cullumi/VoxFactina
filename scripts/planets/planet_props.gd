@@ -1,3 +1,5 @@
+tool
+
 extends Resource
 
 class_name PlanetProperties
@@ -21,8 +23,6 @@ func type():
 		_type = types[planet_type].new(self)
 	return _type
 
-func test_vox(val):
-	return type().test_vox(val)
 
 # Ranges
 var from:Vector3
@@ -56,42 +56,53 @@ var top_radii:Vector2
 var front:Rect2
 var top:Rect2
 
+# Updates
+func signal_update(should_signal:bool=true):
+	if should_signal:
+		emit_signal("changed")
+
 ### Variable Corrections
 
-func set_dims(dims):
+func set_dims(dims, should_signal:bool=true):
 	chunk_dims = dims
 	from = -chunk_dims/2
 	to = chunk_dims/2
 	vox_count = chunk_dims.x * chunk_dims.y * chunk_dims.z
-	update_world_dims()
+	update_world_dims(false)
 	chunk_size = (chunk_dims+Vector3(1,1,1)) * voxel_size
+	signal_update(should_signal)
 
-func set_counts(counts):
+func set_counts(counts, should_signal:bool=true):
 	chunk_counts = counts
-	update_world_dims()
+	update_world_dims(false)
 	last_chunk = chunk_counts-Vector3(1,1,1)
 	center_chunk = last_chunk/2
 	center_pos = center_chunk.floor()
+	signal_update(should_signal)
 
-func set_level(level):
+func set_level(level, should_signal:bool=true):
 	surface_level = level
-	update_rects()
+	update_rects(false)
+	signal_update(should_signal)
 
-func set_vox_size(size):
+func set_vox_size(size, should_signal:bool=true):
 	voxel_size = size
 	chunk_size = (chunk_dims+Vector3(1,1,1)) * voxel_size
 	vox_piv = Vector3.ONE * (voxel_size/2)
 	vox_per_chunk = chunk_size / voxel_size
+	signal_update(should_signal)
 
-func update_world_dims():
+func update_world_dims(should_signal:bool=true):
 	world_dims = chunk_dims * chunk_counts
 	world_radii = world_dims/2
 	var wr = world_radii
 	radius = min(wr.x, min(wr.y, wr.z))
-	update_rects()
+	update_rects(false)
+	signal_update(should_signal)
 
-func update_rects():
+func update_rects(should_signal:bool=true):
 	front_radii = Vector2(world_radii.x, world_radii.y) * surface_level
 	top_radii = Vector2(world_radii.x, world_radii.z) * surface_level
 	front = Rect2(-front_radii, front_radii*2)
 	top = Rect2(-top_radii, top_radii*2)
+	signal_update(should_signal)

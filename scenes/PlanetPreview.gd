@@ -1,0 +1,38 @@
+tool
+
+extends MeshInstance
+
+class_name PlanetPreview
+
+export (bool) var redraw = false setget do_redraw
+
+func do_redraw(val):
+	redraw = false
+	draw()
+
+func _enter_tree():
+	if not Engine.editor_hint:
+		return
+	draw()
+
+# Only works if the parent is a Planet containing PlanetProperties and a PlanetType.
+func draw():
+	if mesh: mesh = null
+	
+	var parent = get_parent()
+	if not parent is Planet: return
+	
+	var props:PlanetProperties = parent.props as PlanetProperties
+	if not props: return
+	elif not props.is_connected("changed", self, "draw"):
+		props.connect("changed", self, "draw")
+	
+	if props.planet_type == props.TYPE.CUBE:
+		var cube := CubeMesh.new()
+		mesh = cube
+		cube.size = props.world_dims
+	else:
+		var sphere := SphereMesh.new()
+		mesh = sphere
+		sphere.radius = props.world_radii.x
+		sphere.height = props.world_dims.y

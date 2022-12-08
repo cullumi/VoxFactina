@@ -64,6 +64,11 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://scenes/Planet.gd"
 }, {
+"base": "MeshInstance",
+"class": "PlanetPreview",
+"language": "GDScript",
+"path": "res://scenes/PlanetPreview.gd"
+}, {
 "base": "Resource",
 "class": "PlanetProperties",
 "language": "GDScript",
@@ -89,7 +94,7 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://script_templates/player_state_template.gd"
 }, {
-"base": "Reference",
+"base": "State",
 "class": "PlayerWalk",
 "language": "GDScript",
 "path": "res://scripts/states/player_walk.gd"
@@ -146,6 +151,7 @@ _global_script_class_icons={
 "NoFSMPlayer": "",
 "OrbWorld": "",
 "Planet": "",
+"PlanetPreview": "",
 "PlanetProperties": "",
 "PlanetType": "",
 "Player": "",

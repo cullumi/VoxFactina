@@ -1,12 +1,21 @@
-[gd_scene load_steps=14 format=2]
+[gd_scene load_steps=17 format=2]
 
 [ext_resource path="res://scenes/Main.gd" type="Script" id=1]
 [ext_resource path="res://scenes/PlayerPivot.tscn" type="PackedScene" id=2]
-[ext_resource path="res://resources/cube_world.tres" type="Resource" id=3]
+[ext_resource path="res://resources/small_orb.tres" type="Resource" id=3]
 [ext_resource path="res://scenes/Test Nodes/Reorient.gd" type="Script" id=4]
 [ext_resource path="res://scenes/Test Nodes/Move.gd" type="Script" id=5]
 [ext_resource path="res://scenes/Test Nodes/MoveUpAndDown.gd" type="Script" id=6]
+[ext_resource path="res://scenes/PlanetPreview.gd" type="Script" id=7]
 [ext_resource path="res://scenes/Planet.tscn" type="PackedScene" id=10]
+
+[sub_resource type="SphereMesh" id=9]
+radius = 32.0
+height = 64.0
+
+[sub_resource type="SpatialMaterial" id=8]
+flags_transparent = true
+albedo_color = Color( 0.00392157, 0.835294, 1, 0.196078 )
 
 [sub_resource type="Curve3D" id=2]
 _data = {
@@ -38,6 +47,11 @@ script = ExtResource( 1 )
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 )
 use_spawn = true
 props = ExtResource( 3 )
+
+[node name="PlanetPreview" type="MeshInstance" parent="Sun/Planet"]
+mesh = SubResource( 9 )
+material/0 = SubResource( 8 )
+script = ExtResource( 7 )
 
 [node name="PlayerPivot" parent="." instance=ExtResource( 2 )]
 
