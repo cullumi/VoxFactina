@@ -10,8 +10,8 @@
 [ext_resource path="res://scenes/Planet.tscn" type="PackedScene" id=10]
 
 [sub_resource type="SphereMesh" id=9]
-radius = 32.0
-height = 64.0
+radius = 100.0
+height = 200.0
 
 [sub_resource type="SpatialMaterial" id=8]
 flags_transparent = true

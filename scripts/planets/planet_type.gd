@@ -36,7 +36,7 @@ func voxel_is_air(_pos:Vector3) -> bool:
 func get_density(pos:Vector3) -> float:
 	return noise.get_noise_3dv(pos)
 
-func test_vox(pos:Vector3, density:float=0) -> int:
+func test_vox(_pos:Vector3, density:float=0) -> int:
 	return LAND if density <= props.iso_level else AIR
 
 ## Gravity Direction

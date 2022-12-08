@@ -11,15 +11,13 @@ var water_height
 func _init(new_props=null):
 	._init(new_props)
 
-func t_height(val):
+func init_height():#val):
 	if not calculated:
 		max_height = props.surface_level * props.radius
-		min_height = max_height * 0.5
+		min_height = max_height * props.bedrock_level
 		height_range = max_height-min_height
 		water_height = min_height + (height_range*0.60)
 		calculated = true
-	var scale = clamp(((val + 1) / 2) + .15, 0, 1)
-	return (height_range * scale) + min_height
 
 ## Content Queries
 func get_voxel_color(pos:Vector3) -> Color:
@@ -27,40 +25,34 @@ func get_voxel_color(pos:Vector3) -> Color:
 		return Color(0,0,0,0)
 	else:
 		var rand = noise.get_noise_3dv(pos)
-#		var height = t_height(rand)
-		
-#		if pos.length() > height:
-#			if pos.length() < water_height:
-#				return Color.cornflower
-#			else:
-#				return Color(0,0,0,1)
-#		else:
 		if rand >= 0: return Color.forestgreen
 		elif rand < 0 and rand > -.25: return Color.cornsilk
 		elif rand <= -.25: return Color.cadetblue
 		else: return Color.brown
 
 func voxel_in_air(pos:Vector3) -> bool:
+	init_height()
 	return pos.length() > (props.radius * props.surface_level) + props.voxel_size
 
 func voxel_is_air(pos:Vector3) -> bool:
+	init_height()
 	return pos.length() > props.radius * props.surface_level
 
 func test_vox(pos:Vector3, density:float=0) -> int:
 #	return LAND if density < props.iso_level else AIR
-	
 	if voxel_is_air(pos):
 		return AIR
 	else:
-		var val:float = density #noise.get_noise_3dv(pos)
-		var height = t_height(val)
+		init_height()
 		var length = pos.length()
-		
-		if length <= height:
-			if length <= min_height:
-				return BEDROCK
-			else:
-				return LAND if val <= props.iso_level else AIR
+		var air_height_scale = clamp(((density + 1) / 2) + .05, 0, 1)
+		var air_height = (height_range * air_height_scale) + min_height
+		var height_percent = length/max_height
+		if length <= min_height:
+			return BEDROCK
+		elif length <= air_height:
+			var iso = (props.iso_curve.interpolate(height_percent)*2)-1
+			return LAND if density < iso else AIR
 		else:
 			return AIR
 

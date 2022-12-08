@@ -8,9 +8,11 @@ enum TYPE {ORB, CUBE}
 export (TYPE) var planet_type = TYPE.ORB
 export (Vector3) var chunk_dims = Vector3(10, 10, 10) setget set_dims
 export (Vector3) var chunk_counts:Vector3 = Vector3(3, 3, 3) setget set_counts
-export (float, 0, 1, 0.05) var surface_level:float = 0.75 setget set_level
+export (float, 0, 1, 0.05) var surface_level:float = 0.75 setget set_surface
+export (float, 0, 1, 0.05) var bedrock_level:float = 0.15 setget set_bedrock
 export (float, 0.005, 2, 0.005) var voxel_size:float = 1 setget set_vox_size
 export (float, -1, 1, 0.005) var iso_level:float = 0
+export (Curve) var iso_curve:Curve
 export (float, EXP, 1000, 1000000, 1000) var voxel_rate:int = 10000
 export (SpatialMaterial) var voxel_material
 export (OpenSimplexNoise) var noise
@@ -71,10 +73,10 @@ func signal_update(should_signal:bool=true):
 func set_dims(dims, should_signal:bool=true):
 	chunk_dims = dims
 	from = -chunk_dims/2
-	to = chunk_dims/2
+	to = (chunk_dims/2)-Vector3.ONE
 	vox_count = chunk_dims.x * chunk_dims.y * chunk_dims.z
 	update_world_dims(false)
-	chunk_size = (chunk_dims+Vector3(1,1,1)) * voxel_size
+	chunk_size = chunk_dims * voxel_size
 	signal_update(should_signal)
 
 func set_counts(counts, should_signal:bool=true):
@@ -85,14 +87,19 @@ func set_counts(counts, should_signal:bool=true):
 	center_pos = center_chunk.floor()
 	signal_update(should_signal)
 
-func set_level(level, should_signal:bool=true):
+func set_surface(level, should_signal:bool=true):
 	surface_level = level
+	update_rects(false)
+	signal_update(should_signal)
+
+func set_bedrock(level, should_signal:bool=true):
+	bedrock_level = level
 	update_rects(false)
 	signal_update(should_signal)
 
 func set_vox_size(size, should_signal:bool=true):
 	voxel_size = size
-	chunk_size = (chunk_dims+Vector3(1,1,1)) * voxel_size
+	chunk_size = chunk_dims * voxel_size
 	vox_piv = Vector3.ONE * (voxel_size/2)
 	vox_per_chunk = chunk_size / voxel_size
 	signal_update(should_signal)

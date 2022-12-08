@@ -27,7 +27,7 @@ func create_mesh(voxels:Dictionary, props, s_tool:SurfaceTool=Surfacetool) -> Ar
 	
 	# Creating the mesh...
 	var corner_tests:Dictionary = {} # For reusing corner tests between voxels
-	print("Creating Mesh...")
+#	print("Creating Mesh...")
 	for vox in voxels:
 		march(voxels[vox], vox, props, s_tool, corner_tests)
 

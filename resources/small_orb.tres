@@ -1,19 +1,26 @@
-[gd_resource type="Resource" load_steps=4 format=2]
+[gd_resource type="Resource" load_steps=5 format=2]
 
 [ext_resource path="res://scripts/planets/planet_props.gd" type="Script" id=1]
 [ext_resource path="res://resources/voxel_mat.tres" type="Material" id=2]
 
+[sub_resource type="Curve" id=2]
+_data = [ Vector2( 0, 0 ), 0.0, 1.0, 0, 1, Vector2( 1, 1 ), 1.0, 0.0, 1, 0 ]
+
 [sub_resource type="OpenSimplexNoise" id=1]
-octaves = 7
+period = 30.0
+persistence = 1.0
+lacunarity = 0.15
 
 [resource]
 script = ExtResource( 1 )
 planet_type = 0
-chunk_dims = Vector3( 64, 64, 64 )
-chunk_counts = Vector3( 1, 1, 1 )
-surface_level = 1.0
-voxel_size = 1.0
+chunk_dims = Vector3( 10, 10, 10 )
+chunk_counts = Vector3( 20, 20, 20 )
+surface_level = 0.75
+bedrock_level = 0.2
+voxel_size = 0.25
 iso_level = 0.0
+iso_curve = SubResource( 2 )
 voxel_rate = 1000000
 voxel_material = ExtResource( 2 )
 noise = SubResource( 1 )
