@@ -6,7 +6,7 @@ export (float, EXP, 0, 2) var ease_rate = 60*.1
 
 onready var player:Player = get_node("%Player")
 onready var target:Transform = transform
-onready var altitude:float = 10
+onready var altitude:float = -1
 var orbit:Spatial
 
 ### Triggers
@@ -23,9 +23,9 @@ func _physics_process(delta):
 	if orbit:
 		var shift:Vector3 = player.translation
 		if shift:
-			altitude += shift.y
-			var pivot_pos = global_translation
 			var orbit_diff:Vector3 = player_pos - orbit.global_translation
+			if altitude < 0: altitude = orbit_diff.length()
+			altitude += shift.y
 			var orbit_dir:Vector3 = orbit_diff.normalized()
 			var orbit_mag:float = altitude
 			var orbit_pos = orbit.global_translation + (orbit_dir * orbit_mag)
