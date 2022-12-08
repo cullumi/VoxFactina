@@ -58,7 +58,7 @@ func initialize_chunks():
 		var orig = props.unoffset(off)
 		if temp != off:
 			temp = off
-			prints(pos, "->", off, "->", orig)
+#			prints(pos, "->", off, "->", orig)
 		chunks[pos] = Chunk.new(pos, props.offset(pos))
 	render_queue.flood(chunks.values())
 	

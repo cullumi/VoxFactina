@@ -6,7 +6,7 @@ extends Node
 
 var DefaultMaterial = SpatialMaterial.new()
 var Surfacetool = SurfaceTool.new()
-enum {EXEMPT, AIR, LAND}
+enum {EXEMPT, AIR, LAND, BEDROCK}
 
 func _ready():
 	# Making sure that vertex color are used
@@ -27,6 +27,7 @@ func create_mesh(voxels:Dictionary, props, s_tool:SurfaceTool=Surfacetool) -> Ar
 	
 	# Creating the mesh...
 	var corner_tests:Dictionary = {} # For reusing corner tests between voxels
+	print("Creating Mesh...")
 	for vox in voxels:
 		march(voxels[vox], vox, props, s_tool, corner_tests)
 
@@ -73,18 +74,33 @@ func march(voxel:Voxel, position:Vector3, props, s_tool:SurfaceTool, c_tests:Dic
 		(pos + Vector3(0,1,1)),
 	]
 	
+	var base_densities:Array = [
+		props.get_density(cube_corners[0]),
+		props.get_density(cube_corners[1]),
+		props.get_density(cube_corners[2]),
+		props.get_density(cube_corners[3]),
+		props.get_density(cube_corners[4]),
+		props.get_density(cube_corners[5]),
+		props.get_density(cube_corners[6]),
+		props.get_density(cube_corners[7]),
+	]
+	
 	# Calculate the index of the current cube configuration as follows:
 	#   Loop over each of the 8 corners of the cube.
 	#   Set the corresponding bit to 1 if its value is below the surface level.
 	#   This will result in a value between 0 and 255.
 	var cubeIndex = 0
 	for i in range(8):
-		var test = c_tests.get(cube_corners[i]) # Avoids recomputation
-		if test == null:
-			test = props.test_vox(cube_corners[i])
-		match test:
+		var result = c_tests.get(cube_corners[i]) # Avoids recomputation
+		if result == null:
+			result = props.test_vox(cube_corners[i], base_densities[i])
+			c_tests[cube_corners[i]] = result
+		else:
+			pass
+		match result:
 			EXEMPT: return
-			AIR: pass
+			AIR: base_densities[i] = -1000
+			BEDROCK: cubeIndex = cubeIndex + (1 << i)
 			LAND: cubeIndex = cubeIndex + (1 << i)
 	
 	# Look up triangulation for current cubeIndex.
@@ -102,11 +118,30 @@ func march(voxel:Voxel, position:Vector3, props, s_tool:SurfaceTool, c_tests:Dic
 			var indexA:int = TriTable.cornerIndexAFromEdge[edgeIndex]
 			var indexB:int = TriTable.cornerIndexBFromEdge[edgeIndex]
 			
+			# Densities, for convenience
+			var d1:float = base_densities[indexA]
+			var d2:float = base_densities[indexB]
+			
 			# Find midpoint of edge
-			var vertexPos:Vector3 = (base_corners[indexA] + base_corners[indexB]) / 2
-#			var v1:Vector3 = base_corners[indexA]
-#			var v2:Vector3 = base_corners[indexB]
-#			var vertexPos:Vector3 = interpolate_vertices(v1, v2, 0, 0, props)
+			var mid_vertexPos:Vector3 = (base_corners[indexA] + base_corners[indexB]) / 2
+			# Find interpolation of edge
+			var int_vertexPos:Vector3
+			if d1 != d2:
+				var v1:Vector3 = base_corners[indexA]
+				var v2:Vector3 = base_corners[indexB]
+#				prints("Interpolate:", "\n\tv1:", v1, "\n\tv2:", v2, "\n\td1:", d1, "d1:", d2, "iso:", props.iso_level)
+				int_vertexPos = interpolate_vertices(v1, v2, d1, d2, props.iso_level)
+#				prints("Midpoint vs Interpolation:", mid_vertexPos, "vs", int_vertexPos)
+			else:
+				prints("Not Interpolated");
+			
+			var vertexPos
+			if d1 < -1 or d2 < -1 or d1 == d2:
+				vertexPos = mid_vertexPos
+			else:
+				vertexPos = int_vertexPos
+			
+			vertexPos = int_vertexPos#mid_vertexPos
 			
 			# Add
 			vertices.append(vertexPos*vox_size)
@@ -121,6 +156,11 @@ func march(voxel:Voxel, position:Vector3, props, s_tool:SurfaceTool, c_tests:Dic
 					s_tool.add_vertex(vertex)
 				vertices.clear()
 
-func interpolate_vertices(v1:Vector3, v2:Vector3, i1:float, i2:float, props):
-	var t = (props.iso_level - i1) / (i2 - i1)
+# Midpoint Formula
+func midpoint_vertices(v1:Vector3, v2:Vector3):
+	return (v1 + v2)/2
+
+# Interpolates based on two vertices and their densities, considering the iso level.
+func interpolate_vertices(v1:Vector3, v2:Vector3, d1:float, d2:float, iso_level:float):
+	var t = (iso_level - d1) / (d2 - d1)
 	return v1 + (t * (v2 - v1))

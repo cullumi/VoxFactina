@@ -23,6 +23,11 @@ func type():
 		_type = types[planet_type].new(self)
 	return _type
 
+func get_density(pos:Vector3) -> float:
+	return type().get_density(pos)
+
+func test_vox(pos:Vector3, density:float=0) -> int:
+	return type().test_vox(pos, density)
 
 # Ranges
 var from:Vector3

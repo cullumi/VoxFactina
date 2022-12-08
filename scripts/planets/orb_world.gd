@@ -46,19 +46,21 @@ func voxel_in_air(pos:Vector3) -> bool:
 func voxel_is_air(pos:Vector3) -> bool:
 	return pos.length() > props.radius * props.surface_level
 
-func test_vox(pos:Vector3) -> int:
+func test_vox(pos:Vector3, density:float=0) -> int:
+#	return LAND if density < props.iso_level else AIR
+	
 	if voxel_is_air(pos):
 		return AIR
 	else:
-		var val:float = noise.get_noise_3dv(pos)
+		var val:float = density #noise.get_noise_3dv(pos)
 		var height = t_height(val)
 		var length = pos.length()
 		
 		if length <= height:
 			if length <= min_height:
-				return LAND
+				return BEDROCK
 			else:
-				return LAND if val < props.iso_level else AIR
+				return LAND if val <= props.iso_level else AIR
 		else:
 			return AIR
 
