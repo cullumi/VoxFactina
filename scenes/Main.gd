@@ -22,6 +22,8 @@ func _unhandled_input(event):
 		get_tree().paused = true
 		get_tree().quit()
 
+func _exit_tree():
+	Count.pop_all()
 
 ### Region Transfers
 
@@ -31,9 +33,11 @@ func _on_Planet_player_entered(planet:Planet):
 		cur_planet.orbiting = false
 	cur_planet = planet
 	cur_planet.orbiting = true
+	pivot.orbit = cur_planet
 
 func _on_Planet_player_exited(planet:Planet):
 	assert(cur_planet == planet) # Should not exit when not current
 	if cur_planet == planet:
 		cur_planet.orbiting = false
 		cur_planet = null
+		pivot.orbit = null

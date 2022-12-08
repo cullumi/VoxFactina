@@ -6,7 +6,8 @@ export (float, EXP, 0, 2) var ease_rate = 60*.1
 
 onready var player:Player = get_node("%Player")
 onready var target:Transform = transform
-
+onready var altitude:float = 10
+var orbit:Spatial
 
 ### Triggers
 
@@ -17,10 +18,21 @@ func _physics_process(delta):
 	# Interpolate the pivot toward's it's target orientation.
 	transform = transform.interpolate_with(target, delta * ease_rate)
 	
-	# Keep Pivot and Player at same global position
+	# Keep Pivot and Player at same global position w/ orbit adjustment
+	var final_pos = player_pos
+	if orbit:
+		var shift:Vector3 = player.translation
+		if shift:
+			altitude += shift.y
+			var pivot_pos = global_translation
+			var orbit_diff:Vector3 = player_pos - orbit.global_translation
+			var orbit_dir:Vector3 = orbit_diff.normalized()
+			var orbit_mag:float = altitude
+			var orbit_pos = orbit.global_translation + (orbit_dir * orbit_mag)
+			final_pos = orbit_pos
 	player.translation = Vector3()
-	global_translation = player_pos
-
+	global_translation = final_pos
+	orthonormalize()
 
 ### Player Orientation
 
