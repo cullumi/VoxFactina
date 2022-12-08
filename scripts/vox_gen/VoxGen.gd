@@ -46,21 +46,19 @@ func _ready():
 	VoxelFactory.DefaultMaterial = props.voxel_material
 
 func start():
+	print("Begin")
 	initialize_chunks()
 	render()
 
 func initialize_chunks():
 	# Add all chunks to Dictionary
+	print("Add chunks to Dictionary")
 	var vectors = Vectors.all(props.last_chunk, Vector3(), [Y,Z,X])
-	var temp = null
 	for pos in vectors:
-		var off = props.offset(pos)
-		var orig = props.unoffset(off)
-		if temp != off:
-			temp = off
-#			prints(pos, "->", off, "->", orig)
 		chunks[pos] = Chunk.new(pos, props.offset(pos))
 	render_queue.flood(chunks.values())
+	
+#	voxel_redundancy_test(vectors)
 	
 	# First Chunk (Where the Player Spawns)
 	var _chunk = force_render(spawn_chunk)
@@ -72,6 +70,43 @@ func initialize_chunks():
 	vector[spawn_axis] = spawn_dir
 	
 	emit_signal("initialized")
+
+func voxel_redundancy_test(vectors):
+	print("Voxel Redundancy Test")
+	var voxels:Dictionary = {}
+	var from = props.from# + Vector3.ONE #- Vector3(0.5, 0.5, 0.5)
+	var to = props.to# - Vector3.ONE #- Vector3(0.5, 0.5, 0.5)
+	var dif = to - from
+	prints("dif:", dif)
+	var c_size = props.chunk_dims
+	prints("Chunk Count:", props.chunk_counts)
+	var origin = -(props.chunk_counts*c_size)/2
+	print("Origin:\t", origin, "\nSize:\t", c_size)
+	prints(props.from, props.to, "[", props.to-props.from+Vector3.ONE, "]")
+	prints(from, to, "[", to-from+Vector3.ONE, "]")
+	for c_pos in vectors:
+		var oc_pos
+#		prints("CPos:", c_pos)
+		var start = origin + (c_pos*c_size)
+		var end = origin + (c_pos*c_size) + dif
+#		prints(start, "->", end)
+		var pos = start
+		while Vectors.lesser(pos, end):
+#			print("\tPos:", pos)
+			Count.push(pos, 1, voxels)
+			pos = Vectors.count_to(pos, end, start)
+		Count.push(pos, 1, voxels)
+#		print("\tPos:", pos)
+	var keys = voxels.keys().duplicate()
+	var counts:Array = Count.pop_all(true, false, null, voxels)
+	var end_found := false
+	for i in range(counts.size()):
+		var key = keys[i]
+		var count = counts[i]
+		if count > 1:
+			Count.push(count, 1, voxels)
+			prints("Redundant Voxel:", count, "\tof\t", key, "\tfound.")
+	Count.pop_all(true, true, null, voxels)
 
 ### Rendering
 
@@ -143,10 +178,10 @@ func render_chunk(chunk:Chunk) -> Chunk:
 func add_voxels(chunk:Chunk, start:Vector3, end:Vector3, voxels=null):
 	var count = 0
 	var pos = start
-	while pos != end:
+	while Vectors.lesser(pos, end):
 		count += 1
 		add_voxel(chunk, pos, voxels)
-		pos = Vectors.count_to(pos, end, props.from)
+		pos = Vectors.count_to(pos, end, start)
 		if count % props.voxel_rate == 0:
 			yield(get_tree(), "idle_frame")
 	add_voxel(chunk, pos, voxels)
