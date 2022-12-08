@@ -8,11 +8,21 @@ enum {X, Y, Z, OOB}
 static func angle_to(from, to):
 	return 90 - (to.dot(from) * 90)
 
-static func greater(a:Vector3, b:Vector3):
+static func any_greater(a:Vector3, b:Vector3):
 	return a.x > b.x or a.y > b.y or a.z > b.z
 
-static func lesser(a:Vector3, b:Vector3):
+static func any_lesser(a:Vector3, b:Vector3):
 	return a.x < b.x or a.y < b.y or a.z < b.z
+
+static func greater(a:Vector3, b:Vector3):
+	if a.x > b.x: return true
+	if a.y > b.y: return true
+	if a.z > b.z: return true
+
+static func lesser(a:Vector3, b:Vector3):
+	if a.x < b.x: return true
+	if a.y < b.y: return true
+	if a.z < b.z: return true
 
 static func all(to:Vector3, from:Vector3=Vector3(), order:Array=[X,Y,Z]):
 	var combos = []

@@ -6,7 +6,7 @@ class_name PlanetPreview
 
 export (bool) var redraw = false setget do_redraw
 
-func do_redraw(val):
+func do_redraw(_val):
 	redraw = false
 	draw()
 
@@ -25,7 +25,7 @@ func draw():
 	var props:PlanetProperties = parent.props as PlanetProperties
 	if not props: return
 	elif not props.is_connected("changed", self, "draw"):
-		props.connect("changed", self, "draw")
+		var _res := props.connect("changed", self, "draw")
 	
 	if props.planet_type == props.TYPE.CUBE:
 		var cube := CubeMesh.new()

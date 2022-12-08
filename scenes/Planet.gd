@@ -80,8 +80,8 @@ func prioritize():
 		last_chunk_pos = chunk_pos
 		for neighbor in neighbors:
 			var cur = chunk_pos + neighbor
-			var greater = Vectors.lesser(cur, Vector3.ZERO)
-			var lesser = Vectors.greater(cur, props.last_chunk)
+			var greater = Vectors.any_lesser(cur, Vector3.ZERO)
+			var lesser = Vectors.any_greater(cur, props.last_chunk)
 			if not greater and not lesser:
 #				print("Enqueued")
 #			if cur >= Vector3.ZERO and cur <= props.last_chunk:
