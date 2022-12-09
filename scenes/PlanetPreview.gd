@@ -30,9 +30,9 @@ func draw():
 	if props.planet_type == props.TYPE.CUBE:
 		var cube := CubeMesh.new()
 		mesh = cube
-		cube.size = props.world_dims
+		cube.size = props.world_dims * props.voxel_size
 	else:
 		var sphere := SphereMesh.new()
 		mesh = sphere
-		sphere.radius = props.world_radii.x
-		sphere.height = props.world_dims.y
+		sphere.radius = props.world_radii.x * props.voxel_size
+		sphere.height = props.world_dims.y * props.voxel_size
