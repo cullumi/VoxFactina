@@ -69,6 +69,7 @@ func init_neighbors():
 	neighbors.append(cur)
 	while cur != end:
 		cur = Vectors.count_to(cur, end, start)
+		
 		neighbors.append(cur)
 
 var last_chunk_pos = null

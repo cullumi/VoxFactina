@@ -14,8 +14,8 @@ lacunarity = 0.15
 [resource]
 script = ExtResource( 1 )
 planet_type = 0
-chunk_dims = Vector3( 5, 5, 5 )
-chunk_counts = Vector3( 20, 20, 20 )
+chunk_dims = Vector3( 8, 8, 8 )
+chunk_counts = Vector3( 5, 5, 5 )
 surface_level = 0.75
 bedrock_level = 0.2
 voxel_size = 0.25

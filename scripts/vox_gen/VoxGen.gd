@@ -9,6 +9,7 @@ export (Resource) var props
 enum AXES {X, Y, Z}
 export (AXES) var spawn_axis = AXES.Y
 export (int, -1, 1, 2) var spawn_dir = 1
+export (int, 1, 4) var lod_number = 1
 
 # Dimensions
 enum {X, Y, Z}
@@ -36,6 +37,9 @@ signal initialized()
 var chunks:Dictionary = {}
 var render_queue:RenderQueue = RenderQueue.new()
 
+var levels:int = 1
+var lods:Array = []
+
 
 ### Initialization
 
@@ -50,20 +54,65 @@ func start():
 	initialize_chunks()
 	render()
 
+func octree_depth():
+	var width:int = props.chunk_counts.x
+	var depth = 1
+	while (width > 1):
+		depth += 1
+		width /= 2
+	return depth
+
+func initialize_octree():
+	levels = octree_depth()
+	lods.clear()
+	for level in levels:
+		lods.append({})
+	var pos:Vector3 = Vector3()
+	var size:Vector3 = props.chunk_counts * props.chunk_size
+	lods[0][pos] = Chunk.new(pos, props.offset(pos), size)
+	for l in range(1, levels):
+		for key in lods[l-1].keys():
+			var chunk:Chunk = lods[l-1][key]
+			chunk.subdivide()
+			for child in chunk.children:
+				lods[l][child.pos] = child
+
 func initialize_chunks():
 	# Add all chunks to Dictionary
+	initialize_octree()
+	var other_chunks = lods.back()
+#	print(chunks)
 	print("Add chunks to Dictionary")
 	var vectors = Vectors.all(props.last_chunk, Vector3(), [Y,Z,X])
 	for pos in vectors:
-		chunks[pos] = Chunk.new(pos, props.offset(pos))
+		chunks[pos] = Chunk.new(pos, props.offset(pos), props.chunk_size)
 	render_queue.flood(chunks.values())
 	
-#	voxel_redundancy_test(vectors)
+	print("Done adding chunks")
+	
+	var unmerged = other_chunks.duplicate()
+	other_chunks.merge(chunks)
+	if unmerged.hash() == other_chunks.hash():
+		print("Identical, it seems")
+	else:
+		print("Different outcomes!")
+		for key in unmerged.keys():
+			if not chunks.has(key):
+				print("Unmerged has ", key)
+	
+	voxel_redundancy_test(vectors)
+	voxel_redundancy_test(chunks.keys())
+	
+#	print("Test done")
+	
+	# Add all chunks to render queue
+#	render_queue.flood(chunks.values())
 	
 	# First Chunk (Where the Player Spawns)
 	var _chunk = force_render(spawn_chunk)
 	var under = spawn_chunk-spawn_vector
 	while under.x >= 0 and under.y >= 0 and under.z >= 0:
+		print("Spawn Section")
 		_chunk = force_render(under)
 		under = under-spawn_vector
 	var vector = Vector3()
@@ -71,6 +120,7 @@ func initialize_chunks():
 	
 	emit_signal("initialized")
 
+# Checks for redundant voxels; really quite slow as the scale of the world increases.
 func voxel_redundancy_test(vectors):
 	print("Voxel Redundancy Test")
 	var voxels:Dictionary = {}
@@ -85,7 +135,6 @@ func voxel_redundancy_test(vectors):
 	prints(props.from, props.to, "[", props.to-props.from+Vector3.ONE, "]")
 	prints(from, to, "[", to-from+Vector3.ONE, "]")
 	for c_pos in vectors:
-		var oc_pos
 #		prints("CPos:", c_pos)
 		var start = origin + (c_pos*c_size)
 		var end = origin + (c_pos*c_size) + dif
@@ -97,9 +146,9 @@ func voxel_redundancy_test(vectors):
 			pos = Vectors.count_to(pos, end, start)
 		Count.push(pos, 1, voxels)
 #		print("\tPos:", pos)
+	print("Counting done")
 	var keys = voxels.keys().duplicate()
 	var counts:Array = Count.pop_all(true, false, null, voxels)
-	var end_found := false
 	for i in range(counts.size()):
 		var key = keys[i]
 		var count = counts[i]
@@ -111,10 +160,13 @@ func voxel_redundancy_test(vectors):
 ### Rendering
 
 func enqueue_pos(pos:Vector3):
-	var chunk = chunks[pos]
-	chunk.priority = 1
-	chunk.render_collision = true
-	render_queue.enqueue(chunk)
+	var chunk = chunks.get(pos)
+	if chunk:
+		chunk.priority = 1
+		chunk.render_collision = true
+		render_queue.enqueue(chunk)
+	else:
+		printerr("Chunk at " + String(pos) + " does not exist")
 
 func render():
 	while true:
@@ -137,17 +189,18 @@ func force_render(pos:Vector3) -> Chunk:
 	render_queue.erase(chunks[pos])
 	return finish_render(render_chunk(chunks[pos]))
 
-func finish_render(chunk:Chunk) -> Chunk:  
-	if chunk.instance != chunk.new_instance:
-		if chunk.instance != null: 
-			chunk.instance.queue_free()
-		chunk.instance = chunk.new_instance
-		if chunk.instance != null:
-			assert(chunk.instance.mesh != null)
-#			assert(chunk.instance.mesh.get_surface_count())
-			add_child(chunk.instance) 
-	chunk.in_render = false
+func finish_render(chunk:Chunk) -> Chunk:
+	chunk.finish_render(self)
 	return chunk
+#	if chunk.instance != chunk.new_instance:
+#		if chunk.instance != null: 
+#			chunk.instance.queue_free()
+#		chunk.instance = chunk.new_instance
+#		if chunk.instance != null:
+#			assert(chunk.instance.mesh != null)
+##			assert(chunk.instance.mesh.get_surface_count())
+#			add_child(chunk.instance) 
+#	chunk.in_render = false
 
 func render_chunk(chunk:Chunk) -> Chunk:
 	var voxels:Dictionary = {}
