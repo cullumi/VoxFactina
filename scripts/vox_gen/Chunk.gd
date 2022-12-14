@@ -11,6 +11,8 @@ var priority:int = 0
 var in_render:bool = false
 var is_rendered:bool = false
 
+var props
+
 var children:Array = []
 var parent = null
 
@@ -18,24 +20,23 @@ var render_collision:bool = false
 var all_air:bool = true
 var has_air:bool = false
 
-func _init(pos_init:Vector3=Vector3(), offset_init:Vector3=Vector3(), size_init:Vector3=Vector3(), instance_init:MeshInstance=null, children_init:Array=[]):
+func _init(props_init, pos_init:Vector3=Vector3(), size_init:Vector3=Vector3(), instance_init:MeshInstance=null, children_init:Array=[]):
+	props = props_init
 	pos = pos_init
-	offset = offset_init
-	size_init
+	offset = props.offset(pos)
+	size = size_init
 	instance= instance_init
 	children = children_init
 
 func unrender(trickle_up:bool=false):
 	if trickle_up and parent: parent.render()
-	if is_rendered:
-		assert(instance)
+	if is_rendered and instance:
 		instance.visible = false
 	return is_rendered
 
 func render(trickle_up:bool=false):
 	if trickle_up and parent: parent.unrender()
-	if is_rendered:
-		assert(instance)
+	if is_rendered and instance:
 		instance.visible = true
 	return is_rendered
 
@@ -46,8 +47,11 @@ func finish_render(source:Node):
 		instance = new_instance
 		if instance != null:
 			assert(instance.mesh != null)
-#			assert(chunk.instance.mesh.get_surface_count())
-			source.add_child(instance) 
+			if instance.mesh.get_surface_count():
+				source.add_child(instance)
+			else:
+				Count.push("0_surface")
+#				source.add_child(instance)
 	render(true)
 	in_render = false
 	is_rendered = true
@@ -58,11 +62,14 @@ func subdivide():
 	children.resize(8)
 	for c in range(8):
 		c += 1
-		var out = int(not bool(c%2)) * Vector3.FORWARD
-		var up = int(not bool((c/2)%2)) * Vector3.UP
-		var right = int(not bool((c/4)%2)) * Vector3.RIGHT
-		var change = out + up + right
-		var chunk = get_script().new(pos+change, offset+(sub_size*change), sub_size)
+		var cf = float(c)
+		var out = int(not bool(c%2)) * Vector3.BACK
+		var up = int(not bool(int(cf/2)%2)) * Vector3.UP
+		var right = int(not bool(int(cf/4)%2)) * Vector3.RIGHT
+		var change = (out + up + right) * sub_size
+		var new_pos = pos+change
+		var new_off = props.offset(new_pos)
+		var chunk = get_script().new(props, new_pos, sub_size)
 		children[c-1] = chunk
 	return children
 	

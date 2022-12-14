@@ -60,22 +60,52 @@ func octree_depth():
 	while (width > 1):
 		depth += 1
 		width /= 2
-	return depth
+	return depth + 2
 
 func initialize_octree():
 	levels = octree_depth()
 	lods.clear()
-	for level in levels:
-		lods.append({})
+#	for level in levels:
+#		lods.append({})
 	var pos:Vector3 = Vector3()
-	var size:Vector3 = props.chunk_counts * props.chunk_size
-	lods[0][pos] = Chunk.new(pos, props.offset(pos), size)
-	for l in range(1, levels):
-		for key in lods[l-1].keys():
-			var chunk:Chunk = lods[l-1][key]
+	var size:Vector3 = props.chunk_counts# * props.chunk_size
+	print(size)
+	var level = 0
+	lods.append({})
+	var lod = lods[level]
+	lod[pos] = Chunk.new(props, pos, size)
+	
+	var lod_sizes = [1]
+	var avg = 0
+	var duplicates = 0
+	var collisions = [0]
+	while Vectors.any_greater(size, Vector3.ONE):
+		lods.append({})
+		level += 1
+		size /= 2
+		prints("Size:", size)
+		var plod = lods[level-1]
+		lod = lods[level]
+		var pavg = 0
+		for key in plod.keys():
+			var chunk:Chunk = plod[key]
 			chunk.subdivide()
+			pavg += chunk.children.size()
 			for child in chunk.children:
-				lods[l][child.pos] = child
+				if not lod.has(child.pos):
+					lod[child.pos] = child
+				else:
+					duplicates += 1
+		collisions.append(duplicates)
+		duplicates = 0
+		pavg /= plod.keys().size()
+		avg += pavg
+		lod_sizes.append(lod.keys().size())
+	print("Final size: ", size)
+	avg /= (lods.size()-1)
+	print("avg childs: ", avg)
+	prints("Lod Sizes:", lod_sizes)
+	print("collisions: ", collisions)
 
 func initialize_chunks():
 	# Add all chunks to Dictionary
@@ -85,28 +115,42 @@ func initialize_chunks():
 	print("Add chunks to Dictionary")
 	var vectors = Vectors.all(props.last_chunk, Vector3(), [Y,Z,X])
 	for pos in vectors:
-		chunks[pos] = Chunk.new(pos, props.offset(pos), props.chunk_size)
-	render_queue.flood(chunks.values())
+		chunks[pos] = Chunk.new(props, pos, props.chunk_size)
+#	render_queue.flood(chunks.values())
 	
 	print("Done adding chunks")
 	
-	var unmerged = other_chunks.duplicate()
-	other_chunks.merge(chunks)
-	if unmerged.hash() == other_chunks.hash():
-		print("Identical, it seems")
-	else:
-		print("Different outcomes!")
-		for key in unmerged.keys():
-			if not chunks.has(key):
-				print("Unmerged has ", key)
+#	var unmerged = other_chunks.duplicate()
+#	other_chunks.merge(chunks)
+#	if unmerged.hash() == other_chunks.hash():
+#		print("Identical, it seems")
+#	else:
+#		print("Different outcomes!")
+#		prints(unmerged.keys().size(), "in unmerged")
+#		print("Unmerged has")
+#		print(unmerged.keys())
+#		for key in unmerged.keys():
+#			if not chunks.has(key):
+#				print("\t", key)
+#		prints(chunks.keys().size(), "in chunks")
+#		print("Chunks has")
+#		for key in chunks.keys():
+#			if not unmerged.has(key):
+#				print("\t", key)
 	
-	voxel_redundancy_test(vectors)
-	voxel_redundancy_test(chunks.keys())
+#	print("OCTREE:")
+#	Vectors.show_3coords(other_chunks.keys(), props.chunk_counts)
+#	print("INCREMENTAL")
+#	Vectors.show_3coords(chunks.keys(), props.chunk_counts)
+	
+#	voxel_redundancy_test(vectors)
+#	voxel_redundancy_test(chunks.keys())
 	
 #	print("Test done")
 	
 	# Add all chunks to render queue
 #	render_queue.flood(chunks.values())
+	render_queue.flood(other_chunks.values())
 	
 	# First Chunk (Where the Player Spawns)
 	var _chunk = force_render(spawn_chunk)
@@ -192,15 +236,6 @@ func force_render(pos:Vector3) -> Chunk:
 func finish_render(chunk:Chunk) -> Chunk:
 	chunk.finish_render(self)
 	return chunk
-#	if chunk.instance != chunk.new_instance:
-#		if chunk.instance != null: 
-#			chunk.instance.queue_free()
-#		chunk.instance = chunk.new_instance
-#		if chunk.instance != null:
-#			assert(chunk.instance.mesh != null)
-##			assert(chunk.instance.mesh.get_surface_count())
-#			add_child(chunk.instance) 
-#	chunk.in_render = false
 
 func render_chunk(chunk:Chunk) -> Chunk:
 	var voxels:Dictionary = {}

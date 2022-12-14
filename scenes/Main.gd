@@ -23,7 +23,8 @@ func _unhandled_input(event):
 		get_tree().quit()
 
 func _exit_tree():
-	Count.pop_all()
+	print("Exiting tree")
+	Count.pop_all(true,true)
 
 ### Region Transfers
 

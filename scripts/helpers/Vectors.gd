@@ -62,3 +62,62 @@ static func clamp_to(cur:Vector3, minv:Vector3, maxv:Vector3):
 
 static func string(vector:Vector3):
 	return "(%.2f, %.2f, %.2f)" % [vector.x, vector.y, vector.z]
+
+# 3 coord matrix display
+
+const pairs = [
+		{"a":X, "b":Y},
+		{"a":Z, "b":Y},
+		{"a":X, "b":Z},
+	]
+static func show_3coords(vectors:Array, dims:Vector3):
+	print("3 Coords")
+	
+	# Top Header
+	var top = ""
+	for pair in pairs:
+		top += header_2coord(vectors, pair.a, dims)
+	print(top)
+	
+	# Top Line
+	var top_line = ""
+	for pair in pairs:
+		top_line += line_2coord(vectors, pair.a, dims)
+	print(top_line)
+	
+	# Rows
+	for bb in range(dims[Y]):
+		var line = ""
+		for pair in pairs:
+			line += row_2coord(vectors, pair.a, pair.b, bb, dims)
+		print(line)
+
+# vector search
+static func has_vector(vectors:Array, av:float, bv:float, a:int, b:int):
+	for vector in vectors:
+		if vector[a] == av and vector[b] == bv:
+			return true
+	return false
+
+# 2 coord line functions
+static func row_2coord(vectors:Array, a:int, b:int, bb:int, dims:Vector3):
+	var line = "\t " + String(bb) + " |"
+	for aa in range(dims[a]):
+		line += " "
+		if has_vector(vectors, aa, bb, a, b):
+			line += "*"
+		else:
+			line += " "
+	line += " "
+	return line
+
+static func header_2coord(vectors:Array, a:int, dims:Vector3):
+	var top = "\t   |"
+	for aa in range(dims[a]):
+		top += " " + String(aa)
+	top += " "
+	return top
+
+static func line_2coord(vectors:Array, a:int, dims:Vector3):
+	var line = "\t---+" + "--".repeat(dims[a]) + "-"
+	return line
