@@ -63,100 +63,44 @@ func octree_depth():
 	return depth + 2
 
 func initialize_octree():
-	levels = octree_depth()
-	lods.clear()
-#	for level in levels:
-#		lods.append({})
+	
+	# Initials
 	var pos:Vector3 = Vector3()
 	var size:Vector3 = props.chunk_counts# * props.chunk_size
-	print(size)
 	var level = 0
+	
+	# 1st LOD
+	lods.clear()
 	lods.append({})
 	var lod = lods[level]
 	lod[pos] = Chunk.new(props, pos, size)
 	
-	var lod_sizes = [1]
-	var avg = 0
-	var duplicates = 0
-	var collisions = [0]
+	# Child LODs
 	while Vectors.any_greater(size, Vector3.ONE):
 		lods.append({})
 		level += 1
 		size /= 2
-		prints("Size:", size)
 		var plod = lods[level-1]
 		lod = lods[level]
-		var pavg = 0
 		for key in plod.keys():
 			var chunk:Chunk = plod[key]
 			chunk.subdivide()
-			pavg += chunk.children.size()
 			for child in chunk.children:
-				if not lod.has(child.pos):
-					lod[child.pos] = child
-				else:
-					duplicates += 1
-		collisions.append(duplicates)
-		duplicates = 0
-		pavg /= plod.keys().size()
-		avg += pavg
-		lod_sizes.append(lod.keys().size())
-	print("Final size: ", size)
-	avg /= (lods.size()-1)
-	print("avg childs: ", avg)
-	prints("Lod Sizes:", lod_sizes)
-	print("collisions: ", collisions)
+				lod[child.pos] = child
 
 func initialize_chunks():
 	# Add all chunks to Dictionary
 	initialize_octree()
-	var other_chunks = lods.back()
-#	print(chunks)
-	print("Add chunks to Dictionary")
-	var vectors = Vectors.all(props.last_chunk, Vector3(), [Y,Z,X])
-	for pos in vectors:
-		chunks[pos] = Chunk.new(props, pos, props.chunk_size)
-#	render_queue.flood(chunks.values())
-	
-	print("Done adding chunks")
-	
-#	var unmerged = other_chunks.duplicate()
-#	other_chunks.merge(chunks)
-#	if unmerged.hash() == other_chunks.hash():
-#		print("Identical, it seems")
-#	else:
-#		print("Different outcomes!")
-#		prints(unmerged.keys().size(), "in unmerged")
-#		print("Unmerged has")
-#		print(unmerged.keys())
-#		for key in unmerged.keys():
-#			if not chunks.has(key):
-#				print("\t", key)
-#		prints(chunks.keys().size(), "in chunks")
-#		print("Chunks has")
-#		for key in chunks.keys():
-#			if not unmerged.has(key):
-#				print("\t", key)
-	
-#	print("OCTREE:")
-#	Vectors.show_3coords(other_chunks.keys(), props.chunk_counts)
-#	print("INCREMENTAL")
+	chunks = lods.back()
 #	Vectors.show_3coords(chunks.keys(), props.chunk_counts)
 	
-#	voxel_redundancy_test(vectors)
-#	voxel_redundancy_test(chunks.keys())
-	
-#	print("Test done")
-	
 	# Add all chunks to render queue
-#	render_queue.flood(chunks.values())
-	render_queue.flood(other_chunks.values())
+	render_queue.flood(chunks.values())
 	
 	# First Chunk (Where the Player Spawns)
 	var _chunk = force_render(spawn_chunk)
 	var under = spawn_chunk-spawn_vector
 	while under.x >= 0 and under.y >= 0 and under.z >= 0:
-		print("Spawn Section")
 		_chunk = force_render(under)
 		under = under-spawn_vector
 	var vector = Vector3()
@@ -168,8 +112,8 @@ func initialize_chunks():
 func voxel_redundancy_test(vectors):
 	print("Voxel Redundancy Test")
 	var voxels:Dictionary = {}
-	var from = props.from# + Vector3.ONE #- Vector3(0.5, 0.5, 0.5)
-	var to = props.to# - Vector3.ONE #- Vector3(0.5, 0.5, 0.5)
+	var from = props.from
+	var to = props.to
 	var dif = to - from
 	prints("dif:", dif)
 	var c_size = props.chunk_dims
@@ -179,17 +123,13 @@ func voxel_redundancy_test(vectors):
 	prints(props.from, props.to, "[", props.to-props.from+Vector3.ONE, "]")
 	prints(from, to, "[", to-from+Vector3.ONE, "]")
 	for c_pos in vectors:
-#		prints("CPos:", c_pos)
 		var start = origin + (c_pos*c_size)
 		var end = origin + (c_pos*c_size) + dif
-#		prints(start, "->", end)
 		var pos = start
 		while Vectors.lesser(pos, end):
-#			print("\tPos:", pos)
 			Count.push(pos, 1, voxels)
 			pos = Vectors.count_to(pos, end, start)
 		Count.push(pos, 1, voxels)
-#		print("\tPos:", pos)
 	print("Counting done")
 	var keys = voxels.keys().duplicate()
 	var counts:Array = Count.pop_all(true, false, null, voxels)
@@ -204,17 +144,19 @@ func voxel_redundancy_test(vectors):
 ### Rendering
 
 func enqueue_pos(pos:Vector3):
-	var chunk = chunks.get(pos)
+	var chunk:Chunk = chunks.get(pos)
 	if chunk:
-		chunk.priority = 1
-		chunk.render_collision = true
-		render_queue.enqueue(chunk)
+		if not chunk.is_rendered and not chunk.in_render:
+			chunk.priority = 1
+			chunk.render_collision = true
+			render_queue.enqueue(chunk)
 	else:
 		printerr("Chunk at " + String(pos) + " does not exist")
 
 func render():
 	while true:
 		while not render_queue.empty():
+			print("Not empty")
 			var chunk:Chunk = render_queue.dequeue()
 			if chunk and not chunk.in_render:
 				chunk.in_render = true

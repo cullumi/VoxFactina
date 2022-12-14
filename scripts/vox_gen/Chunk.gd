@@ -7,9 +7,13 @@ var offset:Vector3 = Vector3()
 var size:Vector3 = Vector3()
 var new_instance:MeshInstance = null
 var instance:MeshInstance = null
+
 var priority:int = 0
 var in_render:bool = false
 var is_rendered:bool = false
+var in_queue:bool = false
+var next
+var prev
 
 var props
 

@@ -69,7 +69,6 @@ func init_neighbors():
 	neighbors.append(cur)
 	while cur != end:
 		cur = Vectors.count_to(cur, end, start)
-		
 		neighbors.append(cur)
 
 var last_chunk_pos = null
@@ -87,7 +86,7 @@ func prioritize():
 #				print("Enqueued")
 #			if cur >= Vector3.ZERO and cur <= props.last_chunk:
 				vox_gen.enqueue_pos(cur)
-				yield(get_tree(), "idle_frame")
+#				yield(get_tree(), "idle_frame")
 
 
 ### Player Spawn
