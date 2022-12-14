@@ -156,7 +156,6 @@ func enqueue_pos(pos:Vector3):
 func render():
 	while true:
 		while not render_queue.empty():
-			print("Not empty")
 			var chunk:Chunk = render_queue.dequeue()
 			if chunk and not chunk.in_render:
 				chunk.in_render = true

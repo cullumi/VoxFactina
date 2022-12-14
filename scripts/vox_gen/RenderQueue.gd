@@ -17,7 +17,6 @@ func erase(chunk:Chunk):
 		chunk.prev.next = chunk.next
 
 func enqueue(chunk:Chunk):
-	print("Enqueue (", front," <- ", chunk, ")")
 	if chunk.in_queue: erase(chunk)
 	# Put chunk at front of queue
 	chunk.next = front
@@ -27,12 +26,8 @@ func enqueue(chunk:Chunk):
 	front = chunk
 	# Mark as in queue
 	chunk.in_queue = true
-#	var idx = queue.bsearch_custom(chunk, self, "higher_priority", true)
-#	queue.insert(idx, chunk)
 
 func flood(chunks:Array):
-#	queue.append_array(chunks)
-#	chunks = chunks.duplicate()
 	front = chunks.pop_back()
 	var cur = front
 	cur.in_queue = true
@@ -56,12 +51,9 @@ func dequeue() -> Chunk:
 	# Pop chunk off queue
 	var chunk = front
 	if chunk:
-		print("Chunk exists")
+		if chunk.next:
+			chunk.next.prev = null
 		front = chunk.next
-		front.prev = null
 		# Mark as in queue
 		chunk.in_queue = false
-	else:
-		print("No front")
 	return chunk
-#	var chunk = queue.pop_back()
