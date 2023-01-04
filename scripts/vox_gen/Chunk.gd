@@ -72,7 +72,6 @@ func subdivide():
 		var right = int(not bool(int(cf/4)%2)) * Vector3.RIGHT
 		var change = (out + up + right) * sub_size
 		var new_pos = pos+change
-		var new_off = props.offset(new_pos)
 		var chunk = get_script().new(props, new_pos, sub_size)
 		children[c-1] = chunk
 	return children

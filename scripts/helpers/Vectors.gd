@@ -111,13 +111,13 @@ static func row_2coord(vectors:Array, a:int, b:int, bb:int, dims:Vector3):
 	line += " "
 	return line
 
-static func header_2coord(vectors:Array, a:int, dims:Vector3):
+static func header_2coord(_vectors:Array, a:int, dims:Vector3):
 	var top = "\t   |"
 	for aa in range(dims[a]):
 		top += " " + String(aa)
 	top += " "
 	return top
 
-static func line_2coord(vectors:Array, a:int, dims:Vector3):
-	var line = "\t---+" + "--".repeat(dims[a]) + "-"
+static func line_2coord(_vectors:Array, a:int, dims:Vector3):
+	var line = "\t---+" + "--".repeat(int(dims[a])) + "-"
 	return line

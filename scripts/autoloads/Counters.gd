@@ -6,7 +6,7 @@ var counters = {}
 
 func makes(keys:Array, count:Dictionary=counters):
 	for key in keys:
-		make(key)
+		make(key, count)
 func make(key, count:Dictionary=counters):
 	count[key] = count.get(key, 0)
 

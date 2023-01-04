@@ -29,7 +29,7 @@ func create_mesh(voxels:Dictionary, props, s_tool:SurfaceTool=Surfacetool) -> Ar
 	var corner_tests:Dictionary = {} # For reusing corner tests between voxels
 #	print("Creating Mesh...")
 	for vox in voxels:
-		march(voxels[vox], vox, props, s_tool, corner_tests)
+		march(voxels[vox], props, s_tool, corner_tests)
 
 	# Finalise the mesh and return.
 	s_tool.index()
@@ -43,7 +43,7 @@ func create_mesh(voxels:Dictionary, props, s_tool:SurfaceTool=Surfacetool) -> Ar
 	return mesh 
 
 # Add voxel to mesh
-func march(voxel:Voxel, position:Vector3, props, s_tool:SurfaceTool, c_tests:Dictionary):
+func march(voxel:Voxel, props, s_tool:SurfaceTool, c_tests:Dictionary):
 	
 	var noise = props.noise
 	var vox_size = props.voxel_size
