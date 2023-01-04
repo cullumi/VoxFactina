@@ -60,6 +60,25 @@ func finish_render(source:Node):
 	in_render = false
 	is_rendered = true
 
+### Subdivision & Deformation
+
+func deform_to(depth:int) -> Array:
+	if depth > 0:
+		var result:Array = []
+		for child in children:
+			result.append_array(deform_to(depth-1))
+		return result
+	else:
+		return [self]
+
+func deform_at(origin:Vector3, depth:int=0, result:Dictionary={}) -> Dictionary:
+	if depth > 0:
+		for child in children:
+			deform_at(origin, depth+1, result)
+	else:
+		result[depth] = result.get(depth, []).append(self)
+	return result
+
 func subdivide():
 	var sub_size = size/2
 	children.clear()
