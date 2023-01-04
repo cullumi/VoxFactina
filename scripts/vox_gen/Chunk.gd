@@ -51,7 +51,7 @@ func finish_render(source:Node):
 		instance = new_instance
 		if instance != null:
 			assert(instance.mesh != null)
-			if instance.mesh.get_surface_count():
+			if instance.mesh.get_surface_count() > 0:
 				source.add_child(instance)
 			else:
 				Count.push("0_surface")

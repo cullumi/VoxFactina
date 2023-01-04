@@ -148,9 +148,10 @@ func march(voxel:Voxel, position:Vector3, props, s_tool:SurfaceTool, c_tests:Dic
 			i = (i+1) % 3
 			if i == 2:
 #				prints("Add Tri", vertices)
-				var prev = vertices[0] - vertices[1]
-				var cur = vertices[1] - vertices[2]
-				var normal = prev.cross(cur)
+				var prev:Vector3 = vertices[0] - vertices[1]
+				var cur:Vector3 = vertices[1] - vertices[2]
+				var normal:Vector3 = prev.cross(cur).normalized()
+				assert(normal.is_normalized())
 				s_tool.add_normal(normal)
 				for vertex in vertices:
 					s_tool.add_vertex(vertex)
