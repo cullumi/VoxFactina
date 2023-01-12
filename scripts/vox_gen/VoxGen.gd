@@ -66,20 +66,20 @@ func initialize_octree():
 	
 	# Initials
 	var pos:Vector3 = Vector3()
-	var size:Vector3 = props.chunk_counts# * props.chunk_size
+	var scale:Vector3 = props.chunk_counts# * props.chunk_size
 	var level = 0
 	
 	# 1st LOD
 	lods.clear()
 	lods.append({})
 	var lod = lods[level]
-	lod[pos] = Chunk.new(props, pos, size)
+	lod[pos] = Chunk.new(props, pos, scale)
 	
 	# Child LODs
-	while Vectors.any_greater(size, Vector3.ONE):
+	while Vectors.any_greater(scale, Vector3.ONE):
 		lods.append({})
 		level += 1
-		size /= 2
+		scale /= 2
 		var plod = lods[level-1]
 		lod = lods[level]
 		for key in plod.keys():
@@ -95,7 +95,33 @@ func initialize_chunks():
 #	Vectors.show_3coords(chunks.keys(), props.chunk_counts)
 	
 	# Add all chunks to render queue
-	render_queue.flood(chunks.values())
+	var root:Chunk = lods.front()[Vector3()]
+	
+	# Ranges
+	var ranges:Array = [(props.chunk_counts.x*props.chunk_dims.x)/2]
+	for lod in lods:
+		ranges.append(ranges.back() / 2)
+	prints(lods.size(), "vs", ranges.size())
+	
+	# Deform
+	var chunk_depths:Dictionary = root.deform_at(spawn_chunk, ranges)
+	var to_render:Array = []
+	for depth in range(lods.size()):
+		var chunks_at_depth:Array = chunk_depths.get(depth, [])
+		prints("depth", depth, "->", chunks_at_depth.size())
+		to_render.append_array(chunks_at_depth)
+	
+	# Comparisons
+	var sum:int = 0
+	for lod in lods:
+		sum += lod.values().size()
+	prints(to_render.size(), "vs", chunks.values().size())
+	prints(to_render.size(), "vs", sum)
+	
+	# Flood it
+	print("Flood it")
+	render_queue.flood(to_render)
+#	render_queue.flood(chunks.values())
 	
 	# First Chunk (Where the Player Spawns)
 	var _chunk = force_render(spawn_chunk)
@@ -180,7 +206,7 @@ func finish_render(chunk:Chunk) -> Chunk:
 
 func render_chunk(chunk:Chunk) -> Chunk:
 	var voxels:Dictionary = {}
-	add_voxels(chunk, props.from, props.to, voxels)
+	add_voxels(chunk, props.relative_voxel_positions, voxels)
 	if not voxels.empty():
 		var s_tool:SurfaceTool = SurfaceTool.new()
 		chunk.new_instance = MeshInstance.new()
@@ -188,7 +214,7 @@ func render_chunk(chunk:Chunk) -> Chunk:
 		chunk.new_instance.use_in_baked_light = true
 		chunk.new_instance.generate_lightmap = true
 		chunk.new_instance.cast_shadow =GeometryInstance.SHADOW_CASTING_SETTING_DOUBLE_SIDED
-		chunk.new_instance.mesh = MarchingCubes.create_mesh(voxels, props, s_tool)
+		chunk.new_instance.mesh = MarchingCubes.create_mesh(chunk.scale, voxels, props, s_tool)
 #		chunk.new_instance.mesh = VoxelFactory.create_mesh(voxels, s_tool)
 		chunk.render_collision = true
 		if chunk.render_collision and chunk.new_instance.mesh.get_surface_count():
@@ -204,20 +230,13 @@ func render_chunk(chunk:Chunk) -> Chunk:
 
 ### Voxel Generation
 
-func add_voxels(chunk:Chunk, start:Vector3, end:Vector3, voxels=null):
-	var count = 0
-	var pos = start
-	while Vectors.lesser(pos, end):
-		count += 1
-		add_voxel(chunk, pos, voxels)
-		pos = Vectors.count_to(pos, end, start)
-		if count % props.voxel_rate == 0:
-			yield(get_tree(), "idle_frame")
-	add_voxel(chunk, pos, voxels)
+func add_voxels(chunk:Chunk, vectors:Array=[], voxels=null):
+	for vector in vectors:
+		add_voxel(chunk, vector, voxels)
 
 func add_voxel(chunk:Chunk, base_pos:Vector3, voxels=null):
-	var pos = props.voxoff(chunk.pos, base_pos)
+	var scale_pos:Vector3 = base_pos * chunk.scale
+	var pos = props.voxoff(chunk.pos, scale_pos)
 	var color = props.type().get_voxel_color(pos)
 	if color.a != 0:
-		voxels[pos] = Voxel.new(base_pos, pos, color)#color
-#	VoxelFactory.add_voxel(base_pos, color, voxels)
+		voxels[pos] = Voxel.new(scale_pos, pos, color)

@@ -34,6 +34,7 @@ func test_vox(pos:Vector3, density:float=0) -> int:
 # Ranges
 var from:Vector3
 var to:Vector3
+var relative_voxel_positions:Array = []
 var vox_count:int
 
 # Dimensions
@@ -74,6 +75,7 @@ func set_dims(dims, should_signal:bool=true):
 	chunk_dims = dims
 	from = -chunk_dims/2
 	to = (chunk_dims/2)-Vector3.ONE
+	relative_voxel_positions = Vectors.collect_vectors(from, to)
 	vox_count = chunk_dims.x * chunk_dims.y * chunk_dims.z
 	update_world_dims(false)
 	chunk_size = chunk_dims * voxel_size

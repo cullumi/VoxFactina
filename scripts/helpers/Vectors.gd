@@ -54,6 +54,15 @@ static func count_to(cur:Vector3, toward:Vector3, base:Vector3=Vector3()):
 			cur.y = base.y
 	return cur
 
+static func collect_vectors(start, end) -> Array:
+	var vectors:Array = []
+	var cur = start
+	while cur != end:
+		vectors.append(cur)
+		cur = count_to(cur, end, start)
+	vectors.append(cur)
+	return vectors
+
 static func clamp_to(cur:Vector3, minv:Vector3, maxv:Vector3):
 	cur.x = clamp(cur.x, minv.x, maxv.x)
 	cur.y = clamp(cur.y, minv.y, maxv.y)

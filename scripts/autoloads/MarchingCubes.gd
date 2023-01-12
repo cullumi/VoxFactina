@@ -15,7 +15,7 @@ func _ready():
 	DefaultMaterial.flags_transparent = true
 
 # Starts the creation of the mesh
-func create_mesh(voxels:Dictionary, props, s_tool:SurfaceTool=Surfacetool) -> ArrayMesh:
+func create_mesh(scale:Vector3, voxels:Dictionary, props, s_tool:SurfaceTool=Surfacetool) -> ArrayMesh:
 	assert(s_tool)
 	
 	s_tool.begin(Mesh.PRIMITIVE_TRIANGLES)
@@ -29,7 +29,7 @@ func create_mesh(voxels:Dictionary, props, s_tool:SurfaceTool=Surfacetool) -> Ar
 	var corner_tests:Dictionary = {} # For reusing corner tests between voxels
 #	print("Creating Mesh...")
 	for vox in voxels:
-		march(voxels[vox], props, s_tool, corner_tests)
+		march(scale, voxels[vox], props, s_tool, corner_tests)
 
 	# Finalise the mesh and return.
 	s_tool.index()
@@ -43,35 +43,39 @@ func create_mesh(voxels:Dictionary, props, s_tool:SurfaceTool=Surfacetool) -> Ar
 	return mesh 
 
 # Add voxel to mesh
-func march(voxel:Voxel, props, s_tool:SurfaceTool, c_tests:Dictionary):
+func march(scale:Vector3, voxel:Voxel, props, s_tool:SurfaceTool, c_tests:Dictionary):
 	
+	var debug:bool = scale.x > 32
+	if debug: print(scale)
 	var noise = props.noise
+	var offset_scale = scale #Vector3.ONE #scale #props.offset(scale)
 	var vox_size = props.voxel_size
+	scale = scale #Vectors.clamp_to(scale/64, Vector3.ONE, Vector3.ONE*1000) #Vector3.ONE
 	assert(noise)
 	
 	# Get The Cube in World Coords
-	var offset = voxel.offset - Vector3.ONE*0.5
+	var offset = voxel.offset - offset_scale*0.5
 	var cube_corners:Array = [
 		(offset),
-		(offset + Vector3(1,0,0)),
-		(offset + Vector3(1,0,1)),
-		(offset + Vector3(0,0,1)),
-		(offset + Vector3(0,1,0)),
-		(offset + Vector3(1,1,0)),
-		(offset + Vector3(1,1,1)),
-		(offset + Vector3(0,1,1)),
+		(offset + (Vector3(1,0,0) * offset_scale)),
+		(offset + (Vector3(1,0,1) * offset_scale)),
+		(offset + (Vector3(0,0,1) * offset_scale)),
+		(offset + (Vector3(0,1,0) * offset_scale)),
+		(offset + (Vector3(1,1,0) * offset_scale)),
+		(offset + (Vector3(1,1,1) * offset_scale)),
+		(offset + (Vector3(0,1,1) * offset_scale)),
 	]
 	# Get the Cube in Chunk Coords
-	var pos = voxel.pos - Vector3.ONE*0.5
+	var pos = voxel.pos - scale*0.5
 	var base_corners:Array = [
 		(pos),
-		(pos + Vector3(1,0,0)),
-		(pos + Vector3(1,0,1)),
-		(pos + Vector3(0,0,1)),
-		(pos + Vector3(0,1,0)),
-		(pos + Vector3(1,1,0)),
-		(pos + Vector3(1,1,1)),
-		(pos + Vector3(0,1,1)),
+		(pos + Vector3(1,0,0) * scale),
+		(pos + Vector3(1,0,1) * scale),
+		(pos + Vector3(0,0,1) * scale),
+		(pos + Vector3(0,1,0) * scale),
+		(pos + Vector3(1,1,0) * scale),
+		(pos + Vector3(1,1,1) * scale),
+		(pos + Vector3(0,1,1) * scale),
 	]
 	
 	var base_densities:Array = [

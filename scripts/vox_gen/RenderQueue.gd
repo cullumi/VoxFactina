@@ -10,11 +10,18 @@ func empty():
 	return front == null
 
 func erase(chunk:Chunk):
-	assert(chunk.in_queue)
-	if chunk.next:
-		chunk.next.prev = chunk.prev
-	if chunk.prev:
-		chunk.prev.next = chunk.next
+	if chunk.in_queue:
+		if chunk.next:
+			chunk.next.prev = chunk.prev
+		if chunk.prev:
+			chunk.prev.next = chunk.next
+
+func count(chunk:Chunk=front):
+	var num:int = 0
+	while chunk != null:
+		num += 1
+		chunk = chunk.next
+	return num
 
 func enqueue(chunk:Chunk):
 	if chunk.in_queue: erase(chunk)
@@ -28,15 +35,18 @@ func enqueue(chunk:Chunk):
 	chunk.in_queue = true
 
 func flood(chunks:Array):
-	front = chunks.pop_back()
-	var cur = front
-	cur.in_queue = true
-	while not chunks.empty():
-		cur.next = chunks.pop_back()
-		cur.next.prev = cur
-		cur = cur.next
+	if not chunks.empty():
+		print("Flooding with ", chunks.size(), " chunks.")
+		front = chunks.pop_back()
+		var cur = front
 		cur.in_queue = true
-	back = cur
+		while not chunks.empty():
+			cur.next = chunks.pop_back()
+			cur.next.prev = cur
+			cur = cur.next
+			cur.in_queue = true
+		back = cur
+		print("Render Queue size of ", count(), ".")
 
 func higher_priority(a:Chunk, b:Chunk):
 	return a.priority < b.priority

@@ -2,9 +2,38 @@ extends Node
 
 
 func _ready():
-	count_vectors(Vector3(.25,.25,.25), Vector3(3.25,3.25,3.25))
+	var vectors:Array = yield(collect_vectors(Vector3(1, 1, 1), Vector3(5, 5, 5)), "completed")
+	print("Finished collect vectors")
+	for i in range(10):
+		yield(get_tree(), "idle_frame")
+	count_vectors(Vector3(1, 1, 1), Vector3(5, 5, 5))
+	print("Finished count vectors")
+	for i in range(10):
+		yield(get_tree(), "idle_frame")
+	loop_vectors(vectors)
+	print("Finished loop vectors")
 #	constant()
 #	make_new()
+
+func loop_vectors(vectors):
+	var base = Vector3()
+	for vector in vectors:
+		var adjusted = base + vector
+
+func collect_vectors(start, end) -> Array:
+	var vectors:Array = []
+	var pos = start
+	while pos != end:
+		pos = count_up(pos, start, end)
+		vectors.append(pos)
+		yield(get_tree(), "idle_frame")
+	return vectors
+
+func count_vectors(start, end):
+	var pos = start
+	while pos != end:
+		pos = count_up(pos, start, end)
+#		yield(get_tree(), "idle_frame")
 
 func count_up(cur:Vector3, base:Vector3, toward:Vector3):
 	cur.z += 1
@@ -15,13 +44,6 @@ func count_up(cur:Vector3, base:Vector3, toward:Vector3):
 			cur.x += 1
 			cur.y = base.y
 	return cur
-
-func count_vectors(start, end):
-	var pos = start
-	while pos != end:
-		print(pos)
-		pos = count_up(pos, start, end)
-		yield(get_tree(), "idle_frame")
 
 func constant():
 	for _i in range(2147483647):
