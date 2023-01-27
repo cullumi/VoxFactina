@@ -54,6 +54,11 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://addons/simple_fps_controller/Player.gd"
 }, {
+"base": "Object",
+"class": "Octree",
+"language": "GDScript",
+"path": "res://scripts/vox_gen/ChunkOctree.gd"
+}, {
 "base": "PlanetType",
 "class": "OrbWorld",
 "language": "GDScript",
@@ -119,6 +124,11 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://script_templates/fsm_state_template.gd"
 }, {
+"base": "Object",
+"class": "Tests",
+"language": "GDScript",
+"path": "res://scripts/vox_gen/VoxGenTests.gd"
+}, {
 "base": "Reference",
 "class": "TriTable",
 "language": "GDScript",
@@ -149,6 +159,7 @@ _global_script_class_icons={
 "Idle": "",
 "Jump": "",
 "NoFSMPlayer": "",
+"Octree": "",
 "OrbWorld": "",
 "Planet": "",
 "PlanetPreview": "",
@@ -162,6 +173,7 @@ _global_script_class_icons={
 "Run": "",
 "State": "",
 "TemplateState": "",
+"Tests": "",
 "TriTable": "",
 "Vectors": "",
 "VoxGen": "",

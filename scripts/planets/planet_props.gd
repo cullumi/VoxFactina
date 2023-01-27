@@ -16,6 +16,9 @@ export (Curve) var iso_curve:Curve
 export (float, EXP, 1000, 1000000, 1000) var voxel_rate:int = 10000
 export (SpatialMaterial) var voxel_material
 export (OpenSimplexNoise) var noise
+export (bool) var DEBUG
+export (SpatialMaterial) var debug_material
+export (SpatialMaterial) var cookie_material
 
 # Types
 var types = {TYPE.ORB:OrbWorld, TYPE.CUBE:CubeWorld}
@@ -30,6 +33,10 @@ func get_density(pos:Vector3) -> float:
 
 func test_vox(pos:Vector3, density:float=0) -> int:
 	return type().test_vox(pos, density)
+
+# LODs
+var lod_ranges:Array
+var lod_count:int
 
 # Ranges
 var from:Vector3
@@ -51,12 +58,20 @@ var center_pos:Vector3
 
 # Offsets
 var vox_piv:Vector3
-func offset(pos:Vector3): # Chunk Position to World Position
-	return ((pos - center_pos) * chunk_size) - vox_piv
-func unoffset(off:Vector3): # World Position to Chunk Position
-	return ((off + vox_piv) / chunk_size) + center_pos
-func voxoff(c_pos, v_pos): # Voxel Chunk Position to Voxel World Position
-	return ((c_pos-center_pos) * chunk_dims) + v_pos
+func centered(pos:Vector3):
+	return pos - center_pos
+func half_chunk() -> Vector3: return chunk_size/2
+func lod_adj(depth) -> Vector3:
+	return Vector3.ONE * (0.5 if depth%2==0 else 0.0)
+func lod_inv(depth) -> Vector3:
+	return Vector3.ONE * (0.5 if depth%2==1 else 0.0)
+
+func offset(pos:Vector3, lod_depth:int=0) -> Vector3: # Chunk Position to World Position
+	return (centered(pos) - lod_adj(lod_depth)) * chunk_size
+func unoffset(off:Vector3) -> Vector3: # World Position to Chunk Position
+	return ((off + half_chunk()) / chunk_size) + center_pos
+func voxlocal(c_pos:Vector3, v_pos:Vector3, lod:int=0) -> Vector3: # Voxel Chunk Position to Voxel World Position
+	return (centered(c_pos) + lod_inv(lod)) * chunk_dims + v_pos
 
 # Surface Level Rects
 var front_radii:Vector2
@@ -83,6 +98,7 @@ func set_dims(dims, should_signal:bool=true):
 
 func set_counts(counts, should_signal:bool=true):
 	chunk_counts = counts
+	update_lod_ranges(false)
 	update_world_dims(false)
 	last_chunk = chunk_counts-Vector3(1,1,1)
 	center_chunk = last_chunk/2
@@ -104,6 +120,13 @@ func set_vox_size(size, should_signal:bool=true):
 	chunk_size = chunk_dims * voxel_size
 	vox_piv = Vector3.ONE * (voxel_size/2)
 	vox_per_chunk = chunk_size / voxel_size
+	signal_update(should_signal)
+
+func update_lod_ranges(should_signal:bool=true):
+	lod_ranges = [(chunk_counts.x * chunk_dims.x) / 2]
+	lod_count = int(log(chunk_counts.x)/log(2))
+	for _l in range(lod_count):
+		lod_ranges.append(lod_ranges.back() / 2)
 	signal_update(should_signal)
 
 func update_world_dims(should_signal:bool=true):

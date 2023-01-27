@@ -1,7 +1,9 @@
-[gd_resource type="Resource" load_steps=5 format=2]
+[gd_resource type="Resource" load_steps=7 format=2]
 
 [ext_resource path="res://scripts/planets/planet_props.gd" type="Script" id=1]
 [ext_resource path="res://resources/voxel_mat.tres" type="Material" id=2]
+[ext_resource path="res://resources/debug_mat.tres" type="Material" id=3]
+[ext_resource path="res://resources/cookie_mat.tres" type="Material" id=4]
 
 [sub_resource type="Curve" id=2]
 _data = [ Vector2( 0, 0 ), 0.0, 1.0, 0, 1, Vector2( 1, 1 ), 1.0, 0.0, 1, 0 ]
@@ -15,12 +17,15 @@ lacunarity = 0.15
 script = ExtResource( 1 )
 planet_type = 0
 chunk_dims = Vector3( 8, 8, 8 )
-chunk_counts = Vector3( 64, 64, 64 )
+chunk_counts = Vector3( 16, 16, 16 )
 surface_level = 0.75
 bedrock_level = 0.75
 voxel_size = 0.25
 iso_level = 0.0
 iso_curve = SubResource( 2 )
-voxel_rate = 1000000
+voxel_rate = 10000
 voxel_material = ExtResource( 2 )
 noise = SubResource( 1 )
+DEBUG = false
+debug_material = ExtResource( 3 )
+cookie_material = ExtResource( 4 )

@@ -110,9 +110,12 @@ static func has_vector(vectors:Array, av:float, bv:float, a:int, b:int):
 
 # 2 coord line functions
 static func row_2coord(vectors:Array, a:int, b:int, bb:int, dims:Vector3):
-	var line = "\t " + String(bb) + " |"
+	var digit_max = ceil(dims[a]/10)
+	var line_digit = digit_max - ceil(bb/10.0)
+	var line = "  " + " ".repeat(line_digit) + String(bb) + " |"
 	for aa in range(dims[a]):
-		line += " "
+		var digit = ceil(aa/10.0)
+		line += " " + " ".repeat(digit)
 		if has_vector(vectors, aa, bb, a, b):
 			line += "*"
 		else:
@@ -121,12 +124,19 @@ static func row_2coord(vectors:Array, a:int, b:int, bb:int, dims:Vector3):
 	return line
 
 static func header_2coord(_vectors:Array, a:int, dims:Vector3):
-	var top = "\t   |"
+	var space = " ".repeat(int(floor(dims[a]/10)))
+	var top = space + "     |"
 	for aa in range(dims[a]):
 		top += " " + String(aa)
 	top += " "
 	return top
 
 static func line_2coord(_vectors:Array, a:int, dims:Vector3):
-	var line = "\t---+" + "--".repeat(int(dims[a])) + "-"
+	var digits:int = int(ceil(dims[a]/10))
+	var left = "-".repeat(digits)
+	var right = "--".repeat(int(dims[a]))
+	for digit in range(1, digits):
+		var count:int = int(dims[a]) % int(pow(10, digit))
+		right += "-".repeat(digit).repeat(count)
+	var line = "  -" + left + "-+" + right + "-"
 	return line

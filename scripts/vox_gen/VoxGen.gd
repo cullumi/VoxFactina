@@ -2,7 +2,9 @@ extends Spatial
 
 class_name VoxGen
 
-# Properties
+### Properties
+
+# Planet Properties
 export (Resource) var props
 
 # Spawn Orientation
@@ -32,13 +34,14 @@ func calc_spawn_chunk():
 	return pos
 onready var spawn_chunk:Vector3 = calc_spawn_chunk()
 
-
+# Octree & Render Queue
 signal initialized()
 var chunks:Dictionary = {}
 var render_queue:RenderQueue = RenderQueue.new()
-
 var levels:int = 1
 var lods:Array = []
+var lod_nodes:Array = []
+var trail_parent:Node
 
 
 ### Initialization
@@ -50,134 +53,77 @@ func _ready():
 	VoxelFactory.DefaultMaterial = props.voxel_material
 
 func start():
-	print("Begin")
-	initialize_chunks()
+	initialize()
 	render()
 
-func octree_depth():
-	var width:int = props.chunk_counts.x
-	var depth = 1
-	while (width > 1):
-		depth += 1
-		width /= 2
-	return depth + 2
-
-func initialize_octree():
-	
-	# Initials
-	var pos:Vector3 = Vector3()
-	var scale:Vector3 = props.chunk_counts# * props.chunk_size
-	var level = 0
-	
-	# 1st LOD
-	lods.clear()
-	lods.append({})
-	var lod = lods[level]
-	lod[pos] = Chunk.new(props, pos, scale)
-	
-	# Child LODs
-	while Vectors.any_greater(scale, Vector3.ONE):
-		lods.append({})
-		level += 1
-		scale /= 2
-		var plod = lods[level-1]
-		lod = lods[level]
-		for key in plod.keys():
-			var chunk:Chunk = plod[key]
-			chunk.subdivide()
-			for child in chunk.children:
-				lod[child.pos] = child
-
-func initialize_chunks():
-	# Add all chunks to Dictionary
-	initialize_octree()
+func initialize():
+	# Initialize Chunk Octree
+	lods = Octree.create(props)
 	chunks = lods.back()
-#	Vectors.show_3coords(chunks.keys(), props.chunk_counts)
-	
-	# Add all chunks to render queue
+	add_lod_parents()
+	Tests.np_chunks_check(chunks, props)
 	var root:Chunk = lods.front()[Vector3()]
 	
-	# Ranges
-	var ranges:Array = [(props.chunk_counts.x*props.chunk_dims.x)/2]
-	for lod in lods:
-		ranges.append(ranges.back() / 2)
-	prints(lods.size(), "vs", ranges.size())
-	
-	# Deform
-	var chunk_depths:Dictionary = root.deform_at(spawn_chunk, ranges)
-	var to_render:Array = []
-	for depth in range(lods.size()):
-		var chunks_at_depth:Array = chunk_depths.get(depth, [])
-		prints("depth", depth, "->", chunks_at_depth.size())
-		to_render.append_array(chunks_at_depth)
-	
-	# Comparisons
-	var sum:int = 0
-	for lod in lods:
-		sum += lod.values().size()
-	prints(to_render.size(), "vs", chunks.values().size())
-	prints(to_render.size(), "vs", sum)
-	
-	# Flood it
-	print("Flood it")
+	# Render
+	var to_render:Array = deform_lods(root)
 	render_queue.flood(to_render)
-#	render_queue.flood(chunks.values())
-	
-	# First Chunk (Where the Player Spawns)
-	var _chunk = force_render(spawn_chunk)
-	var under = spawn_chunk-spawn_vector
-	while under.x >= 0 and under.y >= 0 and under.z >= 0:
-		_chunk = force_render(under)
-		under = under-spawn_vector
-	var vector = Vector3()
-	vector[spawn_axis] = spawn_dir
+	prints("Rendered:", Tests.render_check(root))
+	initialize_spawn_chunks()
 	
 	emit_signal("initialized")
 
-# Checks for redundant voxels; really quite slow as the scale of the world increases.
-func voxel_redundancy_test(vectors):
-	print("Voxel Redundancy Test")
-	var voxels:Dictionary = {}
-	var from = props.from
-	var to = props.to
-	var dif = to - from
-	prints("dif:", dif)
-	var c_size = props.chunk_dims
-	prints("Chunk Count:", props.chunk_counts)
-	var origin = -(props.chunk_counts*c_size)/2
-	print("Origin:\t", origin, "\nSize:\t", c_size)
-	prints(props.from, props.to, "[", props.to-props.from+Vector3.ONE, "]")
-	prints(from, to, "[", to-from+Vector3.ONE, "]")
-	for c_pos in vectors:
-		var start = origin + (c_pos*c_size)
-		var end = origin + (c_pos*c_size) + dif
-		var pos = start
-		while Vectors.lesser(pos, end):
-			Count.push(pos, 1, voxels)
-			pos = Vectors.count_to(pos, end, start)
-		Count.push(pos, 1, voxels)
-	print("Counting done")
-	var keys = voxels.keys().duplicate()
-	var counts:Array = Count.pop_all(true, false, null, voxels)
-	for i in range(counts.size()):
-		var key = keys[i]
-		var count = counts[i]
-		if count > 1:
-			Count.push(count, 1, voxels)
-			prints("Redundant Voxel:", count, "\tof\t", key, "\tfound.")
-	Count.pop_all(true, true, null, voxels)
+func add_lod_parents():
+	trail_parent = Node.new()
+	trail_parent.name = "Trail"
+	add_child(trail_parent)
+	for l in range(lods.size()):
+		lod_nodes.append(Node.new())
+		lod_nodes[l].name = "Lod " + String(l)
+		add_child(lod_nodes[l])
 
-### Rendering
+func deform_lods(root:Chunk) -> Array:
+	var chunk_depths:Dictionary = root.deform_at(spawn_chunk)
+	var to_render:Array = []
+	Tests.print_chunk_depths(chunk_depths)
+	for depth in range(lods.size()):
+		var chunks_at_depth:Array = chunk_depths.get(depth, [])
+		to_render.append_array(chunks_at_depth)
+	Tests.octree_count(to_render, lods, chunks)
+	return to_render
+
+var spawn_axes:Dictionary = {
+	AXES.X:[Vector3(), Vector3.UP, Vector3.BACK, Vector3(0,1,1)],
+	AXES.Y:[Vector3(), Vector3.RIGHT, Vector3.BACK, Vector3(1,0,1)],
+	AXES.Z:[Vector3(), Vector3.RIGHT, Vector3.UP, Vector3(1,1,0)],
+}
+func initialize_spawn_chunks():
+	for corner in spawn_axes[spawn_axis]:
+		var spawn_pos = spawn_chunk + corner
+		var _chunk = force_render(spawn_pos)
+		var under = spawn_pos-spawn_vector
+		while under.x >= 0 and under.y >= 0 and under.z >= 0:
+			_chunk = force_render(under)
+			under = under-spawn_vector
+
+### Render Triggers
+
+func force_render(pos:Vector3) -> Chunk:
+	render_queue.erase(chunks[pos])
+	return finish_render(render_chunk(chunks[pos]))
 
 func enqueue_pos(pos:Vector3):
 	var chunk:Chunk = chunks.get(pos)
 	if chunk:
 		if not chunk.is_rendered and not chunk.in_render:
+			chunk.deform_on_finish = true
 			chunk.priority = 1
 			chunk.render_collision = true
 			render_queue.enqueue(chunk)
 	else:
 		printerr("Chunk at " + String(pos) + " does not exist")
+
+
+### Render Queue Managment
 
 func render():
 	while true:
@@ -196,13 +142,17 @@ func render():
 						yield(ThreadPool, "idling")
 		yield(get_tree(), "idle_frame")
 
-func force_render(pos:Vector3) -> Chunk:
-	render_queue.erase(chunks[pos])
-	return finish_render(render_chunk(chunks[pos]))
-
 func finish_render(chunk:Chunk) -> Chunk:
-	chunk.finish_render(self)
+	var deformed:Array = chunk.finish_render(lod_nodes[chunk.depth])
+	if chunk.instance != null and chunk.instance.get_surface_material_count() > 0:
+		Tests.leave_trail(trail_parent, chunk, props)
+	if chunk.deform_on_finish:
+		for child in deformed:
+			render_queue.enqueue(child)
 	return chunk
+
+
+### Chunk Rendering
 
 func render_chunk(chunk:Chunk) -> Chunk:
 	var voxels:Dictionary = {}
@@ -236,7 +186,7 @@ func add_voxels(chunk:Chunk, vectors:Array=[], voxels=null):
 
 func add_voxel(chunk:Chunk, base_pos:Vector3, voxels=null):
 	var scale_pos:Vector3 = base_pos * chunk.scale
-	var pos = props.voxoff(chunk.pos, scale_pos)
-	var color = props.type().get_voxel_color(pos)
+	var vox_pos = props.voxlocal(chunk.pos, scale_pos, chunk.depth)
+	var color = props.type().get_voxel_color(vox_pos)
 	if color.a != 0:
-		voxels[pos] = Voxel.new(scale_pos, pos, color)
+		voxels[vox_pos] = Voxel.new(scale_pos, vox_pos, color)

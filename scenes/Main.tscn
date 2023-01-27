@@ -1,4 +1,4 @@
-[gd_scene load_steps=17 format=2]
+[gd_scene load_steps=18 format=2]
 
 [ext_resource path="res://scenes/Main.gd" type="Script" id=1]
 [ext_resource path="res://scenes/PlayerPivot.tscn" type="PackedScene" id=2]
@@ -9,9 +9,9 @@
 [ext_resource path="res://scenes/PlanetPreview.gd" type="Script" id=7]
 [ext_resource path="res://scenes/Planet.tscn" type="PackedScene" id=10]
 
-[sub_resource type="SphereMesh" id=9]
-radius = 64.0
-height = 128.0
+[sub_resource type="SphereMesh" id=11]
+radius = 16.0
+height = 32.0
 
 [sub_resource type="SpatialMaterial" id=8]
 flags_transparent = true
@@ -22,6 +22,10 @@ _data = {
 "points": PoolVector3Array( 0, 0, 0, 0, 0, 0, 0, 6.71461, -10.0104, 0, 0, 0, 0, 0, 0, -0.837156, 11.1506, -5.20223, 0, 0, 0, 0, 0, 0, 0, 14.0743, 0.777191, 0, 0, 0, 0, 0, 0, 10.4759, 8.90592, 0.351833, 0, 0, 0, 0, 0, 0, 0, 9.73916, 8.33855, 0, 0, 0, 0, 0, 0, -13.5203, 5.49336, 11.5091, 0, 0, 0, 0, 0, 0, 14.7206, -2.04486, 12.0872, 0, 0, 0, 0, 0, 0, 0, -4.9803, 8.43937, 0, 0, 0, 0, 0, 0, 0, -9.81957, 4.40665, 0, 0, 0, 0, 0, 0, 1.7268, -13.3482, -2.1796, 0, 0, 0, 0, 0, 0, -7.75539, -4.06555, 0.0472507, 0, 0, 0, 0, 0, 0, 0, -4.27457, -9.90954, 0, 0, 0, 0, 0, 0, 11.8077, -2.77376, -10.5859, 0, 0, 0, 0, 0, 0, 0, 6.71461, -10.0104 ),
 "tilts": PoolRealArray( 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 )
 }
+
+[sub_resource type="SpatialMaterial" id=10]
+flags_transparent = true
+albedo_color = Color( 1, 1, 1, 0.4 )
 
 [sub_resource type="CubeMesh" id=1]
 size = Vector3( 2, 1, 3 )
@@ -49,7 +53,7 @@ use_spawn = true
 props = ExtResource( 3 )
 
 [node name="PlanetPreview" type="MeshInstance" parent="Sun/Planet"]
-mesh = SubResource( 9 )
+mesh = SubResource( 11 )
 material/0 = SubResource( 8 )
 script = ExtResource( 7 )
 
@@ -69,6 +73,7 @@ rotation_mode = 0
 script = ExtResource( 5 )
 
 [node name="MeshInstance" type="MeshInstance" parent="Path/PathFollow"]
+material_override = SubResource( 10 )
 mesh = SubResource( 1 )
 skeleton = NodePath("../../..")
 script = ExtResource( 4 )

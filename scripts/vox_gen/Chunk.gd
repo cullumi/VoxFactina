@@ -20,33 +20,39 @@ var props
 var children:Array = []
 var parent:Chunk = null
 var depth:int = 0
+var deform_on_finish:bool = false
 
 var render_collision:bool = false
 var all_air:bool = true
 var has_air:bool = false
 
+# Debugging
+var debug_mask:Node
+var debug_origin:Node
+
 func _init(_props, _pos:Vector3=Vector3(), _scale:Vector3=Vector3(), _depth:int=0, _instance:MeshInstance=null, _children:Array=[]):
 	props = _props
 	pos = _pos
-	offset = props.offset(pos)
 	scale = _scale
 	depth = _depth
-	instance= _instance
+	offset = props.offset(pos, depth)
+	instance = _instance
 	children = _children
+	init_debug_mask()
 
-func unrender(trickle_up:bool=false):
-	if trickle_up and parent: parent.render(true)
+func init_debug_mask():
+	debug_mask = MeshInstance.new()
+	debug_mask.scale = scale
+	debug_mask.mesh = CubeMesh.new()
+	debug_mask.material_override = props.debug_material
+	debug_mask.mesh.size = props.chunk_size
+
+func unrender():
 	if is_rendered and instance:
 		instance.visible = false
 	return is_rendered
 
-func render(trickle_up:bool=false):
-	if trickle_up and parent: parent.unrender(true)
-	if is_rendered and instance:
-		instance.visible = true
-	return is_rendered
-
-func finish_render(source:Node):
+func finish_render(source:Node) -> Array:
 	if instance != new_instance:
 		if instance != null: 
 			instance.queue_free()
@@ -55,28 +61,40 @@ func finish_render(source:Node):
 			assert(instance.mesh != null)
 			if instance.mesh.get_surface_count() > 0:
 				source.add_child(instance)
+				instance.visible = true
+				if props.DEBUG:
+					instance.add_child(debug_mask)
 			else:
 				Count.push("0_surface")
-#				source.add_child(instance)
-	render(true)
 	in_render = false
 	is_rendered = true
+	return [] if not parent else parent.deform()
 
 ### Subdivision & Deformation
 
-func deform_to(depth:int) -> Array:
-	if depth > 0:
-		var result:Array = []
-		for child in children:
-			result.append_array(deform_to(depth-1))
-		return result
-	else:
-		return [self]
+func children_rendered():
+	for child in children:
+		if not child.is_rendered:
+			return false
+	return true
 
-func deform_at(origin:Vector3, ranges:Array, result:Dictionary={}) -> Dictionary:
+func deform() -> Array:
+	assert(not children.empty())
+	if children_rendered():
+		var _res = unrender()
+		return []
+	else:
+		var _result:Array = []
+		for child in children:
+			if not (child.is_rendered or child.in_queue or child.in_render):
+				_result.append(child)
+		return _result
+
+func deform_at(origin:Vector3, result:Dictionary={}) -> Dictionary:
+	var ranges = props.lod_ranges
 	if not children.empty() and close_enough(origin, ranges[depth]):
 		for child in children:
-			var _result = child.deform_at(origin, ranges, result)
+			var _result = child.deform_at(origin, result)
 	else:
 		result[depth] = result.get(depth, [])
 		result[depth].append(self)
@@ -84,9 +102,7 @@ func deform_at(origin:Vector3, ranges:Array, result:Dictionary={}) -> Dictionary
 
 func close_enough(origin:Vector3, distance:float):
 	var aabb:AABB = AABB(pos, scale)
-#	prints(origin.distance_to(pos), "<", ranges[depth])
 	var intersect_point:Vector3 = origin.move_toward(pos, distance)
-#	prints(origin, "->", pos, "=", intersect_point, "(" + String(aabb) + ")")
 	return aabb.intersects_segment(origin, intersect_point)
 
 func subdivide():
@@ -102,6 +118,7 @@ func subdivide():
 		var change = (out + up + right) * sub_scale
 		var new_pos = pos+change
 		var chunk = get_script().new(props, new_pos, sub_scale, depth+1)
+		chunk.parent = self
 		children[c-1] = chunk
 	return children
 	
