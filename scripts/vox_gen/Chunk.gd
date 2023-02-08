@@ -20,21 +20,24 @@ var props
 var children:Array = []
 var parent:Chunk = null
 var depth:int = 0
+var tree_height:int = 0
 var deform_on_finish:bool = false
 
 var render_collision:bool = false
 var all_air:bool = true
 var has_air:bool = false
+var deformed:bool = false
 
 # Debugging
 var debug_mask:Node
 var debug_origin:Node
 
-func _init(_props, _pos:Vector3=Vector3(), _scale:Vector3=Vector3(), _depth:int=0, _instance:MeshInstance=null, _children:Array=[]):
+func _init(_props, _pos:Vector3=Vector3(), _scale:Vector3=Vector3(), _depth:int=0, _tree=null, _instance:MeshInstance=null, _children:Array=[]):
 	props = _props
 	pos = _pos
 	scale = _scale
 	depth = _depth
+	tree_height = props.lod_count
 	offset = props.offset(pos, depth)
 	instance = _instance
 	children = _children
@@ -46,6 +49,9 @@ func init_debug_mask():
 	debug_mask.mesh = CubeMesh.new()
 	debug_mask.material_override = props.debug_material
 	debug_mask.mesh.size = props.chunk_size
+
+func height():
+	return tree_height - depth - 1
 
 func unrender():
 	if is_rendered and instance:
@@ -79,7 +85,9 @@ func children_rendered():
 	return true
 
 func deform() -> Array:
-	assert(not children.empty())
+	if children.empty():
+		print("Something wasn't subdivided")
+		subdivide()
 	if children_rendered():
 		var _res = unrender()
 		return []
@@ -91,13 +99,25 @@ func deform() -> Array:
 		return _result
 
 func deform_at(origin:Vector3, result:Dictionary={}) -> Dictionary:
-	var ranges = props.lod_ranges
-	if not children.empty() and close_enough(origin, ranges[depth]):
+	assert(depth < props.lod_ranges.size())
+	var distance = props.lod_ranges[depth]
+	var def_check:bool = not deformed
+	var depth_check:bool = depth < tree_height-1
+	var dist_check:bool = close_enough(origin, distance)
+	if def_check and depth_check and dist_check:
+		if children.empty():
+			subdivide()
+		deformed = true
 		for child in children:
-			var _result = child.deform_at(origin, result)
+			if not child.deformed:
+				var _result = child.deform_at(origin, result)
+				if not child.deformed:
+					deformed = false
 	else:
 		result[depth] = result.get(depth, [])
 		result[depth].append(self)
+		if depth >= tree_height:
+			deformed = true
 	return result
 
 func close_enough(origin:Vector3, distance:float):

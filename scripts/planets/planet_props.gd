@@ -98,6 +98,7 @@ func set_dims(dims, should_signal:bool=true):
 
 func set_counts(counts, should_signal:bool=true):
 	chunk_counts = counts
+	prints("set counts:", chunk_counts)
 	update_lod_ranges(false)
 	update_world_dims(false)
 	last_chunk = chunk_counts-Vector3(1,1,1)
@@ -123,10 +124,12 @@ func set_vox_size(size, should_signal:bool=true):
 	signal_update(should_signal)
 
 func update_lod_ranges(should_signal:bool=true):
+	prints("lod ranges:", chunk_counts.x, chunk_dims.x)
 	lod_ranges = [(chunk_counts.x * chunk_dims.x) / 2]
 	lod_count = int(log(chunk_counts.x)/log(2))
 	for _l in range(lod_count):
 		lod_ranges.append(lod_ranges.back() / 2)
+	prints("Lod Ranges:", lod_ranges)
 	signal_update(should_signal)
 
 func update_world_dims(should_signal:bool=true):

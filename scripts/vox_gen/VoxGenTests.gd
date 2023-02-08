@@ -27,7 +27,7 @@ static func np_chunks_check(chunks, props):
 		Vectors.show_3coords(np_chunks.keys(), props.chunk_counts)
 
 # Print counts from a dictionary of chunk depths.
-static func print_chunk_depths(chunk_depths:Dictionary):
+static func print_chunk_depths(chunk_depths:Dictionary, condensed:bool=false):
 	print("Count:")
 	for key in chunk_depths.keys():
 		prints("\tdepth:", key, "->", chunk_depths[key].size())

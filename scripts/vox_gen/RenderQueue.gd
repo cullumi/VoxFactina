@@ -18,8 +18,11 @@ func erase(chunk:Chunk):
 
 func count(chunk:Chunk=front):
 	var num:int = 0
+	var verified:Dictionary
 	while chunk != null:
 		num += 1
+		assert(not verified.get(chunk), "duplicate chunk in queue")
+		verified[chunk] = true
 		chunk = chunk.next
 	return num
 
@@ -34,17 +37,28 @@ func enqueue(chunk:Chunk):
 	# Mark as in queue
 	chunk.in_queue = true
 
-func flood(chunks:Array):
+func flood(chunks:Array, overwrite:bool=false):
 	if not chunks.empty():
 		print("Flooding with ", chunks.size(), " chunks.")
-		front = chunks.pop_back()
-		var cur = front
-		cur.in_queue = true
+		var cur
+		if overwrite or front == null:
+			var next:Chunk
+			while next == null or next.in_queue:
+				next = chunks.pop_back()
+			front = next
+			front.in_queue = true
+			cur = front
+		else:
+			cur = back
 		while not chunks.empty():
-			cur.next = chunks.pop_back()
-			cur.next.prev = cur
-			cur = cur.next
-			cur.in_queue = true
+			var next:Chunk = chunks.pop_back()
+			if not next.in_queue:
+				assert(cur.next == null, "cur != null")
+				cur.next = next
+				cur.next.prev = cur
+				cur = cur.next
+				cur.in_queue = true
+			
 		back = cur
 		print("Render Queue size of ", count(), ".")
 
@@ -65,5 +79,7 @@ func dequeue() -> Chunk:
 			chunk.next.prev = null
 		front = chunk.next
 		# Mark as in queue
+		chunk.prev = null
+		chunk.next = null
 		chunk.in_queue = false
 	return chunk

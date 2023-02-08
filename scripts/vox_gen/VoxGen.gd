@@ -39,6 +39,7 @@ signal initialized()
 var chunks:Dictionary = {}
 var render_queue:RenderQueue = RenderQueue.new()
 var levels:int = 1
+var octree:Octree = Octree.new()
 var lods:Array = []
 var lod_nodes:Array = []
 var trail_parent:Node
@@ -58,38 +59,52 @@ func start():
 
 func initialize():
 	# Initialize Chunk Octree
-	lods = Octree.create(props)
-	chunks = lods.back()
+	print("\t\t\t\t\t\t\t\tINITIALIZE OCTREE")
+	var spawn_pos = spawn_chunk
+	var lods_to_render = octree.create(props, spawn_pos)
+	chunks = octree.lods.back()
 	add_lod_parents()
 	Tests.np_chunks_check(chunks, props)
-	var root:Chunk = lods.front()[Vector3()]
 	
 	# Render
-	var to_render:Array = deform_lods(root)
-	render_queue.flood(to_render)
-	prints("Rendered:", Tests.render_check(root))
+	print("\t\t\t\t\t\t\t\tRENDER LODS")
+	render_lods(lods_to_render)
+	prints("Rendered:", Tests.render_check(octree.root))
 	initialize_spawn_chunks()
 	
+	print("\t\t\t\t\t\t\t\tINITIALIZED")
 	emit_signal("initialized")
 
 func add_lod_parents():
+	prints("parents:", props.lod_count)
 	trail_parent = Node.new()
 	trail_parent.name = "Trail"
 	add_child(trail_parent)
-	for l in range(lods.size()):
+	for l in range(props.lod_count):
 		lod_nodes.append(Node.new())
 		lod_nodes[l].name = "Lod " + String(l)
 		add_child(lod_nodes[l])
 
-func deform_lods(root:Chunk) -> Array:
-	var chunk_depths:Dictionary = root.deform_at(spawn_chunk)
+func render_lods(lods_to_render=lods):
+	
 	var to_render:Array = []
-	Tests.print_chunk_depths(chunk_depths)
-	for depth in range(lods.size()):
-		var chunks_at_depth:Array = chunk_depths.get(depth, [])
-		to_render.append_array(chunks_at_depth)
+	Tests.print_chunk_depths(lods_to_render)
+	
+	# Determine Depths
+	var depths:Array
+	if lods_to_render is Dictionary:
+		depths = lods_to_render.keys().duplicate()
+		depths.sort()
+	else:
+		depths = range(lods.size())
+	
+	# Compile Chunks
+	for depth in depths:
+		to_render.append_array(lods_to_render[depth])
+	
+	# Flood
 	Tests.octree_count(to_render, lods, chunks)
-	return to_render
+	render_queue.flood(to_render)
 
 var spawn_axes:Dictionary = {
 	AXES.X:[Vector3(), Vector3.UP, Vector3.BACK, Vector3(0,1,1)],
@@ -97,23 +112,29 @@ var spawn_axes:Dictionary = {
 	AXES.Z:[Vector3(), Vector3.RIGHT, Vector3.UP, Vector3(1,1,0)],
 }
 func initialize_spawn_chunks():
-	for corner in spawn_axes[spawn_axis]:
-		var spawn_pos = spawn_chunk + corner
-		var _chunk = force_render(spawn_pos)
-		var under = spawn_pos-spawn_vector
-		while under.x >= 0 and under.y >= 0 and under.z >= 0:
-			_chunk = force_render(under)
-			under = under-spawn_vector
+	pass
+#	var spawn_max = props.chunk_counts / 2
+#	for corner in spawn_axes[spawn_axis]:
+#		var spawn_pos = spawn_chunk + corner
+#		var _chunk = force_render(spawn_pos)
+#		var under = spawn_pos-spawn_vector
+#		while under.x >= spawn_max.x and under.y >= spawn_max.y and under.z >= spawn_max.z:
+#			_chunk = force_render(under)
+#			under = under-spawn_vector
 
 ### Render Triggers
 
 func force_render(pos:Vector3) -> Chunk:
+	assert(chunks.has(pos))
 	render_queue.erase(chunks[pos])
 	return finish_render(render_chunk(chunks[pos]))
 
 func enqueue_pos(pos:Vector3):
 	var chunk:Chunk = chunks.get(pos)
-	if chunk:
+	if not chunk:
+		var lods_to_render = octree.root.deform_at(pos)
+		render_lods(lods_to_render)
+	elif chunk:
 		if not chunk.is_rendered and not chunk.in_render:
 			chunk.deform_on_finish = true
 			chunk.priority = 1
