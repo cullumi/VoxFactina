@@ -1,14 +1,17 @@
-[gd_resource type="Resource" load_steps=3 format=2]
+[gd_resource type="Resource" script_class="PlanetProperties" load_steps=3 format=3 uid="uid://qdjw3166rvkf"]
 
-[ext_resource path="res://scripts/planets/planet_props.gd" type="Script" id=1]
-[ext_resource path="res://resources/voxel_mat.tres" type="Material" id=2]
+[ext_resource type="Script" path="res://scripts/planets/planet_props.gd" id="1"]
+[ext_resource type="Material" uid="uid://cghxttxanho7v" path="res://resources/voxel_mat.tres" id="2"]
 
 [resource]
-script = ExtResource( 1 )
+script = ExtResource("1")
 planet_type = 1
-chunk_dims = Vector3( 16, 16, 16 )
-chunk_counts = Vector3( 9, 9, 9 )
+chunk_dims = Vector3i(16, 16, 16)
+chunk_counts = Vector3i(9, 9, 9)
 surface_level = 0.8
+bedrock_level = 0.15
 voxel_size = 0.5
-voxel_rate = 1e+06
-voxel_material = ExtResource( 2 )
+iso_level = 0.0
+voxel_rate = 1000000
+voxel_material = ExtResource("2")
+DEBUG = false

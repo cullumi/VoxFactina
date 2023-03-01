@@ -35,7 +35,7 @@ func _enter_tree():
 	for _i in range(count):
 		var thread = Thread.new()
 		workers.append(thread)
-		thread.start(self, "worker", {"thread":thread})
+		thread.start(Callable(self,"worker").bind({"thread":thread}))
 		var id = thread.get_id()
 		mutexes[id] = Mutex.new()
 		semaphores[id] = Semaphore.new()
@@ -80,13 +80,13 @@ func finish_jobs(num:int):
 	emit_signal("idling")
 
 func _exit_tree():
-	for worker in states:
-		set_state(worker, EXIT)
-	while not workers.empty():
+	for worker_state in states:
+		set_state(worker_state, EXIT)
+	while not workers.is_empty():
 		for thread in workers:
 			if not thread.is_alive():
 				thread.wait_to_finish()
-		yield(get_tree(), "idle_frame")
+		await get_tree().process_frame
 
 ### Job Management
 
@@ -116,9 +116,7 @@ func worker(args={"thread":null}):
 			match get_state(id):
 				WORK:
 					var job = jobs[id]
-					var work = job.object.callv(job.method, job.args)
-					if work is GDScriptFunctionState:
-						yield(work, "completed")
+					var work = await job.object.callv(job.method, job.args)
 					jobs[id]["results"] = work
 					set_state(id, DONE)
 					report_done()

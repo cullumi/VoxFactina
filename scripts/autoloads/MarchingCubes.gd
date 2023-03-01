@@ -1,10 +1,10 @@
 extends Node
 
-# Based on Sebastian Lague's "Coding Adventure: Marching Cubes"
+# Based checked Sebastian Lague's "Coding Adventure: Marching Cubes"
 # https://www.youtube.com/watch?v=M3iI2l0ltbE
 # https://github.com/SebLague/Marching-Cubes/blob/master/Assets/Scripts/Compute/MarchingCubes.compute
 
-var DefaultMaterial = SpatialMaterial.new()
+var DefaultMaterial = StandardMaterial3D.new()
 var Surfacetool = SurfaceTool.new()
 enum {EXEMPT, AIR, LAND, BEDROCK}
 
@@ -53,7 +53,7 @@ func march(scale:Vector3, voxel:Voxel, props, s_tool:SurfaceTool, c_tests:Dictio
 	scale = scale #Vectors.clamp_to(scale/64, Vector3.ONE, Vector3.ONE*1000) #Vector3.ONE
 	assert(noise)
 	
-	# Get The Cube in World Coords
+	# Get The Cube in World3D Coords
 	var offset = voxel.offset - offset_scale*0.5
 	var cube_corners:Array = [
 		(offset),
@@ -165,7 +165,7 @@ func march(scale:Vector3, voxel:Voxel, props, s_tool:SurfaceTool, c_tests:Dictio
 func midpoint_vertices(v1:Vector3, v2:Vector3):
 	return (v1 + v2)/2
 
-# Interpolates based on two vertices and their densities, considering the iso level.
+# Interpolates based checked two vertices and their densities, considering the iso level.
 func interpolate_vertices(v1:Vector3, v2:Vector3, d1:float, d2:float, iso_level:float):
 	var t = (iso_level - d1) / (d2 - d1)
 	return v1 + (t * (v2 - v1))

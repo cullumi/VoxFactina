@@ -1,0 +1,5 @@
+res://scenes/Main.tscn
+res://resources/voxel_mat.tres
+res://resources/debug_mat.tres
+res://resources/small_orb.tres
+res://scenes/PlanetPreview.gd

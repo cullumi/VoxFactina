@@ -1,11 +1,8 @@
-[gd_resource type="SpatialMaterial" format=2]
+[gd_resource type="StandardMaterial3D" format=3 uid="uid://cghxttxanho7v"]
 
 [resource]
-flags_transparent = true
-flags_vertex_lighting = true
+shading_mode = 2
 vertex_color_use_as_albedo = true
 vertex_color_is_srgb = true
-params_cull_mode = 2
-params_depth_draw_mode = 3
 metallic = 0.25
 roughness = 0.75

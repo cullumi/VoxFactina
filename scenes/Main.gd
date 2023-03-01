@@ -1,20 +1,25 @@
-extends Spatial
+extends Node3D
 
 ### Properties
 
 ## Nodes
-onready var pivot:PlayerPivot = get_node("%PlayerPivot")
-onready var planets:Array = get_tree().get_nodes_in_group("Planet")
+@onready var pivot:PlayerPivot = get_node("%PlayerPivot")
+@onready var planets:Array = get_tree().get_nodes_in_group("Planet")
 var cur_planet:Planet
 
 ### Triggers
 
 func _ready():
+	var chunk:Chunk = Chunk.new(null)
+	print(chunk.get_meta_list())
+#	print(self)
+#	prints("Test Chunk:", chunk)
+	
 	for planet in planets:
 		planet.pivot = pivot
 		planet.orbiting = false
-		planet.connect("player_entered", self, "_on_Planet_player_entered")
-		planet.connect("player_exited", self, "_on_Planet_player_exited")
+		planet.connect("player_entered",Callable(self,"_on_Planet_player_entered"))
+		planet.connect("player_exited",Callable(self,"_on_Planet_player_exited"))
 		planet.generate()
 
 func _unhandled_input(event):

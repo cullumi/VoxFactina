@@ -3,7 +3,7 @@ extends PlanetType
 class_name CubeWorld
 
 func _init(new_props=null):
-	._init(new_props)
+	super._init(new_props)
 
 ## Content Queries
 func get_voxel_color(pos:Vector3) -> Color:
@@ -15,11 +15,11 @@ func get_voxel_color(pos:Vector3) -> Color:
 		var height = max_height * ((rand + 1) / 2)
 		if pos.length() > height:
 			if pos.length() < max_height/2:
-				return Color.cornflower
+				return Color.CORNFLOWER_BLUE
 			else:
 				return Color(0,0,0,0)
 		else:
-			return Color.forestgreen if rand >= 0 else Color.darkolivegreen
+			return Color.FOREST_GREEN if rand >= 0 else Color.DARK_OLIVE_GREEN
 
 func voxel_is_air(pos:Vector3) -> bool:
 	var in_front = props.front.has_point(Vector2(pos.x, pos.y))

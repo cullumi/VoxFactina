@@ -11,10 +11,10 @@ extends Node
 #	self.mesh = VoxelFactory.create_mesh_from_image_file("res://icon.png")
 #
 # Thank you for downloading Voxel factory.
-# If you need help you can message me on the discord: 
+# If you need help you can message me checked the discord: 
 #                                                     @Kreptic
 var VoxelSize = 1.0
-var DefaultMaterial = SpatialMaterial.new()
+var DefaultMaterial = StandardMaterial3D.new()
 var Voxels = {} # Data in the factory
 var Surfacetool = SurfaceTool.new()
 
@@ -80,14 +80,14 @@ func create_mesh_from_image(image, voxels=Voxels, s_tool=Surfacetool) -> Mesh:
 	
 	# Image is upside down by default.
 	image.flip_y()
-	image.lock()
+	false # image.lock() # TODOConverter40, Image no longer requires locking, `false` helps to not break one line if/else, so it can freely be removed
 	
 	# For each pixel add a voxel.
 	for x in imageSize.x:
 		for y in imageSize.y:
 			add_voxel(Vector3(x, y, 0), image.get_pixel(x, y), voxels)
 	
-	image.unlock()
+	false # image.unlock() # TODOConverter40, Image no longer requires locking, `false` helps to not break one line if/else, so it can freely be removed
 	return create_mesh(voxels, s_tool)
 
 
@@ -115,7 +115,7 @@ func create_mesh(voxels=Voxels, s_tool=Surfacetool) -> ArrayMesh:
 	s_tool.clear()
 	return mesh 
 
-# Decides where to put faces on the mesh.
+# Decides where to put faces checked the mesh.
 # Checks if there is an adjacent block before place a face.
 func create_voxel(color:Color, position:Vector3, voxels:Dictionary=Voxels, s_tool:SurfaceTool=Surfacetool):
 	voxels = Voxels if voxels == null else voxels

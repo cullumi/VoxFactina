@@ -3,7 +3,7 @@
 [ext_resource path="res://scenes/Test Nodes/PlayerPivot.gd" type="Script" id=1]
 [ext_resource path="res://scenes/FSM Testing/FSMPlayer.tscn" type="PackedScene" id=3]
 
-[node name="PlayerPivot" type="Spatial"]
+[node name="PlayerPivot" type="Node3D"]
 unique_name_in_owner = true
 script = ExtResource( 1 )
 

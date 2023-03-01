@@ -1,4 +1,4 @@
-tool
+@tool
 extends Node
 
 class_name FSM
@@ -6,22 +6,23 @@ class_name FSM
 # Controls wether this state machine is running or not
 # The current state can be paused and resumed by setting this value
 # Setting the current state to null will also stop the state machine
-export(bool) var paused = false
+@export var paused: bool = false
 # State machine's current state
-# Setting this value will call '_exit_state' on the previous state and '_enter_state' on the new one
+# Setting this value will call '_exit_state' checked the previous state and '_enter_state' checked the new one
 # Set this to null to stop the state machine until a new state is set
-var current_state: State = null setget set_state
+var current_state: State = null : set = set_state
 
 
 # Called every frame
-# Calls '_process_state' on the current state
+# Calls '_process_state' checked the current state
 func _process(delta) -> void:
 	if is_running():
+		prints("Running", current_state.name)
 		current_state._process_state(delta)
 
 
 # Called every physics frame
-# Calls '_physics_process_state' on the current state
+# Calls '_physics_process_state' checked the current state
 func _physics_process(delta) -> void:
 	if is_running():
 		current_state._physics_process_state(delta)

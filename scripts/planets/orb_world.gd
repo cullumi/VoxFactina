@@ -9,7 +9,7 @@ var height_range
 var water_height
 
 func _init(new_props=null):
-	._init(new_props)
+	super._init(new_props)
 
 func init_height():#val):
 	if not calculated:
@@ -25,10 +25,10 @@ func get_voxel_color(pos:Vector3) -> Color:
 		return Color(0,0,0,0)
 	else:
 		var rand = noise.get_noise_3dv(pos)
-		if rand >= 0: return Color.forestgreen
-		elif rand < 0 and rand > -.25: return Color.cornsilk
-		elif rand <= -.25: return Color.cadetblue
-		else: return Color.brown
+		if rand >= 0: return Color.FOREST_GREEN
+		elif rand < 0 and rand > -.25: return Color.CORNSILK
+		elif rand <= -.25: return Color.CADET_BLUE
+		else: return Color.BROWN
 
 func voxel_in_air(pos:Vector3) -> bool:
 	init_height()
@@ -51,7 +51,7 @@ func test_vox(pos:Vector3, density:float=0) -> int:
 		if length <= min_height:
 			return BEDROCK
 		elif length <= air_height:
-			var iso = (props.iso_curve.interpolate(height_percent)*2)-1
+			var iso = (props.iso_curve.sample(height_percent)*2)-1
 			return LAND if density < iso else AIR
 		else:
 			return AIR

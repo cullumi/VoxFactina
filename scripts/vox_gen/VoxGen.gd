@@ -1,17 +1,17 @@
-extends Spatial
+extends Node3D
 
 class_name VoxGen
 
 ### Properties
 
 # Planet Properties
-export (Resource) var props
+@export var props:Resource
 
 # Spawn Orientation
 enum AXES {X, Y, Z}
-export (AXES) var spawn_axis = AXES.Y
-export (int, -1, 1, 2) var spawn_dir = 1
-export (int, 1, 4) var lod_number = 1
+@export var spawn_axis:AXES = AXES.Y
+@export_range (-1, 1, 2) var spawn_dir:int = 1
+@export_range (1, 4, 1) var lod_number = 1
 
 # Dimensions
 enum {X, Y, Z}
@@ -21,18 +21,18 @@ func vector_spawn():
 	var vector = Vector3()
 	vector[spawn_axis] = spawn_dir
 	return vector
-onready var spawn_vector = vector_spawn()
-onready var spawn_height:float = (props.chunk_counts[spawn_axis]/2 * props.surface_level) * spawn_dir
+@onready var spawn_vector = vector_spawn()
+@onready var spawn_height:float = (props.chunk_counts[spawn_axis]/2 * props.surface_level) * spawn_dir
 func calc_spawn_offset():
-	var off = props.center_pos[spawn_axis] + spawn_height
-	off = floor(off) if spawn_height < 0 else ceil(off)
-	return clamp(off, 0, props.chunk_counts[spawn_axis]-1)
-onready var spawn_offset:float = calc_spawn_offset()
+	var unchecked = props.center_pos[spawn_axis] + spawn_height
+	unchecked = floor(unchecked) if spawn_height < 0 else ceil(unchecked)
+	return clamp(unchecked, 0, props.chunk_counts[spawn_axis]-1)
+@onready var spawn_offset:float = calc_spawn_offset()
 func calc_spawn_chunk():
 	var pos = props.center_pos
 	pos[spawn_axis] = spawn_offset
 	return pos
-onready var spawn_chunk:Vector3 = calc_spawn_chunk()
+@onready var spawn_chunk:Vector3 = calc_spawn_chunk()
 
 # Octree & Render Queue
 signal initialized()
@@ -59,7 +59,7 @@ func start():
 
 func initialize():
 	# Initialize Chunk Octree
-	print("\t\t\t\t\t\t\t\tINITIALIZE OCTREE")
+	print("\n\t\t\t\t\t\t\t\tINITIALIZE OCTREE")
 	var spawn_pos = spawn_chunk
 	var lods_to_render = octree.create(props, spawn_pos)
 	chunks = octree.lods.back()
@@ -67,12 +67,11 @@ func initialize():
 	Tests.np_chunks_check(chunks, props)
 	
 	# Render
-	print("\t\t\t\t\t\t\t\tRENDER LODS")
+	print("\n\t\t\t\t\t\t\t\tRENDER LODS")
 	render_lods(lods_to_render)
 	prints("Rendered:", Tests.render_check(octree.root))
 	initialize_spawn_chunks()
-	
-	print("\t\t\t\t\t\t\t\tINITIALIZED")
+	print("\n\t\t\t\t\t\t\t\tINITIALIZED")
 	emit_signal("initialized")
 
 func add_lod_parents():
@@ -82,7 +81,7 @@ func add_lod_parents():
 	add_child(trail_parent)
 	for l in range(props.lod_count):
 		lod_nodes.append(Node.new())
-		lod_nodes[l].name = "Lod " + String(l)
+		lod_nodes[l].name = "Lod " + str(l)
 		add_child(lod_nodes[l])
 
 func render_lods(lods_to_render=lods):
@@ -103,7 +102,7 @@ func render_lods(lods_to_render=lods):
 		to_render.append_array(lods_to_render[depth])
 	
 	# Flood
-	Tests.octree_count(to_render, lods, chunks)
+	Tests.octree_count(to_render, octree.lods, chunks)
 	render_queue.flood(to_render)
 
 var spawn_axes:Dictionary = {
@@ -141,14 +140,14 @@ func enqueue_pos(pos:Vector3):
 			chunk.render_collision = true
 			render_queue.enqueue(chunk)
 	else:
-		printerr("Chunk at " + String(pos) + " does not exist")
+		printerr("Chunk at " + str(pos) + " does not exist")
 
 
 ### Render Queue Managment
 
 func render():
 	while true:
-		while not render_queue.empty():
+		while not render_queue.is_empty():
 			var chunk:Chunk = render_queue.dequeue()
 			if chunk and not chunk.in_render:
 				chunk.in_render = true
@@ -160,12 +159,13 @@ func render():
 					if res:
 						break
 					else:
-						yield(ThreadPool, "idling")
-		yield(get_tree(), "idle_frame")
+						await ThreadPool.idling
+		await get_tree().process_frame
 
 func finish_render(chunk:Chunk) -> Chunk:
+	assert(chunk)
 	var deformed:Array = chunk.finish_render(lod_nodes[chunk.depth])
-	if chunk.instance != null and chunk.instance.get_surface_material_count() > 0:
+	if chunk.instance != null and chunk.instance.get_surface_override_material_count() > 0:
 		Tests.leave_trail(trail_parent, chunk, props)
 	if chunk.deform_on_finish:
 		for child in deformed:
@@ -178,26 +178,33 @@ func finish_render(chunk:Chunk) -> Chunk:
 func render_chunk(chunk:Chunk) -> Chunk:
 	var voxels:Dictionary = {}
 	add_voxels(chunk, props.relative_voxel_positions, voxels)
-	if not voxels.empty():
-		var s_tool:SurfaceTool = SurfaceTool.new()
-		chunk.new_instance = MeshInstance.new()
-		chunk.new_instance.translation = chunk.offset
-		chunk.new_instance.use_in_baked_light = true
-		chunk.new_instance.generate_lightmap = true
-		chunk.new_instance.cast_shadow =GeometryInstance.SHADOW_CASTING_SETTING_DOUBLE_SIDED
-		chunk.new_instance.mesh = MarchingCubes.create_mesh(chunk.scale, voxels, props, s_tool)
-#		chunk.new_instance.mesh = VoxelFactory.create_mesh(voxels, s_tool)
-		chunk.render_collision = true
-		if chunk.render_collision and chunk.new_instance.mesh.get_surface_count():
-			chunk.new_instance.create_trimesh_collision()
-		chunk.all_air = false
-		chunk.has_air = voxels.size() < props.vox_count
+	if not voxels.is_empty():
+		construct_instance(chunk, voxels)
 	else:
 		chunk.new_instance = null
 		chunk.all_air = true
 		chunk.has_air = true
 	return chunk
 
+func construct_instance(chunk, voxels):
+	var s_tool:SurfaceTool = SurfaceTool.new()
+	var mesh = MarchingCubes.create_mesh(chunk.scale, voxels, props, s_tool)
+	chunk.new_instance = new_instance(chunk.offset, mesh)
+	chunk.render_collision = true
+	if chunk.render_collision and mesh.get_surface_count():
+		chunk.new_instance.create_trimesh_collision()
+	chunk.all_air = false
+	chunk.has_air = voxels.size() < props.vox_count
+
+func new_instance(offset, mesh):
+	var instance = MeshInstance3D.new()
+	instance = MeshInstance3D.new()
+	instance.position = offset
+	instance.use_in_baked_light = true
+	instance.generate_lightmap = true
+	instance.cast_shadow =GeometryInstance3D.SHADOW_CASTING_SETTING_DOUBLE_SIDED
+	instance.mesh = mesh
+	return instance
 
 ### Voxel Generation
 

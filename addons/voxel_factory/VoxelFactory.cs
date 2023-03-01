@@ -2,10 +2,10 @@ using Godot;
 using System;
 using System.Collections.Generic;
 
-public class VoxelFactory
+public partial class VoxelFactory
 {
     public float VoxelSize = 1f;
-    public Material DefaultMaterial = new SpatialMaterial() 
+    public Material DefaultMaterial = new StandardMaterial3D() 
     {
         VertexColorUseAsAlbedo = true 
     };
@@ -32,9 +32,9 @@ public class VoxelFactory
     }
 
     // SpriteNode
-    public Mesh CreateMeshFromSprite(Sprite sprite)
+    public Mesh CreateMeshFromSprite(Sprite2D sprite)
     {
-        var image = sprite.Texture.GetData();
+        var image = sprite.Texture2D.GetData();
         return CreateMeshFromImage(image);
     }
 

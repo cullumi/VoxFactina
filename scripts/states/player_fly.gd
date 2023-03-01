@@ -2,14 +2,14 @@ class_name Fly # Replace this with your state's name
 extends State
 
 # player and finite state machine
-onready var p:Player
-onready var mv:FSM = get_node("%Movement")
+@onready var p:Player
+@onready var mv:FSM = get_node("%Movement")
 
 # other states to change to
-onready var st_fall:NodePath = "%Fall"
-onready var st_float:NodePath = "%Float"
-onready var st_ascend:NodePath = "%Ascend"
-onready var st_descend:NodePath = "%Fall"
+@onready var st_fall:NodePath = "%Fall"
+@onready var st_float:NodePath = "%Float"
+@onready var st_ascend:NodePath = "%Ascend"
+@onready var st_descend:NodePath = "%Fall"
 
 # Called when a state enters the finite state machine
 func _enter_state():

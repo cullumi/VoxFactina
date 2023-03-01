@@ -8,18 +8,16 @@ var lod_nodes:Array = []
 
 func depth(props):
 	var width:int = props.chunk_counts.x
-	var depth = 1
+	var _depth = 1
 	while (width > 1):
-		depth += 1
+		_depth += 1
 		width /= 2
-	return depth + 2
+	return _depth + 2
 
 func create(props, deform_pos:Vector3) -> Dictionary:
-	
 	# Initials
 	var pos:Vector3 = Vector3()
 	var scale:Vector3 = props.chunk_counts# * props.chunk_size
-	var level = 0
 	
 	# 1st LOD
 	lods = []
@@ -28,12 +26,15 @@ func create(props, deform_pos:Vector3) -> Dictionary:
 	var root_lod = lods.front()
 	root = Chunk.new(props, pos, scale, 0, 0)
 	root_lod[pos] = root
+	
+	# Leaves
 	var leaves = root.deform_at(deform_pos)
+	save_lods(root)
 	return leaves
 
 func save_lods(chunk:Chunk):
 	lods[chunk.depth][chunk.pos] = chunk
-	if not chunk.children.empty():
+	if not chunk.children.is_empty():
 		for child in chunk.children:
 			save_lods(child)
 

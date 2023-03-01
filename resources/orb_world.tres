@@ -1,22 +1,20 @@
-[gd_resource type="Resource" load_steps=4 format=2]
+[gd_resource type="Resource" script_class="PlanetProperties" load_steps=4 format=3 uid="uid://cbm51qw6xudgn"]
 
-[ext_resource path="res://scripts/planets/planet_props.gd" type="Script" id=1]
-[ext_resource path="res://resources/voxel_mat.tres" type="Material" id=2]
+[ext_resource type="Script" path="res://scripts/planets/planet_props.gd" id="1"]
+[ext_resource type="Material" uid="uid://cghxttxanho7v" path="res://resources/voxel_mat.tres" id="2"]
 
-[sub_resource type="OpenSimplexNoise" id=1]
-octaves = 8
-period = 100.0
+[sub_resource type="FastNoiseLite" id="1"]
 
 [resource]
-script = ExtResource( 1 )
+script = ExtResource("1")
 planet_type = 0
-chunk_dims = Vector3( 16, 16, 16 )
-chunk_counts = Vector3( 36, 36, 36 )
+chunk_dims = Vector3i(16, 16, 16)
+chunk_counts = Vector3i(36, 36, 36)
 surface_level = 0.95
 bedrock_level = 0.15
 voxel_size = 0.25
 iso_level = 0.0
 voxel_rate = 10000
-voxel_material = ExtResource( 2 )
-noise = SubResource( 1 )
+voxel_material = ExtResource("2")
+noise = SubResource("1")
 DEBUG = false

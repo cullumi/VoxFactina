@@ -1,4 +1,4 @@
-extends Reference
+extends RefCounted
 
 class_name PlanetType
 
@@ -11,7 +11,7 @@ func get_voxel_color(pos:Vector3) -> Color:
 		return Color(0,0,0,0)
 	else:
 		var rand = randi()
-		return Color.forestgreen if rand % 2 else Color.darkolivegreen
+		return Color.FOREST_GREEN if rand % 2 else Color.DARK_OLIVE_GREEN
 
 func voxel_is_air(pos:Vector3) -> bool:
 	return false

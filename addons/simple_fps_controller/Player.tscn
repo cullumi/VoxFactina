@@ -1,38 +1,33 @@
-[gd_scene load_steps=4 format=2]
+[gd_scene load_steps=4 format=3 uid="uid://dvq22dg4ysmoc"]
 
-[ext_resource path="res://addons/simple_fps_controller/Player.gd" type="Script" id=1]
-[ext_resource path="res://addons/simple_fps_controller/Crosshair.png" type="Texture" id=2]
+[ext_resource type="Script" path="res://addons/simple_fps_controller/Player.gd" id="1"]
+[ext_resource type="Texture2D" uid="uid://bd6cerh75g0xr" path="res://addons/simple_fps_controller/Crosshair.png" id="2"]
 
-[sub_resource type="CapsuleShape" id=1]
-radius = 0.5
+[sub_resource type="CapsuleShape3D" id="1"]
 
-[node name="Player" type="KinematicBody"]
-script = ExtResource( 1 )
+[node name="Player" type="CharacterBody3D"]
+script = ExtResource("1")
 move_speed = 8
 friction = 1.34
 
-[node name="Collider" type="CollisionShape" parent="."]
-transform = Transform( 1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 0.25, 0 )
-shape = SubResource( 1 )
+[node name="Collider" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 0.25, 0)
+shape = SubResource("1")
 
-[node name="Camera" type="Camera" parent="Collider"]
+[node name="Camera3D" type="Camera3D" parent="Collider"]
 unique_name_in_owner = true
-transform = Transform( 1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, 0, -2.11571e-08, 0.484018 )
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, 0, -2.11571e-08, 0.484018)
 current = true
 fov = 90.0
 far = 1000.0
 
-[node name="RayCast" type="RayCast" parent="Collider/Camera"]
-enabled = true
-cast_to = Vector3( 0, 0, -500 )
+[node name="RayCast3D" type="RayCast3D" parent="Collider/Camera3D"]
 
 [node name="HUD" type="CenterContainer" parent="."]
+anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 
 [node name="Crosshair_Tex" type="TextureRect" parent="HUD"]
-margin_left = 476.0
-margin_top = 264.0
-margin_right = 548.0
-margin_bottom = 336.0
-texture = ExtResource( 2 )
+layout_mode = 2
+texture = ExtResource("2")

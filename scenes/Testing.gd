@@ -2,14 +2,14 @@ extends Node
 
 
 func _ready():
-	var vectors:Array = yield(collect_vectors(Vector3(1, 1, 1), Vector3(5, 5, 5)), "completed")
+	var vectors:Array = await collect_vectors(Vector3(1, 1, 1), Vector3(5, 5, 5))
 	print("Finished collect vectors")
 	for i in range(10):
-		yield(get_tree(), "idle_frame")
+		await get_tree().idle_frame
 	count_vectors(Vector3(1, 1, 1), Vector3(5, 5, 5))
 	print("Finished count vectors")
 	for i in range(10):
-		yield(get_tree(), "idle_frame")
+		await get_tree().idle_frame
 	loop_vectors(vectors)
 	print("Finished loop vectors")
 #	constant()
@@ -26,14 +26,14 @@ func collect_vectors(start, end) -> Array:
 	while pos != end:
 		pos = count_up(pos, start, end)
 		vectors.append(pos)
-		yield(get_tree(), "idle_frame")
+		await get_tree().idle_frame
 	return vectors
 
 func count_vectors(start, end):
 	var pos = start
 	while pos != end:
 		pos = count_up(pos, start, end)
-#		yield(get_tree(), "idle_frame")
+#		await get_tree().idle_frame
 
 func count_up(cur:Vector3, base:Vector3, toward:Vector3):
 	cur.z += 1

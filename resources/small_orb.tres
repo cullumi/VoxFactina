@@ -1,31 +1,29 @@
-[gd_resource type="Resource" load_steps=7 format=2]
+[gd_resource type="Resource" script_class="PlanetProperties" load_steps=7 format=3 uid="uid://d0lcqcqbga4te"]
 
-[ext_resource path="res://scripts/planets/planet_props.gd" type="Script" id=1]
-[ext_resource path="res://resources/voxel_mat.tres" type="Material" id=2]
-[ext_resource path="res://resources/debug_mat.tres" type="Material" id=3]
-[ext_resource path="res://resources/cookie_mat.tres" type="Material" id=4]
+[ext_resource type="Script" path="res://scripts/planets/planet_props.gd" id="1"]
+[ext_resource type="Material" uid="uid://cghxttxanho7v" path="res://resources/voxel_mat.tres" id="2"]
+[ext_resource type="Material" uid="uid://dwgxbpslbgp0o" path="res://resources/debug_mat.tres" id="3"]
+[ext_resource type="Material" path="res://resources/cookie_mat.tres" id="4"]
 
-[sub_resource type="Curve" id=2]
-_data = [ Vector2( 0, 0 ), 0.0, 1.0, 0, 1, Vector2( 1, 1 ), 1.0, 0.0, 1, 0 ]
+[sub_resource type="Curve" id="2"]
+_data = [Vector2(0, 0), 0.0, 1.0, 0, 1, Vector2(1, 1), 1.0, 0.0, 1, 0]
+point_count = 2
 
-[sub_resource type="OpenSimplexNoise" id=1]
-period = 30.0
-persistence = 1.0
-lacunarity = 0.15
+[sub_resource type="FastNoiseLite" id="1"]
 
 [resource]
-script = ExtResource( 1 )
+script = ExtResource("1")
 planet_type = 0
-chunk_dims = Vector3( 8, 8, 8 )
-chunk_counts = Vector3( 64, 64, 64 )
+chunk_dims = Vector3i(10, 10, 10)
+chunk_counts = Vector3i(4, 4, 4)
 surface_level = 0.75
-bedrock_level = 0.75
-voxel_size = 0.125
+bedrock_level = 0.15
+voxel_size = 1.0
 iso_level = 0.0
-iso_curve = SubResource( 2 )
+iso_curve = SubResource("2")
 voxel_rate = 10000
-voxel_material = ExtResource( 2 )
-noise = SubResource( 1 )
-DEBUG = false
-debug_material = ExtResource( 3 )
-cookie_material = ExtResource( 4 )
+voxel_material = ExtResource("2")
+noise = SubResource("1")
+DEBUG = true
+debug_material = ExtResource("3")
+cookie_material = ExtResource("4")

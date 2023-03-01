@@ -3,13 +3,13 @@ extends State
 
 
 # player and finite state machine
-onready var p:Player
-onready var mv:FSM = get_node("%Movement")
+@onready var p:Player
+@onready var mv:FSM = get_node("%Movement")
 
-onready var st_fall:NodePath = "%Fall"
-onready var st_fly:NodePath = "%Fly"
-onready var st_ascend:NodePath = "%Ascend"
-onready var st_descend:NodePath = "%Fall"
+@onready var st_fall:NodePath = "%Fall"
+@onready var st_fly:NodePath = "%Fly"
+@onready var st_ascend:NodePath = "%Ascend"
+@onready var st_descend:NodePath = "%Fall"
 
 
 # Called when a state enters the finite state machine

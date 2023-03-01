@@ -1,10 +1,10 @@
 class_name Jump # Replace this with your state's name
 extends State
 
-onready var p:Player
-onready var mv:FSM = get_node("%Movement")
+@onready var p:Player
+@onready var mv:FSM = get_node("%Movement")
 
-onready var st_fall:NodePath = "%Fall"
+@onready var st_fall:NodePath = "%Fall"
 
 # Called when a state enters the finite state machine
 func _enter_state():

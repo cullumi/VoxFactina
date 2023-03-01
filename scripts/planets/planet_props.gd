@@ -1,24 +1,25 @@
-tool
+@tool
 
 extends Resource
 
 class_name PlanetProperties
 
 enum TYPE {ORB, CUBE}
-export (TYPE) var planet_type = TYPE.ORB
-export (Vector3) var chunk_dims = Vector3(10, 10, 10) setget set_dims
-export (Vector3) var chunk_counts:Vector3 = Vector3(3, 3, 3) setget set_counts
-export (float, 0, 1, 0.05) var surface_level:float = 0.75 setget set_surface
-export (float, 0, 1, 0.05) var bedrock_level:float = 0.15 setget set_bedrock
-export (float, 0.005, 2, 0.005) var voxel_size:float = 1 setget set_vox_size
-export (float, -1, 1, 0.005) var iso_level:float = 0
-export (Curve) var iso_curve:Curve
-export (float, EXP, 1000, 1000000, 1000) var voxel_rate:int = 10000
-export (SpatialMaterial) var voxel_material
-export (OpenSimplexNoise) var noise
-export (bool) var DEBUG
-export (SpatialMaterial) var debug_material
-export (SpatialMaterial) var cookie_material
+@export var planet_type:TYPE = TYPE.ORB
+#var _chunk_dims:Vector3i
+@export var chunk_dims:Vector3i = Vector3i(10, 10, 10) : set = set_dims
+@export var chunk_counts:Vector3i = Vector3i(3, 3, 3) : set=set_counts
+@export_range (0, 1, 0.05) var surface_level:float = 0.75 : set=set_surface
+@export_range (0, 1, 0.05) var bedrock_level:float = 0.15 : set=set_bedrock
+@export_range (0.005, 2, 0.005) var voxel_size:float = 1 : set=set_vox_size
+@export_range (-1, 1, 0.005) var iso_level:float = 0
+@export var iso_curve:Curve
+@export_range (1000, 1000000, 1000, "exp") var voxel_rate:int = 10000
+@export var voxel_material:StandardMaterial3D
+@export var noise:FastNoiseLite
+@export var DEBUG:bool
+@export var debug_material:StandardMaterial3D
+@export var cookie_material:StandardMaterial3D
 
 # Types
 var types = {TYPE.ORB:OrbWorld, TYPE.CUBE:CubeWorld}
@@ -66,11 +67,11 @@ func lod_adj(depth) -> Vector3:
 func lod_inv(depth) -> Vector3:
 	return Vector3.ONE * (0.5 if depth%2==1 else 0.0)
 
-func offset(pos:Vector3, lod_depth:int=0) -> Vector3: # Chunk Position to World Position
+func offset(pos:Vector3, lod_depth:int=0) -> Vector3: # Chunk Position to World3D Position
 	return (centered(pos) - lod_adj(lod_depth)) * chunk_size
-func unoffset(off:Vector3) -> Vector3: # World Position to Chunk Position
-	return ((off + half_chunk()) / chunk_size) + center_pos
-func voxlocal(c_pos:Vector3, v_pos:Vector3, lod:int=0) -> Vector3: # Voxel Chunk Position to Voxel World Position
+func unoffset(unchecked:Vector3) -> Vector3: # World3D Position to Chunk Position
+	return ((unchecked + half_chunk()) / chunk_size) + center_pos
+func voxlocal(c_pos:Vector3, v_pos:Vector3, lod:int=0) -> Vector3: # Voxel Chunk Position to Voxel World3D Position
 	return (centered(c_pos) + lod_inv(lod)) * chunk_dims + v_pos
 
 # Surface Level Rects
@@ -86,46 +87,45 @@ func signal_update(should_signal:bool=true):
 
 ### Variable Corrections
 
-func set_dims(dims, should_signal:bool=true):
+func set_dims(dims):
 	chunk_dims = dims
 	from = -chunk_dims/2
-	to = (chunk_dims/2)-Vector3.ONE
+	to = (chunk_dims/2)-Vector3i.ONE
 	relative_voxel_positions = Vectors.collect_vectors(from, to)
 	vox_count = chunk_dims.x * chunk_dims.y * chunk_dims.z
 	update_world_dims(false)
 	chunk_size = chunk_dims * voxel_size
-	signal_update(should_signal)
+	signal_update(true)
 
-func set_counts(counts, should_signal:bool=true):
+func set_counts(counts):
 	chunk_counts = counts
-	prints("set counts:", chunk_counts)
 	update_lod_ranges(false)
 	update_world_dims(false)
-	last_chunk = chunk_counts-Vector3(1,1,1)
+	last_chunk = chunk_counts-Vector3i(1,1,1)
 	center_chunk = last_chunk/2
 	center_pos = center_chunk.floor()
-	signal_update(should_signal)
+	signal_update(true)
 
-func set_surface(level, should_signal:bool=true):
-	surface_level = level
+func set_surface(surface):
+	surface_level = surface
 	update_rects(false)
-	signal_update(should_signal)
+	signal_update(true)
 
-func set_bedrock(level, should_signal:bool=true):
-	bedrock_level = level
+func set_bedrock(bedrock):
+	bedrock_level = bedrock
 	update_rects(false)
-	signal_update(should_signal)
+	signal_update(true)
 
-func set_vox_size(size, should_signal:bool=true):
+func set_vox_size(size):
 	voxel_size = size
 	chunk_size = chunk_dims * voxel_size
 	vox_piv = Vector3.ONE * (voxel_size/2)
 	vox_per_chunk = chunk_size / voxel_size
-	signal_update(should_signal)
+	signal_update(true)
 
 func update_lod_ranges(should_signal:bool=true):
 	prints("lod ranges:", chunk_counts.x, chunk_dims.x)
-	lod_ranges = [(chunk_counts.x * chunk_dims.x) / 2]
+	lod_ranges = [float(chunk_counts.x * chunk_dims.x) / 2]
 	lod_count = int(log(chunk_counts.x)/log(2))
 	for _l in range(lod_count):
 		lod_ranges.append(lod_ranges.back() / 2)

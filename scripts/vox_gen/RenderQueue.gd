@@ -1,4 +1,4 @@
-extends Reference
+extends RefCounted
 
 class_name RenderQueue
 
@@ -6,7 +6,7 @@ var queue:Array = []
 var front:Chunk
 var back:Chunk
 
-func empty():
+func is_empty():
 	return front == null
 
 func erase(chunk:Chunk):
@@ -18,10 +18,10 @@ func erase(chunk:Chunk):
 
 func count(chunk:Chunk=front):
 	var num:int = 0
-	var verified:Dictionary
+	var verified:Dictionary = {}
 	while chunk != null:
 		num += 1
-		assert(not verified.get(chunk), "duplicate chunk in queue")
+		assert(not verified.get(chunk)) #,"duplicate chunk in queue")
 		verified[chunk] = true
 		chunk = chunk.next
 	return num
@@ -38,7 +38,7 @@ func enqueue(chunk:Chunk):
 	chunk.in_queue = true
 
 func flood(chunks:Array, overwrite:bool=false):
-	if not chunks.empty():
+	if not chunks.is_empty():
 		print("Flooding with ", chunks.size(), " chunks.")
 		var cur
 		if overwrite or front == null:
@@ -50,10 +50,10 @@ func flood(chunks:Array, overwrite:bool=false):
 			cur = front
 		else:
 			cur = back
-		while not chunks.empty():
+		while not chunks.is_empty():
 			var next:Chunk = chunks.pop_back()
 			if not next.in_queue:
-				assert(cur.next == null, "cur != null")
+				assert(cur.next == null) #,"cur != null")
 				cur.next = next
 				cur.next.prev = cur
 				cur = cur.next
@@ -72,7 +72,7 @@ func dequeues(num:int) -> Array:
 	return chunks
 
 func dequeue() -> Chunk:
-	# Pop chunk off queue
+	# Pop chunk unchecked queue
 	var chunk = front
 	if chunk:
 		if chunk.next:

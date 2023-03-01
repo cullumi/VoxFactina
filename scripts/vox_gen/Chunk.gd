@@ -1,12 +1,12 @@
-extends Reference
+extends RefCounted
 
 class_name Chunk
 
 var pos:Vector3 = Vector3()
 var offset:Vector3 = Vector3()
 var scale:Vector3 = Vector3()
-var new_instance:MeshInstance = null
-var instance:MeshInstance = null
+var new_instance:MeshInstance3D = null
+var instance:MeshInstance3D = null
 
 var priority:int = 0
 var in_render:bool = false
@@ -32,21 +32,23 @@ var deformed:bool = false
 var debug_mask:Node
 var debug_origin:Node
 
-func _init(_props, _pos:Vector3=Vector3(), _scale:Vector3=Vector3(), _depth:int=0, _tree=null, _instance:MeshInstance=null, _children:Array=[]):
+func _init(_props,_pos:Vector3=Vector3(),_scale:Vector3=Vector3(),_depth:int=0,_tree=null,_instance:MeshInstance3D=null,_children:Array=[]):
 	props = _props
 	pos = _pos
 	scale = _scale
 	depth = _depth
-	tree_height = props.lod_count
-	offset = props.offset(pos, depth)
+	if props:
+		tree_height = props.lod_count
+		offset = props.offset(pos, depth)
 	instance = _instance
 	children = _children
-	init_debug_mask()
+	if (props):
+		init_debug_mask()
 
 func init_debug_mask():
-	debug_mask = MeshInstance.new()
+	debug_mask = MeshInstance3D.new()
 	debug_mask.scale = scale
-	debug_mask.mesh = CubeMesh.new()
+	debug_mask.mesh = BoxMesh.new()
 	debug_mask.material_override = props.debug_material
 	debug_mask.mesh.size = props.chunk_size
 
@@ -85,7 +87,7 @@ func children_rendered():
 	return true
 
 func deform() -> Array:
-	if children.empty():
+	if children.is_empty():
 		print("Something wasn't subdivided")
 		subdivide()
 	if children_rendered():
@@ -105,7 +107,7 @@ func deform_at(origin:Vector3, result:Dictionary={}) -> Dictionary:
 	var depth_check:bool = depth < tree_height-1
 	var dist_check:bool = close_enough(origin, distance)
 	if def_check and depth_check and dist_check:
-		if children.empty():
+		if children.is_empty():
 			subdivide()
 		deformed = true
 		for child in children:
@@ -120,10 +122,11 @@ func deform_at(origin:Vector3, result:Dictionary={}) -> Dictionary:
 			deformed = true
 	return result
 
-func close_enough(origin:Vector3, distance:float):
+func close_enough(origin:Vector3, distance:float) -> bool:
 	var aabb:AABB = AABB(pos, scale)
 	var intersect_point:Vector3 = origin.move_toward(pos, distance)
-	return aabb.intersects_segment(origin, intersect_point)
+	var intersects = aabb.intersects_segment(origin, intersect_point)
+	return intersects != null
 
 func subdivide():
 	var sub_scale = scale/2

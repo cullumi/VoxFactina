@@ -1,26 +1,27 @@
-extends Area
+extends Area3D
 
 class_name Planet
 
 # Properties
-export (float, 0, 3) var spawn_buffer:float = 0
-export (bool) var use_spawn = false
-export (Resource) var props
-export (bool) var orbiting = false
+@export_range (0, 3) var spawn_buffer:float = 0
+@export var use_spawn:bool = false
+@export var props:Resource
+@export var orbiting:bool = false
 
 # Nodes
-onready var vox_gen:VoxGen = $VoxGen
-onready var pivot:PlayerPivot
-onready var collider:CollisionShape = get_node("%CollisionShape")
-onready var spawn_cast:RayCast = $SpawnCast
+@onready var vox_gen:VoxGen = $VoxGen
+@onready var pivot:PlayerPivot
+@onready var collider:CollisionShape3D = get_node("%CollisionShape3D")
+@onready var spawn_cast:RayCast3D = $SpawnCast
 
 # Xforms
-func xformed(spatial:Spatial): return global_transform.xform_inv(spatial.global_translation)
+func xformed(spatial:Node3D): return spatial.global_position * global_transform
 var player_pos = Vector3()
 
 # Signals
 signal player_entered
 signal player_exited
+signal props_changed
 var exiting = false
 
 
@@ -31,6 +32,7 @@ func _on_Planet_child_entered_tree(node):
 		node.props = props
 
 func _init():
+	props.connect("changed", _on_Props_changed)
 	init_neighbors()
 
 func _ready():
@@ -59,6 +61,8 @@ func _on_Planet_body_exited(body):
 	if body is Player:
 		emit_signal("player_exited", self)
 
+func _on_Props_changed():
+	emit_signal("props_changed")
 
 ### Render Queue
 var neighbors:Array = []
@@ -94,34 +98,34 @@ func spawn_player():
 	var top:float = props.chunk_counts[spawn_axis] * dim
 	var cast_vector = Vector3(0,0,0)
 	cast_vector[spawn_axis] = top * spawn_dir
-	spawn_cast.translation = cast_vector
-	spawn_cast.cast_to = -cast_vector
+	spawn_cast.position = cast_vector
+	spawn_cast.target_position = -cast_vector
 	spawn_cast.enabled = true
 	spawn_cast.force_raycast_update()
 	if spawn_cast.is_colliding():
-		pivot.global_translation = spawn_cast.get_collision_point()
-		pivot.global_translation[spawn_axis] += (spawn_buffer * spawn_dir)
+		pivot.global_position = spawn_cast.get_collision_point()
+		pivot.global_position[spawn_axis] += (spawn_buffer * spawn_dir)
 	spawn_cast.enabled = false
-	prints("Spawned at:", pivot.global_translation)
+	prints("Spawned at:", pivot.global_position)
 	reorient_player()
 
 
 ### Player Orientation
 
-# Get the gravity based on the player's location; reorient the player if needed.
+# Get the gravity based checked the player's location; reorient the player if needed.
 var cur_gravity = Vector3()
 func reorient_player():
-	var gravity = props.type().gravity_dir(player_pos).normalized()
-	pivot.reorient_player(gravity)
+	var _gravity = props.type().gravity_dir(player_pos).normalized()
+	pivot.reorient_player(_gravity)
 
 # Orient the Player based on a given gravity vector
-func orient_player(gravity, last_gravity):
-	var angle:float = -gravity.angle_to(last_gravity)
-	var axis:Vector3 = gravity.cross(last_gravity).normalized()
-	if axis and axis.is_normalized():
+func orient_player(_gravity, last_gravity):
+	var angle:float = -_gravity.angle_to(last_gravity)
+	var axis:Vector3 = _gravity.cross(last_gravity).normalized()
+	if axis!=Vector3() and axis.is_normalized(): # Vector3 and bool
 		if angle != 0 and angle != -0:
 			# Roll the basis
-			var basis = pivot.target.basis.rotated(axis, angle)
-			pivot.target.basis = basis.orthonormalized()
+			var _basis = pivot.target.basis.rotated(axis, angle)
+			pivot.target.basis = _basis.orthonormalized()
 	else:
 		prints("Axis not normalized...", axis, "[%.2f]" % angle)

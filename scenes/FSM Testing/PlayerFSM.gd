@@ -1,4 +1,4 @@
-extends KinematicBody
+extends CharacterBody3D
 
 class_name Player
 
@@ -14,44 +14,44 @@ var CURVES_RES = [
 ]
 
 ## Initialization Properties
-export var start_out_flying:bool = false
+@export var start_out_flying:bool = false
 
 ## Input Properties
-export var mouse_sens = Vector2(.1,.1) # sensitivities for each
-export var gamepad_sens = Vector2(2,2) # axis + input
-export var gamepad_curve = Curves.INV_S # curve analog inputs map to
+@export var mouse_sens = Vector2(.1,.1) # sensitivities for each
+@export var gamepad_sens = Vector2(2,2) # axis + input
+@export var gamepad_curve = Curves.INV_S # curve analog inputs map to
 
 ## Multiplayer Properties
-export var id = 0
-export var mouse_control = true # only works for lowest viewport (first child)
+@export var id = 0
+@export var mouse_control = true # only works for lowest viewport (first child)
 
 ## Movement Properties
 # Defaults
-export var move_speed = 7 # max move speed
-export var acceleration = 1 # ground acceleration
-export var air_speed = 7 # max move speed in air
-export var air_acceleration = .5 # air acceleration
-export var jump_speed = 5 # length in frames to reach apex
-export var jump_height = 1 # apex in meters of jump
-export var coyote_factor = 3 # jump forgiveness after leaving platform in frames
-export var gravity_accel = -12 # how fast fall speed increases
-export var gravity_max = -24 # max falling speed
-export var friction = 1.15 # how fast player stops when idle
-export var max_climb_angle = 0.6 # 0.0-1.0 based on normal of collision .5 for 45 degree slope
-export var angle_of_freedom = 80 # amount player may look up/down
+@export var move_speed = 7 # max move speed
+@export var acceleration = 1 # ground acceleration
+@export var air_speed = 7 # max move speed in air
+@export var air_acceleration = .5 # air acceleration
+@export var jump_speed = 5 # length in frames to reach apex
+@export var jump_height = 1 # apex in meters of jump
+@export var coyote_factor = 3 # jump forgiveness after leaving platform in frames
+@export var gravity_accel = -12 # how fast fall speed increases
+@export var gravity_max = -24 # max falling speed
+@export var friction = 1.15 # how fast player stops when idle
+@export var max_climb_angle = 0.6 # 0.0-1.0 based checked normal of collision .5 for 45 degree slope
+@export var angle_of_freedom = 80 # amount player may look up/down
 # Flying
-export (float, EXP, 1, 1000) var fly_speed = 14.0
-export (float, EXP, 0.1, 10) var fly_acceleration = .5
-export (float, 1, 1.5) var fly_friction = 1.15
-export (float, EXP, 1, 2) var fly_jump_speed = 10.0
-export (float, EXP, 0, 10) var fly_jump_height = 1.0
+@export_range (1, 1000, 1, "exp") var fly_speed:float = 14.0
+@export_range (0.1, 10, 1, "exp") var fly_acceleration:float = .5
+@export_range (1, 1.5, 1, "exp") var fly_friction:float = 1.15
+@export_range (1, 2, 1, "exp") var fly_jump_speed:float = 10.0
+@export_range (0, 10, 1, "exp") var fly_jump_height:float = 1.0
 # Sprint
-export (float, EXP, 1, 10) var sprint_multiplier = 14.0
+@export_range (1, 10, 1, "exp") var sprint_multiplier:float = 14.0
 
 ### Nodes
-onready var camera:Camera = get_node("%Camera")
-onready var collider:CollisionShape = get_node("%Collider")
-onready var mv:FSM = get_node("%Movement")
+@onready var camera:Camera3D = get_node("%Camera3D")
+@onready var collider:CollisionShape3D = get_node("%Collider")
+@onready var mv:FSM = get_node("%Movement")
 var st_default:NodePath = "%Fall"
 var st_jump:NodePath = "%Jump"
 enum st {idle, run, jump, fall, floatt, fly, ascend, descend}
@@ -66,8 +66,8 @@ var sts_nodes:Array = []
 var on_floor:bool = false
 var frames:float = 0 # frame jumping
 var input_dir:Vector3 = Vector3()
-var collision:KinematicCollision # Stores the collision from move_and_collide
-var velocity:Vector3 = Vector3()
+var collision:KinematicCollision3D # Stores the collision from move_and_collide
+#var velocity:Vector3 = Vector3()
 var coyote_frames:float = 0
 var falling = false
 var jumping = false
@@ -118,9 +118,9 @@ func _process_input(_delta):
 	# Map gamepad look to curves
 	var signs = Vector2(sign(look_vec.x),sign(look_vec.y))
 	var sens_curv = CURVES_RES[gamepad_curve]
-	look_vec = look_vec.abs() # Interpolate input on the curve as positives
-	look_vec.x = sens_curv.interpolate_baked(look_vec.x)
-	look_vec.y = sens_curv.interpolate_baked(look_vec.y)
+	look_vec = look_vec.abs() # Interpolate input checked the curve as positives
+	look_vec.x = sens_curv.sample_baked(look_vec.x)
+	look_vec.y = sens_curv.sample_baked(look_vec.y)
 	look_vec *= signs # Return inputs to original signs
 	cam_rotate(look_vec, gamepad_sens)
 
@@ -148,7 +148,7 @@ func _process_flying_input(_delta):
 
 ## Conversions
 func relative(vector:Vector3):
-	var formed = global_transform.basis.xform(vector)
+	var formed = global_transform.basis * vector
 	var roted = formed.rotated(global_transform.basis.y.normalized(), -rotation.y)
 	return roted
 func collision_angle(): return global_transform.basis.y.normalized().dot(collision.normal)
@@ -173,14 +173,14 @@ func apply(delta):
 	else:
 		velocity = Vector3(0, velocity.y, 0)
 	if collision:
-		if collision_angle() < .5: # if collision is 50% not from below aka if on slope
+		if collision_angle() < .5: # if collision is 50% not from below aka if checked slope
 			velocity.y += delta * gravity_accel
 			velocity.y = clamp(velocity.y, gravity_max, 9999)
 			velocity = velocity.slide(collision_relative().normalized()).normalized() * velocity.length()
 
 func cam_rotate(vect, sens):
-	rotate_y(deg2rad(vect.x * sens.y * -1))
-	camera.rotate_x(deg2rad(vect.y * sens.x * -1))
+	rotate_y(deg_to_rad(vect.x * sens.y * -1))
+	camera.rotate_x(deg_to_rad(vect.y * sens.x * -1))
 	
 	var camera_rot = camera.rotation_degrees
 	camera_rot.x = clamp(camera_rot.x, 90 - angle_of_freedom, 90 + angle_of_freedom)

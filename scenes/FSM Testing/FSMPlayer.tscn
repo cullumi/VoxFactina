@@ -1,72 +1,81 @@
-[gd_scene load_steps=11 format=2]
+[gd_scene load_steps=14 format=3 uid="uid://ctgug0y4bvuwm"]
 
-[ext_resource path="res://scenes/FSM Testing/PlayerFSM.gd" type="Script" id=1]
-[ext_resource path="res://addons/hexagon-fsm/fsm.gd" type="Script" id=2]
-[ext_resource path="res://addons/simple_fps_controller/Crosshair.png" type="Texture" id=3]
-[ext_resource path="res://scripts/states/player_float.gd" type="Script" id=4]
-[ext_resource path="res://scripts/states/player_run.gd" type="Script" id=5]
-[ext_resource path="res://scripts/states/player_idle.gd" type="Script" id=6]
-[ext_resource path="res://scripts/states/player_jump.gd" type="Script" id=7]
-[ext_resource path="res://scripts/states/player_fall.gd" type="Script" id=8]
-[ext_resource path="res://scripts/states/player_fly.gd" type="Script" id=11]
+[ext_resource type="Script" path="res://scenes/FSM Testing/PlayerFSM.gd" id="1"]
+[ext_resource type="Script" path="res://addons/hexagon-fsm/fsm.gd" id="2"]
+[ext_resource type="Texture2D" uid="uid://bd6cerh75g0xr" path="res://addons/simple_fps_controller/Crosshair.png" id="3"]
+[ext_resource type="Script" path="res://scripts/states/player_float.gd" id="4"]
+[ext_resource type="Script" path="res://scripts/states/player_run.gd" id="5"]
+[ext_resource type="Script" path="res://scripts/states/player_idle.gd" id="6"]
+[ext_resource type="Script" path="res://scripts/states/player_jump.gd" id="7"]
+[ext_resource type="Script" path="res://scripts/states/player_fall.gd" id="8"]
+[ext_resource type="Script" path="res://scripts/states/player_fly.gd" id="11"]
 
-[sub_resource type="CapsuleShape" id=1]
-radius = 0.5
+[sub_resource type="CapsuleShape3D" id="1"]
 
-[node name="Player" type="KinematicBody"]
-script = ExtResource( 1 )
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_cawhy"]
+sky_top_color = Color(0.152941, 0.447059, 0.858824, 1)
+sky_horizon_color = Color(0.647059, 0.654902, 0.670588, 1)
+ground_bottom_color = Color(0, 0, 0, 1)
+ground_horizon_color = Color(0.458824, 0.458824, 0.458824, 1)
 
-[node name="Collider" type="CollisionShape" parent="."]
+[sub_resource type="Sky" id="Sky_2rajb"]
+sky_material = SubResource("ProceduralSkyMaterial_cawhy")
+
+[sub_resource type="Environment" id="Environment_im1sb"]
+background_mode = 2
+sky = SubResource("Sky_2rajb")
+
+[node name="Player" type="CharacterBody3D"]
+script = ExtResource("1")
+
+[node name="Collider" type="CollisionShape3D" parent="."]
 unique_name_in_owner = true
-transform = Transform( 1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 0.25, 0 )
-shape = SubResource( 1 )
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 0.25, 0)
+shape = SubResource("1")
 
-[node name="Camera" type="Camera" parent="Collider"]
+[node name="Camera3D" type="Camera3D" parent="Collider"]
 unique_name_in_owner = true
-transform = Transform( 1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, 0, -2.11571e-08, 0.484018 )
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, 0, -2.11571e-08, 0.484018)
+environment = SubResource("Environment_im1sb")
 current = true
 fov = 90.0
 far = 1000.0
 
-[node name="RayCast" type="RayCast" parent="Collider/Camera"]
-enabled = true
-cast_to = Vector3( 0, 0, -500 )
+[node name="RayCast3D" type="RayCast3D" parent="Collider/Camera3D"]
 
 [node name="HUD" type="CenterContainer" parent="."]
+anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 
 [node name="Crosshair_Tex" type="TextureRect" parent="HUD"]
-margin_left = 476.0
-margin_top = 264.0
-margin_right = 548.0
-margin_bottom = 336.0
-texture = ExtResource( 3 )
+layout_mode = 2
+texture = ExtResource("3")
 
 [node name="Movement" type="Node" parent="."]
 unique_name_in_owner = true
-script = ExtResource( 2 )
+script = ExtResource("2")
 
 [node name="Idle" type="Node" parent="Movement"]
 unique_name_in_owner = true
-script = ExtResource( 6 )
+script = ExtResource("6")
 
 [node name="Run" type="Node" parent="Movement"]
 unique_name_in_owner = true
-script = ExtResource( 5 )
+script = ExtResource("5")
 
 [node name="Jump" type="Node" parent="Movement"]
 unique_name_in_owner = true
-script = ExtResource( 7 )
+script = ExtResource("7")
 
 [node name="Fall" type="Node" parent="Movement"]
 unique_name_in_owner = true
-script = ExtResource( 8 )
+script = ExtResource("8")
 
 [node name="Float" type="Node" parent="Movement"]
 unique_name_in_owner = true
-script = ExtResource( 4 )
+script = ExtResource("4")
 
 [node name="Fly" type="Node" parent="Movement"]
 unique_name_in_owner = true
-script = ExtResource( 11 )
+script = ExtResource("11")

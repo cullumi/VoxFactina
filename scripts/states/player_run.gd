@@ -1,11 +1,11 @@
 class_name Run # Replace this with your state's name
 extends State
 
-onready var p:Player
-onready var mv:FSM = get_node("%Movement")
+@onready var p:Player
+@onready var mv:FSM = get_node("%Movement")
 
-onready var st_fall:NodePath = "%Fall"
-onready var st_idle:NodePath = "%Idle"
+@onready var st_fall:NodePath = "%Fall"
+@onready var st_idle:NodePath = "%Idle"
 
 # Called when a state enters the finite state machine
 func _enter_state():
@@ -46,7 +46,7 @@ func _physics_process_state(delta: float):
 		var rel_adj = ((rel_xz.dot(p.collision.normal)) * -1)
 		p.velocity.y = -rel_adj
 	
-	# fake gravity to keep character on the ground
+	# fake gravity to keep character checked the ground
 	# increase if player is falling down slopes instead of running
 	p.velocity.y -= .0001 + (int(p.velocity.y < 0) * 1.1)
 

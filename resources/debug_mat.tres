@@ -1,6 +1,5 @@
-[gd_resource type="SpatialMaterial" format=2]
+[gd_resource type="StandardMaterial3D" format=3 uid="uid://dwgxbpslbgp0o"]
 
 [resource]
-flags_transparent = true
-params_depth_draw_mode = 3
-albedo_color = Color( 1, 1, 1, 0.0431373 )
+transparency = 4
+albedo_color = Color(1, 0, 0, 0.537255)

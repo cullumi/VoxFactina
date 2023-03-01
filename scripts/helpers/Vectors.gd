@@ -1,4 +1,4 @@
-extends Reference
+extends RefCounted
 
 class_name Vectors
 
@@ -111,10 +111,10 @@ static func has_vector(vectors:Array, av:float, bv:float, a:int, b:int):
 # 2 coord line functions
 static func row_2coord(vectors:Array, a:int, b:int, bb:int, dims:Vector3):
 	var digit_max = ceil(dims[a]/10)
-	var line_digit = digit_max - ceil(bb/10.0)
-	var line = "  " + " ".repeat(line_digit) + String(bb) + " |"
+	var line_digit = max(0, digit_max - ceil(bb+1/10.0))
+	var line = "   " + " ".repeat(line_digit) + str(bb) + " |"
 	for aa in range(dims[a]):
-		var digit = ceil(aa/10.0)
+		var digit = max(0, digit_max - ceil(aa+1/10.0))
 		line += " " + " ".repeat(digit)
 		if has_vector(vectors, aa, bb, a, b):
 			line += "*"
@@ -127,7 +127,7 @@ static func header_2coord(_vectors:Array, a:int, dims:Vector3):
 	var space = " ".repeat(int(floor(dims[a]/10)))
 	var top = space + "     |"
 	for aa in range(dims[a]):
-		top += " " + String(aa)
+		top += " " + str(aa)
 	top += " "
 	return top
 

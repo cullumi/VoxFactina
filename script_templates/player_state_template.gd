@@ -3,8 +3,8 @@ extends State
 
 
 # player and finite state machine
-onready var p:Player
-onready var mv:FSM = get_node("%Movement")
+@onready var p:Player
+@onready var mv:FSM = get_node("%Movement")
 
 # other states to change to
 var st_fall:NodePath = "%PlayerFall"

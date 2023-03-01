@@ -1,17 +1,17 @@
-tool
+@tool
 
-extends MeshInstance
+extends MeshInstance3D
 
 class_name PlanetPreview
 
-export (bool) var redraw = false setget do_redraw
+@export var redraw:bool = false : set = do_redraw
 
 func do_redraw(_val):
 	redraw = false
 	draw()
 
 func _enter_tree():
-	if not Engine.editor_hint:
+	if not Engine.is_editor_hint():
 		return
 	draw()
 
@@ -24,11 +24,11 @@ func draw():
 	
 	var props:PlanetProperties = parent.props as PlanetProperties
 	if not props: return
-	elif not props.is_connected("changed", self, "draw"):
-		var _res := props.connect("changed", self, "draw")
+	elif not props.is_connected("changed",Callable(self,"draw")):
+		var _res := props.connect("changed",Callable(self,"draw"))
 	
 	if props.planet_type == props.TYPE.CUBE:
-		var cube := CubeMesh.new()
+		var cube := BoxMesh.new()
 		mesh = cube
 		cube.size = props.world_dims * props.voxel_size
 	else:

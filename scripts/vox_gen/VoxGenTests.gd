@@ -15,19 +15,19 @@ static func render_check(root:Chunk) -> bool:
 	return true
 
 # Check for Non Parent Chunks, print out a peek at where they are.
-static func np_chunks_check(chunks, props):
+static func np_chunks_check(chunks:Dictionary, props:PlanetProperties):
 	var np_chunks:Dictionary = {}
-	var __chunk:Chunk = null
+	var _chunk:Chunk = null
 	for key in chunks.keys():
-		__chunk = chunks[key]
-		if __chunk.parent == null:
-			np_chunks[key] = __chunk
-	if not np_chunks.empty():
+		_chunk = chunks[key]
+		if _chunk.parent == null:
+			np_chunks[key] = _chunk
+	if not np_chunks.is_empty():
 		print("Some chunks have no parents...")
 		Vectors.show_3coords(np_chunks.keys(), props.chunk_counts)
 
 # Print counts from a dictionary of chunk depths.
-static func print_chunk_depths(chunk_depths:Dictionary, condensed:bool=false):
+static func print_chunk_depths(chunk_depths:Dictionary):
 	print("Count:")
 	for key in chunk_depths.keys():
 		prints("\tdepth:", key, "->", chunk_depths[key].size())
@@ -47,15 +47,15 @@ static func octree_count(actual:Array, lods:Array, chunks:Dictionary):
 
 static func leave_trail(source:Node, chunk:Chunk, props):
 	if props.DEBUG:
-		var cookie:MeshInstance = MeshInstance.new()
-		cookie.mesh = CubeMesh.new()
+		var cookie:MeshInstance3D = MeshInstance3D.new()
+		cookie.mesh = BoxMesh.new()
 		cookie.mesh.size = Vector3(0.25, 0.25, 0.25)
-		var new_mat = SpatialMaterial.new()
+		var new_mat = StandardMaterial3D.new()
 		new_mat.albedo_color = props.cookie_material.albedo_color
 		new_mat.albedo_color.r = lerp(0, 255, chunk.depth/props.lod_count)
 		cookie.material_override = new_mat
 		source.add_child(cookie)
-		cookie.translation = chunk.offset
+		cookie.position = chunk.offset
 
 
 ### Voxels
