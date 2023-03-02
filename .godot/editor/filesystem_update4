@@ -4,3 +4,14 @@ res://resources/debug_mat.tres
 res://resources/small_orb.tres
 res://scenes/Main.gd
 res://scenes/FSM Testing/PlayerFSM.gd
+res://addons/g4climbnglide/PlayerContainer.tscn
+res://scenes/Test Nodes/PlayerPivot.gd
+res://addons/g4climbnglide/CharacterController.gd
+res://scripts/helpers/actions.gd
+res://scripts/helpers/Actions.gd
+res://resources/ship_world.tres
+res://scenes/FSM Testing/FSMPlayer.tscn
+res://addons/simple_fps_controller/Player.tscn
+res://addons/g4climbnglide/CharacterAnimationController.gd
+res://addons/g4climbnglide/StaminaBar.gd
+res://scripts/vox_gen/VoxGen.gd

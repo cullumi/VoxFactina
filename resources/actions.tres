@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="Actions" load_steps=2 format=3 uid="uid://dy6skl3rixypo"]
+
+[ext_resource type="Script" path="res://scripts/helpers/Actions.gd" id="1_cvbik"]
+
+[resource]
+script = ExtResource("1_cvbik")
+move_front = "forward"
+move_back = "backward"
+move_left = "left"
+move_right = "right"
+look_up = "look_up"
+look_down = "look_down"
+look_left = "look_left"
+look_right = "look_right"
+crouch = "crouch"
+jump = "jump"
+toggle_fly = "toggle_fly"
+dash = "dash"

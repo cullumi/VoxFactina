@@ -1,15 +1,15 @@
 [gd_scene load_steps=18 format=3 uid="uid://bxp8gsdstccwb"]
 
 [ext_resource type="Script" path="res://scenes/Main.gd" id="1"]
-[ext_resource type="PackedScene" path="res://scenes/PlayerPivot.tscn" id="2"]
 [ext_resource type="Resource" uid="uid://d0lcqcqbga4te" path="res://resources/small_orb.tres" id="3"]
 [ext_resource type="Script" path="res://scenes/Test Nodes/Reorient.gd" id="4"]
 [ext_resource type="Script" path="res://scenes/Test Nodes/Move.gd" id="5"]
+[ext_resource type="PackedScene" uid="uid://cimx1tw3ansd0" path="res://addons/g4climbnglide/PlayerContainer.tscn" id="5_e66tq"]
 [ext_resource type="Script" path="res://scenes/Test Nodes/MoveUpAndDown.gd" id="6"]
 [ext_resource type="Script" path="res://scenes/PlanetPreview.gd" id="7"]
 [ext_resource type="PackedScene" path="res://scenes/Planet.tscn" id="10"]
 
-[sub_resource type="SphereMesh" id="SphereMesh_tuhs2"]
+[sub_resource type="SphereMesh" id="SphereMesh_23q55"]
 radius = 20.0
 height = 40.0
 
@@ -58,12 +58,13 @@ use_spawn = true
 props = ExtResource("3")
 
 [node name="PlanetPreview" type="MeshInstance3D" parent="Sun/Planet"]
-mesh = SubResource("SphereMesh_tuhs2")
+mesh = SubResource("SphereMesh_23q55")
 surface_material_override/0 = SubResource("StandardMaterial3D_pi7vq")
 script = ExtResource("7")
 metadata/_edit_lock_ = true
 
-[node name="PlayerPivot" parent="." instance=ExtResource("2")]
+[node name="PlayerPivot" parent="." instance=ExtResource("5_e66tq")]
+unique_name_in_owner = true
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(0.766044, -0.291819, 0.572729, 0, 0.891007, 0.45399, -0.642788, -0.347777, 0.68255, 0, 0.940165, 0)
@@ -103,5 +104,3 @@ surface_material_override/0 = SubResource("StandardMaterial3D_tsfqn")
 transform = Transform3D(1, 0, 0, 0, 1, -1.74533e-05, 0, 1.74533e-05, 1, 0, 0, 0)
 
 [connection signal="props_changed" from="Sun/Planet" to="Sun/Planet/PlanetPreview" method="draw"]
-
-[editable path="PlayerPivot"]
