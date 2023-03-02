@@ -90,23 +90,26 @@ func prioritize():
 
 ### Player Spawn
 func spawn_player():
-	print("Spawn")
+	# Properties
 	var _player = pivot.player
 	var spawn_axis = vox_gen.spawn_axis
 	var spawn_dir = vox_gen.spawn_dir
 	var dim:float = props.chunk_dims[spawn_axis]
 	var top:float = props.chunk_counts[spawn_axis] * dim
+	# Setup ray cast
 	var cast_vector = Vector3(0,0,0)
 	cast_vector[spawn_axis] = top * spawn_dir
 	spawn_cast.position = cast_vector
 	spawn_cast.target_position = -cast_vector
+	# User ray cast
 	spawn_cast.enabled = true
 	spawn_cast.force_raycast_update()
 	if spawn_cast.is_colliding():
+		# Place player where the ray cast landed
 		pivot.global_position = spawn_cast.get_collision_point()
 		pivot.global_position[spawn_axis] += (spawn_buffer * spawn_dir)
 	spawn_cast.enabled = false
-	prints("Spawned at:", pivot.global_position)
+	
 	reorient_player()
 
 

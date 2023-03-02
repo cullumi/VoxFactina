@@ -1,13 +1,15 @@
-[gd_scene load_steps=8 format=3 uid="uid://dpihqjevt2x3n"]
+[gd_scene load_steps=9 format=3 uid="uid://dpihqjevt2x3n"]
 
 [ext_resource type="Script" path="res://scenes/Main.gd" id="1"]
 [ext_resource type="Resource" uid="uid://d0lcqcqbga4te" path="res://resources/small_orb.tres" id="3"]
+[ext_resource type="Material" uid="uid://byt7o771loaag" path="res://resources/preview_mat.tres" id="4_jb6w1"]
 [ext_resource type="PackedScene" path="res://addons/g4climbnglide/PlayerContainer.tscn" id="5_e66tq"]
 [ext_resource type="PackedScene" uid="uid://dg870l0u1m2v8" path="res://scenes/Testing/SceneAxes.tscn" id="6_n487x"]
 [ext_resource type="Script" path="res://scenes/Planets/PlanetPreview.gd" id="7"]
 [ext_resource type="PackedScene" path="res://scenes/Planets/Planet.tscn" id="10"]
 
-[sub_resource type="SphereMesh" id="SphereMesh_j2gb8"]
+[sub_resource type="SphereMesh" id="SphereMesh_t3jt5"]
+material = ExtResource("4_jb6w1")
 radius = 20.0
 height = 40.0
 
@@ -22,7 +24,7 @@ use_spawn = true
 props = ExtResource("3")
 
 [node name="PlanetPreview" type="MeshInstance3D" parent="Sun/Planet"]
-mesh = SubResource("SphereMesh_j2gb8")
+mesh = SubResource("SphereMesh_t3jt5")
 script = ExtResource("7")
 metadata/_edit_lock_ = true
 

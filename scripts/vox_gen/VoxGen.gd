@@ -5,7 +5,7 @@ class_name VoxGen
 ### Properties
 
 # Planet Properties
-@export var props:Resource
+@export var props:PlanetProperties
 
 # Spawn Orientation
 enum AXES {X, Y, Z}
@@ -22,7 +22,7 @@ func vector_spawn():
 	vector[spawn_axis] = spawn_dir
 	return vector
 @onready var spawn_vector = vector_spawn()
-@onready var spawn_height:float = (props.chunk_counts[spawn_axis]/2 * props.surface_level) * spawn_dir
+@onready var spawn_height:float = (props.chunk_counts[spawn_axis]/2.0 * props.surface_level) * spawn_dir
 func calc_spawn_offset():
 	var unchecked = props.center_pos[spawn_axis] + spawn_height
 	unchecked = floor(unchecked) if spawn_height < 0 else ceil(unchecked)
@@ -35,6 +35,7 @@ func calc_spawn_chunk():
 @onready var spawn_chunk:Vector3 = calc_spawn_chunk()
 
 # Octree & Render Queue
+@export var debug:bool = false
 signal initialized()
 var chunks:Dictionary = {}
 var render_queue:RenderQueue = RenderQueue.new()
@@ -59,7 +60,7 @@ func start():
 
 func initialize():
 	# Initialize Chunk Octree
-	print("\n\t\t\t\t\t\t\t\tINITIALIZE OCTREE")
+	debug_print("\n\t\t\t\t\t\t\t\tINITIALIZE OCTREE")
 	var spawn_pos = spawn_chunk
 	var lods_to_render = octree.create(props, spawn_pos)
 	chunks = octree.lods.back()
@@ -67,15 +68,15 @@ func initialize():
 	Tests.np_chunks_check(chunks, props)
 	
 	# Render
-	print("\n\t\t\t\t\t\t\t\tRENDER LODS")
+	debug_print("\n\t\t\t\t\t\t\t\tRENDER LODS")
 	render_lods(lods_to_render)
-	prints("Rendered:", Tests.render_check(octree.root))
+	debug_prints(["Rendered:", str(Tests.render_check(octree.root))])
 	initialize_spawn_chunks()
-	print("\n\t\t\t\t\t\t\t\tINITIALIZED")
+	debug_print("\n\t\t\t\t\t\t\t\tINITIALIZED")
 	emit_signal("initialized")
 
 func add_lod_parents():
-	prints("parents:", props.lod_count)
+	debug_prints(["parents:", str(props.lod_count)])
 	trail_parent = Node.new()
 	trail_parent.name = "Trail"
 	add_child(trail_parent)
@@ -85,7 +86,6 @@ func add_lod_parents():
 		add_child(lod_nodes[l])
 
 func render_lods(lods_to_render=lods):
-	
 	var to_render:Array = []
 	Tests.print_chunk_depths(lods_to_render)
 	
@@ -120,6 +120,20 @@ func initialize_spawn_chunks():
 #		while under.x >= spawn_max.x and under.y >= spawn_max.y and under.z >= spawn_max.z:
 #			_chunk = force_render(under)
 #			under = under-spawn_vector
+
+
+###
+func debug_prints(items:Array):
+	if not debug: return
+	var final = ""
+	for item in items:
+		final += str(item) + " "
+	final.strip_edges(false, true)
+	print(final)
+
+func debug_print(string:String):
+	if debug: print(string)
+
 
 ### Render Triggers
 
@@ -208,13 +222,15 @@ func new_instance(offset, mesh):
 
 ### Voxel Generation
 
-func add_voxels(chunk:Chunk, vectors:Array=[], voxels=null):
+func add_voxels(chunk:Chunk, vectors:Array=[], voxels:Dictionary={}):
 	for vector in vectors:
 		add_voxel(chunk, vector, voxels)
+	debug_prints(["Voxel count:", voxels.size(), "Vector count:", vectors.size()])
 
-func add_voxel(chunk:Chunk, base_pos:Vector3, voxels=null):
+func add_voxel(chunk:Chunk, base_pos:Vector3, voxels:Dictionary={}):
 	var scale_pos:Vector3 = base_pos * chunk.scale
 	var vox_pos = props.voxlocal(chunk.pos, scale_pos, chunk.depth)
 	var color = props.type().get_voxel_color(vox_pos)
 	if color.a != 0:
+#		if voxels.has(vox_pos): print(vox_pos, ": ", voxels[vox_pos])
 		voxels[vox_pos] = Voxel.new(scale_pos, vox_pos, color)

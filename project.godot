@@ -21,6 +21,7 @@ VoxelFactory="*res://addons/voxel_factory/voxel_factory.gd"
 ThreadPool="*res://scripts/autoloads/ThreadPool.gd"
 MarchingCubes="*res://scripts/autoloads/MarchingCubes.gd"
 Count="*res://scripts/autoloads/Counters.gd"
+Tests="*res://scripts/autoloads/Tests.gd"
 
 [editor_plugins]
 

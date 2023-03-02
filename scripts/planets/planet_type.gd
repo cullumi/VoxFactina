@@ -18,7 +18,7 @@ func _init(new_props=null):
 		noise = FastNoiseLite.new()
 		noise.seed = randi()
 		noise.fractal_octaves = 8
-		noise.frequency = 1/100
+		noise.frequency = 1.0/100.0
 		noise.fractal_gain = .5
 		noise.fractal_lacunarity = 2
 

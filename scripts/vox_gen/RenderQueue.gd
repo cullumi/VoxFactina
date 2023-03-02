@@ -6,6 +6,8 @@ var queue:Array = []
 var front:Chunk
 var back:Chunk
 
+const show_debug:bool = false
+
 func is_empty():
 	return front == null
 
@@ -39,7 +41,7 @@ func enqueue(chunk:Chunk):
 
 func flood(chunks:Array, overwrite:bool=false):
 	if not chunks.is_empty():
-		print("Flooding with ", chunks.size(), " chunks.")
+		if show_debug: print("Flooding with ", chunks.size(), " chunks.")
 		var cur
 		if overwrite or front == null:
 			var next:Chunk
@@ -60,7 +62,7 @@ func flood(chunks:Array, overwrite:bool=false):
 				cur.in_queue = true
 			
 		back = cur
-		print("Render Queue size of ", count(), ".")
+		if show_debug: print("Render Queue size of ", count(), ".")
 
 func higher_priority(a:Chunk, b:Chunk):
 	return a.priority < b.priority
