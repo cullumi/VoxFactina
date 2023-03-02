@@ -15,9 +15,9 @@ func _ready():
 	DefaultMaterial.flags_transparent = true
 
 # Starts the creation of the mesh
-func create_mesh(scale:Vector3, voxels:Dictionary, props, s_tool:SurfaceTool=Surfacetool) -> ArrayMesh:
-	assert(s_tool)
+func create_mesh(scale:Vector3, voxels:Dictionary, props:PlanetProperties, s_tool:SurfaceTool=Surfacetool) -> ArrayMesh:
 	
+	assert(s_tool)
 	s_tool.begin(Mesh.PRIMITIVE_TRIANGLES)
 	
 	if props.voxel_material:
@@ -37,13 +37,15 @@ func create_mesh(scale:Vector3, voxels:Dictionary, props, s_tool:SurfaceTool=Sur
 
 	# add meta data to resource for the editor.
 	for vox in voxels:
-		mesh.set_meta(str(vox), voxels[vox])
+		var meta_name = "vox_" + str(vox.x) + "_" + str(vox.y) + "_" + str(vox.z)
+		mesh.set_meta(meta_name, voxels[vox])
 	mesh.set_meta("voxel_size", props.voxel_size)
+	
 	s_tool.clear()
 	return mesh 
 
 # Add voxel to mesh
-func march(scale:Vector3, voxel:Voxel, props, s_tool:SurfaceTool, c_tests:Dictionary):
+func march(scale:Vector3, voxel:Voxel, props:PlanetProperties, s_tool:SurfaceTool, c_tests:Dictionary):
 	
 	var debug:bool = scale.x > 32
 	if debug: print(scale)
