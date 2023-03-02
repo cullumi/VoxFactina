@@ -4,6 +4,13 @@ class_name Vectors
 
 enum {X, Y, Z, OOB}
 
+static func to_meta_name(vector:Vector3) -> String:
+	var absv = vector.abs()
+	var prefix = "vox_pos_" if absv == vector else "neg_pos_"
+	var conv = func (val:float): return "_" + str(val)
+	var content = conv.call(absv.x) + conv.call(absv.y) + conv.call(absv.z)
+	return prefix + content
+
 # Return an angle from one vector to another, in degrees.
 static func angle_to(from, to):
 	return 90 - (to.dot(from) * 90)

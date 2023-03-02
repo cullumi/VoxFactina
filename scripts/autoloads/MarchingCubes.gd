@@ -37,7 +37,7 @@ func create_mesh(scale:Vector3, voxels:Dictionary, props:PlanetProperties, s_too
 
 	# add meta data to resource for the editor.
 	for vox in voxels:
-		var meta_name = "vox_" + str(vox.x) + "_" + str(vox.y) + "_" + str(vox.z)
+		var meta_name = Vectors.to_meta_name(vox)
 		mesh.set_meta(meta_name, voxels[vox])
 	mesh.set_meta("voxel_size", props.voxel_size)
 	
