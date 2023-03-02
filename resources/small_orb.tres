@@ -10,6 +10,7 @@ _data = [Vector2(0, 0), 0.0, 1.0, 0, 1, Vector2(1, 1), 1.0, 0.0, 1, 0]
 point_count = 2
 
 [sub_resource type="FastNoiseLite" id="1"]
+fractal_octaves = 8
 
 [resource]
 script = ExtResource("1")

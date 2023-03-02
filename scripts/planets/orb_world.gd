@@ -24,7 +24,7 @@ func get_voxel_color(pos:Vector3) -> Color:
 	if voxel_in_air(pos):
 		return Color(0,0,0,0)
 	else:
-		var rand = noise.get_noise_3dv(pos)
+		var rand = get_density(pos)
 		if rand >= 0: return Color.FOREST_GREEN
 		elif rand < 0 and rand > -.25: return Color.CORNSILK
 		elif rand <= -.25: return Color.CADET_BLUE

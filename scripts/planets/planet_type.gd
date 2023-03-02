@@ -8,7 +8,7 @@ enum {EXEMPT, AIR, LAND, BEDROCK}
 
 var props
 
-var noise = FastNoiseLite.new()
+var noise:FastNoiseLite
 
 func _init(new_props=null):
 	props = new_props
@@ -17,17 +17,17 @@ func _init(new_props=null):
 	if not noise:
 		noise = FastNoiseLite.new()
 		noise.seed = randi()
-		noise.octaves = 8
-		noise.period = 100
-		noise.persistence = .5
-		noise.lacunarity = 2
+		noise.fractal_octaves = 8
+		noise.frequency = 1/100
+		noise.fractal_gain = .5
+		noise.fractal_lacunarity = 2
 
 ## Content Queries
 func get_voxel_color(pos:Vector3) -> Color:
 	if voxel_is_air(pos):
 		return Color(0,0,0,0)
 	else:
-		var rand = noise.get_noise_3dv(pos)
+		var rand = get_density(pos)
 		return Color.FOREST_GREEN if rand <= 0 else Color.DARK_OLIVE_GREEN
 
 func voxel_is_air(_pos:Vector3) -> bool:

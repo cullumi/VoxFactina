@@ -10,7 +10,7 @@ func get_voxel_color(pos:Vector3) -> Color:
 	if voxel_is_air(pos):
 		return Color(0,0,0,0)
 	else:
-		var rand = noise.get_noise_3dv(pos)
+		var rand = get_density(pos)
 		var max_height = props.surface_level * props.radius
 		var height = max_height * ((rand + 1) / 2)
 		if pos.length() > height:
