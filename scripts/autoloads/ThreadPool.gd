@@ -35,7 +35,7 @@ func _enter_tree():
 	for _i in range(count):
 		var thread = Thread.new()
 		workers.append(thread)
-		thread.start(Callable(self,"worker").bind({"thread":thread}))
+		thread.start(worker.bind({"thread":thread}))
 		var id = thread.get_id()
 		mutexes[id] = Mutex.new()
 		semaphores[id] = Semaphore.new()
@@ -68,8 +68,8 @@ func finish_jobs(num:int):
 	for id in states:
 		if get_state(id) == DONE:
 			var job = jobs[id]
-			if job.cb_object and job.cb_method and job.has("results"):
-				job.cb_object.callv(job.cb_method, [job.results])
+			if job.callback.is_valid() and job.has("results"):
+				job.callback.callv([job.results])
 			idle_worker(id)
 			finished += 1
 			if finished == num:
@@ -90,15 +90,13 @@ func _exit_tree():
 
 ### Job Management
 
-func start_job(object:Object, method:String, args=[], cb_object:Object=null, cb_method:String=""):
+func start_job(callable:Callable, args=[], callback:Callable=Callable()):
 	var id = idles.pop_back()
 	if id:
 		jobs[id] = {
-			"object":object,
-			"method":method,
+			"callable":callable,
 			"args":args,
-			"cb_object":cb_object,
-			"cb_method":cb_method,
+			"callback":callback
 		}
 		set_state(id, WORK)
 		return true
@@ -116,7 +114,7 @@ func worker(args={"thread":null}):
 			match get_state(id):
 				WORK:
 					var job = jobs[id]
-					var work = await job.object.callv(job.method, job.args)
+					var work = await job.callable.callv(job.args)
 					jobs[id]["results"] = work
 					set_state(id, DONE)
 					report_done()

@@ -153,8 +153,8 @@ func render():
 				chunk.in_render = true
 				while true:
 					var res = ThreadPool.start_job(
-						self, "render_chunk", [chunk],
-						self, "finish_render"
+						render_chunk, [chunk],
+						finish_render
 					)
 					if res:
 						break
