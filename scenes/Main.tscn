@@ -7,9 +7,9 @@
 [ext_resource type="PackedScene" uid="uid://cimx1tw3ansd0" path="res://addons/g4climbnglide/PlayerContainer.tscn" id="5_e66tq"]
 [ext_resource type="Script" path="res://scenes/Test Nodes/MoveUpAndDown.gd" id="6"]
 [ext_resource type="Script" path="res://scenes/PlanetPreview.gd" id="7"]
-[ext_resource type="PackedScene" path="res://scenes/Planet.tscn" id="10"]
+[ext_resource type="PackedScene" uid="uid://cjpohdjd330x3" path="res://scenes/Planet.tscn" id="10"]
 
-[sub_resource type="SphereMesh" id="SphereMesh_23q55"]
+[sub_resource type="SphereMesh" id="SphereMesh_lk65k"]
 radius = 20.0
 height = 40.0
 
@@ -58,7 +58,7 @@ use_spawn = true
 props = ExtResource("3")
 
 [node name="PlanetPreview" type="MeshInstance3D" parent="Sun/Planet"]
-mesh = SubResource("SphereMesh_23q55")
+mesh = SubResource("SphereMesh_lk65k")
 surface_material_override/0 = SubResource("StandardMaterial3D_pi7vq")
 script = ExtResource("7")
 metadata/_edit_lock_ = true

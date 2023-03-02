@@ -5,6 +5,7 @@ extends Node3D
 var follow:Node3D
 @export var invertX:bool = false
 @export var invertY:bool = false
+@export var actions:Actions
 
 var mousev:Vector2
 var joyv:Vector2
@@ -21,7 +22,7 @@ func _input(event):
 		mouse = true
 	elif event is InputEventJoypadMotion:
 		if abs(event.axis_value) > 0.075:
-			joyv = Input.get_vector("camera_left","camera_right","camera_up","camera_down")*0.1
+			joyv = Input.get_vector(actions.look_left,actions.look_right,actions.look_up,actions.look_down)*0.1
 
 
 func _physics_process(delta):
