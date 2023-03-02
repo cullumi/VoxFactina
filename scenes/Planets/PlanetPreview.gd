@@ -28,13 +28,18 @@ func connect_props():
 # Only works if the parent is a Planet containing PlanetProperties and a PlanetType.
 func draw():
 	assert(props)
+	var material = null
+	if mesh and mesh is PrimitiveMesh:
+		material = mesh.material
 	match props.planet_type:
 		props.TYPE.CUBE:
-			var cube := BoxMesh.new()
+			var cube := mesh if mesh is BoxMesh else BoxMesh.new()
 			cube.size = props.world_dims * props.voxel_size
 			mesh = cube
+			mesh.material = material
 		_:
-			var sphere := SphereMesh.new()
+			var sphere := mesh if mesh is SphereMesh else SphereMesh.new()
 			sphere.radius = props.world_radii.x * props.voxel_size
 			sphere.height = props.world_dims.y * props.voxel_size
 			mesh = sphere
+			mesh.material = material
