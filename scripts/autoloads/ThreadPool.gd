@@ -114,7 +114,9 @@ func worker(args={"thread":null}):
 			match get_state(id):
 				WORK:
 					var job = jobs[id]
+					push_warning("Do work.")
 					var work = await job.callable.callv(job.args)
+					push_warning("Did work.")
 					jobs[id]["results"] = work
 					set_state(id, DONE)
 					report_done()

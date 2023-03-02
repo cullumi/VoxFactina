@@ -1,51 +1,15 @@
-[gd_scene load_steps=18 format=3 uid="uid://bxp8gsdstccwb"]
+[gd_scene load_steps=8 format=3 uid="uid://dpihqjevt2x3n"]
 
 [ext_resource type="Script" path="res://scenes/Main.gd" id="1"]
 [ext_resource type="Resource" uid="uid://d0lcqcqbga4te" path="res://resources/small_orb.tres" id="3"]
-[ext_resource type="Script" path="res://scenes/Test Nodes/Reorient.gd" id="4"]
-[ext_resource type="Script" path="res://scenes/Test Nodes/Move.gd" id="5"]
-[ext_resource type="PackedScene" uid="uid://cimx1tw3ansd0" path="res://addons/g4climbnglide/PlayerContainer.tscn" id="5_e66tq"]
-[ext_resource type="Script" path="res://scenes/Test Nodes/MoveUpAndDown.gd" id="6"]
-[ext_resource type="Script" path="res://scenes/PlanetPreview.gd" id="7"]
-[ext_resource type="PackedScene" uid="uid://cjpohdjd330x3" path="res://scenes/Planet.tscn" id="10"]
+[ext_resource type="PackedScene" path="res://addons/g4climbnglide/PlayerContainer.tscn" id="5_e66tq"]
+[ext_resource type="PackedScene" uid="uid://dg870l0u1m2v8" path="res://scenes/Testing/SceneAxes.tscn" id="6_n487x"]
+[ext_resource type="Script" path="res://scenes/Planets/PlanetPreview.gd" id="7"]
+[ext_resource type="PackedScene" path="res://scenes/Planets/Planet.tscn" id="10"]
 
-[sub_resource type="SphereMesh" id="SphereMesh_lk65k"]
+[sub_resource type="SphereMesh" id="SphereMesh_j2gb8"]
 radius = 20.0
 height = 40.0
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_pi7vq"]
-transparency = 1
-cull_mode = 2
-albedo_color = Color(0, 0.533333, 1, 0.0901961)
-
-[sub_resource type="Curve3D" id="2"]
-_data = {
-"points": PackedVector3Array(0, 0, 0, 0, 0, 0, 0, 6.71461, -10.0104, 0, 0, 0, 0, 0, 0, -0.837156, 11.1506, -5.20223, 0, 0, 0, 0, 0, 0, 0, 14.0743, 0.777191, 0, 0, 0, 0, 0, 0, 10.4759, 8.90592, 0.351833, 0, 0, 0, 0, 0, 0, 0, 9.73916, 8.33855, 0, 0, 0, 0, 0, 0, -13.5203, 5.49336, 11.5091, 0, 0, 0, 0, 0, 0, 14.7206, -2.04486, 12.0872, 0, 0, 0, 0, 0, 0, 0, -4.9803, 8.43937, 0, 0, 0, 0, 0, 0, 0, -9.81957, 4.40665, 0, 0, 0, 0, 0, 0, 1.7268, -13.3482, -2.1796, 0, 0, 0, 0, 0, 0, -7.75539, -4.06555, 0.0472507, 0, 0, 0, 0, 0, 0, 0, -4.27457, -9.90954, 0, 0, 0, 0, 0, 0, 11.8077, -2.77376, -10.5859, 0, 0, 0, 0, 0, 0, 0, 6.71461, -10.0104),
-"tilts": PackedFloat32Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
-}
-point_count = 14
-
-[sub_resource type="StandardMaterial3D" id="10"]
-transparency = 1
-albedo_color = Color(1, 1, 1, 0.94902)
-
-[sub_resource type="BoxMesh" id="1"]
-size = Vector3(2, 1, 3)
-
-[sub_resource type="BoxMesh" id="3"]
-size = Vector3(0.125, 100, 0.125)
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_by04d"]
-vertex_color_use_as_albedo = true
-albedo_color = Color(0.337255, 0.788235, 0, 1)
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_6nju2"]
-vertex_color_use_as_albedo = true
-albedo_color = Color(0, 0.329412, 0.788235, 1)
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_tsfqn"]
-vertex_color_use_as_albedo = true
-albedo_color = Color(0.788235, 0, 0, 1)
 
 [node name="Main" type="Node3D"]
 script = ExtResource("1")
@@ -58,49 +22,13 @@ use_spawn = true
 props = ExtResource("3")
 
 [node name="PlanetPreview" type="MeshInstance3D" parent="Sun/Planet"]
-mesh = SubResource("SphereMesh_lk65k")
-surface_material_override/0 = SubResource("StandardMaterial3D_pi7vq")
+mesh = SubResource("SphereMesh_j2gb8")
 script = ExtResource("7")
 metadata/_edit_lock_ = true
 
 [node name="PlayerPivot" parent="." instance=ExtResource("5_e66tq")]
 unique_name_in_owner = true
 
-[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
-transform = Transform3D(0.766044, -0.291819, 0.572729, 0, 0.891007, 0.45399, -0.642788, -0.347777, 0.68255, 0, 0.940165, 0)
-
-[node name="Path3D" type="Path3D" parent="."]
-curve = SubResource("2")
-
-[node name="PathFollow3D" type="PathFollow3D" parent="Path3D"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 6.71461, -10.0104)
-rotation_mode = 0
-script = ExtResource("5")
-
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Path3D/PathFollow3D"]
-material_override = SubResource("10")
-mesh = SubResource("1")
-skeleton = NodePath("../../..")
-script = ExtResource("4")
-
-[node name="Orb" type="Node3D" parent="."]
-script = ExtResource("6")
-
-[node name="Tower" type="MeshInstance3D" parent="."]
-mesh = SubResource("3")
-surface_material_override/0 = SubResource("StandardMaterial3D_by04d")
-
-[node name="Tower2" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0, 0)
-mesh = SubResource("3")
-surface_material_override/0 = SubResource("StandardMaterial3D_6nju2")
-
-[node name="Tower3" type="MeshInstance3D" parent="."]
-transform = Transform3D(-4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0, 0, 1, 0, 0, 0)
-mesh = SubResource("3")
-surface_material_override/0 = SubResource("StandardMaterial3D_tsfqn")
-
-[node name="Node3D" type="Node3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, -1.74533e-05, 0, 1.74533e-05, 1, 0, 0, 0)
+[node name="Axes" parent="." instance=ExtResource("6_n487x")]
 
 [connection signal="props_changed" from="Sun/Planet" to="Sun/Planet/PlanetPreview" method="draw"]

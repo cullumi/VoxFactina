@@ -1,0 +1,32 @@
+[gd_scene load_steps=6 format=3 uid="uid://dycmv60fypxu8"]
+
+[ext_resource type="Script" path="res://scenes/FloatingBox/AutoPathFollow3D.gd" id="1_wd872"]
+[ext_resource type="Script" path="res://scenes/FloatingBox/BoxReorient.gd" id="2_nw13j"]
+
+[sub_resource type="Curve3D" id="2"]
+_data = {
+"points": PackedVector3Array(0, 0, 0, 0, 0, 0, 0, 6.71461, -10.0104, 0, 0, 0, 0, 0, 0, -0.837156, 11.1506, -5.20223, 0, 0, 0, 0, 0, 0, 0, 14.0743, 0.777191, 0, 0, 0, 0, 0, 0, 10.4759, 8.90592, 0.351833, 0, 0, 0, 0, 0, 0, 0, 9.73916, 8.33855, 0, 0, 0, 0, 0, 0, -13.5203, 5.49336, 11.5091, 0, 0, 0, 0, 0, 0, 14.7206, -2.04486, 12.0872, 0, 0, 0, 0, 0, 0, 0, -4.9803, 8.43937, 0, 0, 0, 0, 0, 0, 0, -9.81957, 4.40665, 0, 0, 0, 0, 0, 0, 1.7268, -13.3482, -2.1796, 0, 0, 0, 0, 0, 0, -7.75539, -4.06555, 0.0472507, 0, 0, 0, 0, 0, 0, 0, -4.27457, -9.90954, 0, 0, 0, 0, 0, 0, 11.8077, -2.77376, -10.5859, 0, 0, 0, 0, 0, 0, 0, 6.71461, -10.0104),
+"tilts": PackedFloat32Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+}
+point_count = 14
+
+[sub_resource type="StandardMaterial3D" id="10"]
+transparency = 1
+albedo_color = Color(1, 1, 1, 0.94902)
+
+[sub_resource type="BoxMesh" id="1"]
+size = Vector3(2, 1, 3)
+
+[node name="Path3D" type="Path3D"]
+curve = SubResource("2")
+
+[node name="PathFollow3D" type="PathFollow3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 6.71461, -10.0104)
+rotation_mode = 0
+script = ExtResource("1_wd872")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="PathFollow3D"]
+material_override = SubResource("10")
+mesh = SubResource("1")
+skeleton = NodePath("../../..")
+script = ExtResource("2_nw13j")

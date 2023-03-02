@@ -124,12 +124,10 @@ func set_vox_size(size):
 	signal_update(true)
 
 func update_lod_ranges(should_signal:bool=true):
-	prints("lod ranges:", chunk_counts.x, chunk_dims.x)
 	lod_ranges = [float(chunk_counts.x * chunk_dims.x) / 2]
 	lod_count = int(log(chunk_counts.x)/log(2))
 	for _l in range(lod_count):
 		lod_ranges.append(lod_ranges.back() / 2)
-	prints("Lod Ranges:", lod_ranges)
 	signal_update(should_signal)
 
 func update_world_dims(should_signal:bool=true):
