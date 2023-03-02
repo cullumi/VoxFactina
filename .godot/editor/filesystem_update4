@@ -3,3 +3,4 @@ res://resources/voxel_mat.tres
 res://resources/debug_mat.tres
 res://resources/small_orb.tres
 res://scenes/Main.gd
+res://scenes/FSM Testing/PlayerFSM.gd

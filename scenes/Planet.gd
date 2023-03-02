@@ -5,7 +5,7 @@ class_name Planet
 # Properties
 @export_range (0, 3) var spawn_buffer:float = 0
 @export var use_spawn:bool = false
-@export var props:Resource
+@export var props:PlanetProperties
 @export var orbiting:bool = false
 
 # Nodes
@@ -32,10 +32,10 @@ func _on_Planet_child_entered_tree(node):
 		node.props = props
 
 func _init():
-	props.connect("changed", _on_Props_changed)
 	init_neighbors()
 
 func _ready():
+	props.changed.connect(_on_Props_changed)
 	collider.shape.extents = props.world_dims * props.voxel_size
 
 func _physics_process(_delta):

@@ -101,12 +101,6 @@ func _input(event):
 
 ### Inputs
 func _process_input(_delta):
-	# Toggle mouse capture
-	if Input.is_action_just_pressed("mouse_escape") && mouse_control:
-			if Input.get_mouse_mode() == Input.MOUSE_MODE_VISIBLE:
-				Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
-			else:
-				Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
 	# WASD
 	input_dir = Vector3(Input.get_action_strength("right_%s" % id) - Input.get_action_strength("left_%s" % id), 0,
 			Input.get_action_strength("back_%s" % id) - Input.get_action_strength("forward_%s" % id)).normalized()

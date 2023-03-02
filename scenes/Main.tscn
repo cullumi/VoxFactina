@@ -9,7 +9,7 @@
 [ext_resource type="Script" path="res://scenes/PlanetPreview.gd" id="7"]
 [ext_resource type="PackedScene" path="res://scenes/Planet.tscn" id="10"]
 
-[sub_resource type="SphereMesh" id="SphereMesh_hcdgr"]
+[sub_resource type="SphereMesh" id="SphereMesh_tuhs2"]
 radius = 20.0
 height = 40.0
 
@@ -58,7 +58,7 @@ use_spawn = true
 props = ExtResource("3")
 
 [node name="PlanetPreview" type="MeshInstance3D" parent="Sun/Planet"]
-mesh = SubResource("SphereMesh_hcdgr")
+mesh = SubResource("SphereMesh_tuhs2")
 surface_material_override/0 = SubResource("StandardMaterial3D_pi7vq")
 script = ExtResource("7")
 metadata/_edit_lock_ = true
