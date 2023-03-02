@@ -41,6 +41,7 @@ var last_wall_normal:Vector3 = Vector3.FORWARD
 var last_on_floor:float = 0
 
 
+var flying:bool = false
 var climbing:bool = false
 
 
@@ -97,11 +98,17 @@ func _physics_process(delta):
 	movement = Vector3.ZERO;
 	
 	
+	# toggle flying
+	if Actions.pressed(actions.toggle_fly):
+		flying = not flying
+	
+	
 	#get directional input
 	if ! state.RUN in locked:
-		var vertical = Input.get_action_strength(actions.move_front) - Input.get_action_strength(actions.move_back)
-		var horizontal = Input.get_action_strength(actions.move_left) - Input.get_action_strength(actions.move_right)
-		control_direction = Vector2(horizontal,vertical).normalized()
+		control_direction = Actions.vector(actions.move)
+#		var vertical = Actions.strength(actions.move_front) - Actions.strength(actions.move_back)
+#		var horizontal = Actions.strength(actions.move_left) - Actions.strength(actions.move_right)
+#		control_direction = Vector2(horizontal,vertical).normalized()
 	
 	#save that directional input in case we need it later
 	if control_direction.length()>0.1:
@@ -122,7 +129,7 @@ func _physics_process(delta):
 
 	
 	#get jump/climb button input. If we're not climbing then store jump for later
-	if Input.is_action_just_pressed(actions.jump) and ! state.JUMP in locked:
+	if Actions.pressed(actions.jump) and ! state.JUMP in locked:
 		if last_on_wall<climb_hold_time and !climbing:
 			climbing = true
 		elif last_on_floor < air_run_time or last_on_wall<climb_hold_time:
@@ -165,7 +172,8 @@ func _physics_process(delta):
 		movement += camera_relative
 		
 	#dash input and set direction
-	if Input.is_action_just_pressed(actions.dash) and dashtime <= 0  and (last_on_floor< air_run_time || air_dash) and ! state.DASH in locked:
+	var no_air_restrict:bool = (last_on_floor < air_run_time || air_dash)
+	if Actions.pressed(actions.dash) and dashtime <= 0  and no_air_restrict and ! state.DASH in locked:
 		dashtime = dash_length
 		rotation.y = (last_facing*Vector2(-1,1)).rotated(PI*1.5).angle()+camera.rotation.y
 		dashdir = Vector3(0,0,dash_speed*runspeed*control_direction.length()).rotated(Vector3.UP,rotation.y)
@@ -181,7 +189,7 @@ func _physics_process(delta):
 		fallspeed = 0;
 		glidable = false
 	else:
-		if Input.is_action_pressed(actions.jump) and ! state.GLIDE in locked and glidable:
+		if Actions.down(actions.jump) and ! state.GLIDE in locked and glidable:
 			fallspeed = gravity*0.1
 			current_state = state.GLIDE
 		else:

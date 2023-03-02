@@ -21,8 +21,7 @@ func _input(event):
 		mousev += Input.get_last_mouse_velocity()*0.00001
 		mouse = true
 	elif event is InputEventJoypadMotion:
-		if abs(event.axis_value) > 0.075:
-			joyv = Input.get_vector(actions.look_left,actions.look_right,actions.look_up,actions.look_down)*0.1
+		joyv = Actions.vector(actions.look) * 0.1
 
 
 func _physics_process(delta):
