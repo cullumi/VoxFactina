@@ -35,7 +35,8 @@ func calc_spawn_chunk():
 @onready var spawn_chunk:Vector3 = calc_spawn_chunk()
 
 # Octree & Render Queue
-@export var debug:bool = false
+@export var debug:bool = true :
+	set(val): debug=val; Tests.show_debug=val
 signal initialized()
 var chunks:Dictionary = {}
 var render_queue:RenderQueue = RenderQueue.new()
@@ -49,6 +50,7 @@ var trail_parent:Node
 ### Initialization
 
 func _ready():
+	Tests.show_debug = debug
 	randomize()
 	VoxelFactory.VoxelSize = props.voxel_size
 	VoxelFactory.update_vertices()
@@ -60,19 +62,20 @@ func start():
 
 func initialize():
 	# Initialize Chunk Octree
-	debug_print("\n\t\t\t\t\t\t\t\tINITIALIZE OCTREE")
+	debug_print("\n\t\t\t\t\t\t\t\tINITIALIZE OCTREE\n")
 	var spawn_pos = spawn_chunk
 	var lods_to_render = octree.create(props, spawn_pos)
 	chunks = octree.lods.back()
+	print(octree.depth(props))
 	add_lod_parents()
 	Tests.np_chunks_check(chunks, props)
 	
 	# Render
-	debug_print("\n\t\t\t\t\t\t\t\tRENDER LODS")
+	debug_print("\n\t\t\t\t\t\t\t\tRENDER LODS\n")
 	render_lods(lods_to_render)
 	debug_prints(["Rendered:", str(Tests.render_check(octree.root))])
 	initialize_spawn_chunks()
-	debug_print("\n\t\t\t\t\t\t\t\tINITIALIZED")
+	debug_print("\n\t\t\t\t\t\t\t\tINITIALIZED\n")
 	emit_signal("initialized")
 
 func add_lod_parents():
@@ -227,8 +230,8 @@ func add_voxels(chunk:Chunk, vectors:Array=[], voxels:Dictionary={}):
 		add_voxel(chunk, vector, voxels)
 	debug_prints(["Voxel count:", voxels.size(), "Vector count:", vectors.size()])
 
-func add_voxel(chunk:Chunk, base_pos:Vector3, voxels:Dictionary={}):
-	var scale_pos:Vector3 = base_pos * chunk.scale
+func add_voxel(chunk:Chunk, base_pos:Vector3i, voxels:Dictionary={}):
+	var scale_pos:Vector3i = base_pos * chunk.scale
 	var vox_pos = props.voxlocal(chunk.pos, scale_pos, chunk.depth)
 	var color = props.type().get_voxel_color(vox_pos)
 	if color.a != 0:

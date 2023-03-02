@@ -2,7 +2,7 @@ extends Node
 
 #class_name Tests
 
-const show_debug:bool = false
+var show_debug:bool = false
 
 ### Chunk Tree
 
@@ -43,8 +43,12 @@ func octree_count(actual:Array, lods:Array, chunks:Dictionary):
 	var sum:int = 0
 	for lod in lods:
 		sum += lod.values().size()
+	var tsum:int = 0
+	for l in range(lods.size()+1): # 16 -> 8 -> 4 -> 2 -> 1
+		tsum += int(pow(int(pow(2, l)), 3))
 	prints("\tlods:", actual.size(), "vs", "leaves:", chunks.values().size())
 	prints("\tlods:", actual.size(), "vs", "tree:", sum)
+	prints("\tlods:", actual.size(), "vs", "full tree:", tsum)
 
 
 ### Chunk Rendering

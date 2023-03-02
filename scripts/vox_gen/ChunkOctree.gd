@@ -6,15 +6,15 @@ var root:Chunk = null
 var lods:Array = []
 var lod_nodes:Array = []
 
-func depth(props):
+func depth(props:PlanetProperties):
 	var width:int = props.chunk_counts.x
 	var _depth = 1
 	while (width > 1):
 		_depth += 1
 		width /= 2
-	return _depth + 2
+	return _depth
 
-func create(props, deform_pos:Vector3) -> Dictionary:
+func create(props:PlanetProperties, deform_pos:Vector3) -> Dictionary:
 	# Initials
 	var pos:Vector3 = Vector3()
 	var scale:Vector3 = props.chunk_counts# * props.chunk_size

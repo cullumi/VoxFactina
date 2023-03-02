@@ -2,9 +2,9 @@ extends RefCounted
 
 class_name Chunk
 
-var pos:Vector3 = Vector3()
+var pos:Vector3i = Vector3()
 var offset:Vector3 = Vector3()
-var scale:Vector3 = Vector3()
+var scale:Vector3i = Vector3i()
 var new_instance:MeshInstance3D = null
 var instance:MeshInstance3D = null
 
@@ -129,15 +129,16 @@ func close_enough(origin:Vector3, distance:float) -> bool:
 	return intersects != null
 
 func subdivide():
-	var sub_scale = scale/2
+	assert(scale >= Vector3i.ONE)
+	var sub_scale:Vector3i = scale/2
 	children.clear()
 	children.resize(8)
 	for c in range(8):
 		c += 1
 		var cf = float(c)
-		var out = int(not bool(c%2)) * Vector3.BACK
-		var up = int(not bool(int(cf/2)%2)) * Vector3.UP
-		var right = int(not bool(int(cf/4)%2)) * Vector3.RIGHT
+		var out:Vector3i = int(not bool(c%2)) * Vector3i.BACK
+		var up:Vector3i = int(not bool(int(cf/2)%2)) * Vector3i.UP
+		var right:Vector3i = int(not bool(int(cf/4)%2)) * Vector3i.RIGHT
 		var change = (out + up + right) * sub_scale
 		var new_pos = pos+change
 		var chunk = get_script().new(props, new_pos, sub_scale, depth+1)

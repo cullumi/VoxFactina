@@ -4,7 +4,9 @@ class_name Vectors
 
 enum {X, Y, Z, OOB}
 
-static func to_meta_name(vector:Vector3) -> String:
+# converts a Vector3 or Vector3i to a valid meta_name
+static func to_meta_name(vector) -> String:
+	vector = vector if vector is Vector3i else Vector3i(vector)
 	var absv = vector.abs()
 	var prefix = "vox_pos_" if absv == vector else "neg_pos_"
 	var conv = func (val:float): return "_" + str(val)

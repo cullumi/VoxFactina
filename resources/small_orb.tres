@@ -15,8 +15,8 @@ fractal_octaves = 8
 [resource]
 script = ExtResource("1")
 planet_type = 0
-chunk_dims = Vector3i(10, 10, 10)
-chunk_counts = Vector3i(4, 4, 4)
+chunk_dims = Vector3i(5, 5, 5)
+chunk_counts = Vector3i(16, 16, 16)
 surface_level = 0.75
 bedrock_level = 0.15
 voxel_size = 1.0

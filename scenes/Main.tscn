@@ -10,8 +10,8 @@
 
 [sub_resource type="SphereMesh" id="SphereMesh_t3jt5"]
 material = ExtResource("4_jb6w1")
-radius = 20.0
-height = 40.0
+radius = 40.0
+height = 80.0
 
 [node name="Main" type="Node3D"]
 script = ExtResource("1")
