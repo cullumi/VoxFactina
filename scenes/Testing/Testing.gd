@@ -2,6 +2,11 @@ extends Node
 
 
 func _ready():
+	# can't multiply Vector3 and Vector3i
+#	var vf:Vector3 = Vector3()
+#	var vi:Vector3i = Vector3i()
+#	print(vf * vi)
+	
 	var vectors:Array = await collect_vectors(Vector3(1, 1, 1), Vector3(5, 5, 5))
 	print("Finished collect vectors")
 	for i in range(10):

@@ -59,7 +59,7 @@ var center_pos:Vector3
 
 # Offsets
 var vox_piv:Vector3
-func centered(pos:Vector3):
+func centered(pos:Vector3) -> Vector3:
 	return pos - center_pos
 func half_chunk() -> Vector3: return chunk_size/2
 func lod_adj(depth) -> Vector3:
@@ -72,7 +72,7 @@ func offset(pos:Vector3, lod_depth:int=0) -> Vector3: # Chunk Position to World3
 func unoffset(unchecked:Vector3) -> Vector3: # World3D Position to Chunk Position
 	return ((unchecked + half_chunk()) / chunk_size) + center_pos
 func voxlocal(c_pos:Vector3, v_pos:Vector3, lod:int=0) -> Vector3: # Voxel Chunk Position to Voxel World3D Position
-	return (centered(c_pos) + lod_inv(lod)) * chunk_dims + v_pos
+	return (centered(c_pos) + lod_inv(lod)) * Vector3(chunk_dims) + v_pos
 
 # Surface Level Rects
 var front_radii:Vector2
