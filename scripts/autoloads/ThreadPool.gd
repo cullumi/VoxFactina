@@ -1,7 +1,8 @@
 extends Node
 
 var count:int = (OS.get_processor_count() * 2)
-var workers:Array = []
+var threads:Array = []
+var workers:Dictionary = {}
 
 enum {WORK, DONE, IDLE, EXIT}
 var states:Dictionary = {}
@@ -32,13 +33,16 @@ func set_state(id, val):
 ### Worker Management
 
 func _enter_tree():
+	print("Initializing ThreadPool: %d workers" % count)
 	for _i in range(count):
 		var thread = Thread.new()
-		workers.append(thread)
-		thread.start(worker.bind({"thread":thread}))
+		threads.append(thread)
+		thread.start(work.bind({"thread":thread}))
 		var id = thread.get_id()
+		assert(id != "")
 		mutexes[id] = Mutex.new()
 		semaphores[id] = Semaphore.new()
+		workers[id] = Worker.new(thread, semaphore, mutex, semaphores[id], mutexes[id])
 		idle_worker(id)
 
 func idle_worker(id):
@@ -82,15 +86,17 @@ func finish_jobs(num:int):
 func _exit_tree():
 	for worker_state in states:
 		set_state(worker_state, EXIT)
-	while not workers.is_empty():
-		for thread in workers:
+	while not threads.is_empty():
+		for thread in threads:
 			if not thread.is_alive():
 				thread.wait_to_finish()
 		await get_tree().process_frame
+	for worker in workers:
+		worker.free()
 
 ### Job Management
 
-func start_job(callable:Callable, args=[], callback:Callable=Callable()):
+func start_job(callable:Callable, args=[], callback:Callable=Callable()) -> Worker:
 	var id = idles.pop_back()
 	if id:
 		jobs[id] = {
@@ -99,13 +105,14 @@ func start_job(callable:Callable, args=[], callback:Callable=Callable()):
 			"callback":callback
 		}
 		set_state(id, WORK)
-		return true
+		assert(workers[id])
+		return workers[id]
 	else:
-		return false
+		return null
 
 ### Worker
 
-func worker(args={"thread":null}):
+func work(args={"thread":null}):
 	if args.thread:
 		var exit:bool = false
 		var id:String = args.thread.get_id()
@@ -114,8 +121,8 @@ func worker(args={"thread":null}):
 			match get_state(id):
 				WORK:
 					var job = jobs[id]
-					var work = await job.callable.callv(job.args)
-					jobs[id]["results"] = work
+					var result = await job.callable.callv(job.args)
+					jobs[id]["results"] = result
 					set_state(id, DONE)
 					report_done()
 				EXIT:

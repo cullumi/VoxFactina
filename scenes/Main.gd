@@ -12,8 +12,6 @@ var cur_planet:Planet
 func _ready():
 	var chunk:Chunk = Chunk.new(null)
 	print(chunk.get_meta_list())
-#	print(self)
-#	prints("Test Chunk:", chunk)
 	
 	for planet in planets:
 		planet.pivot = pivot

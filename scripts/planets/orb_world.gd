@@ -20,9 +20,11 @@ func init_height():#val):
 		calculated = true
 
 ## Content Queries
+
+# Used in VoxGen
 func get_voxel_color(pos:Vector3) -> Color:
 	if voxel_in_air(pos):
-		return Color(0,0,0,0)
+		return AIR
 	else:
 		var rand = get_density(pos)
 		if rand >= 0: return Color.FOREST_GREEN
@@ -41,7 +43,7 @@ func voxel_is_air(pos:Vector3) -> bool:
 func test_vox(pos:Vector3, density:float=0) -> int:
 #	return LAND if density < props.iso_level else AIR
 	if voxel_is_air(pos):
-		return AIR
+		return TEST.AIR
 	else:
 		init_height()
 		var length = pos.length()
@@ -49,12 +51,12 @@ func test_vox(pos:Vector3, density:float=0) -> int:
 		var air_height = (height_range * air_height_scale) + min_height
 		var height_percent = length/max_height
 		if length <= min_height:
-			return BEDROCK
+			return TEST.BEDROCK
 		elif length <= air_height:
 			var iso = (props.iso_curve.sample(height_percent)*2)-1
-			return LAND if density < iso else AIR
+			return TEST.LAND if density < iso else TEST.AIR
 		else:
-			return AIR
+			return TEST.AIR
 
 ## Gravity Direction
 var last_grav = Vector3()

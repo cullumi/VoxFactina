@@ -15,7 +15,7 @@ func _ready():
 	DefaultMaterial.flags_transparent = true
 
 # Starts the creation of the mesh
-func create_mesh(scale:Vector3, voxels:Dictionary, props:PlanetProperties, s_tool:SurfaceTool=Surfacetool) -> ArrayMesh:
+func create_mesh(scale:Vector3, voxels:Dictionary, props:PlanetProperties, worker:Worker=null, s_tool:SurfaceTool=Surfacetool) -> ArrayMesh:
 	
 	assert(s_tool)
 	s_tool.begin(Mesh.PRIMITIVE_TRIANGLES)
@@ -29,7 +29,7 @@ func create_mesh(scale:Vector3, voxels:Dictionary, props:PlanetProperties, s_too
 	var corner_tests:Dictionary = {} # For reusing corner tests between voxels
 #	print("Creating Mesh...")
 	for vox in voxels:
-		march(scale, voxels[vox], props, s_tool, corner_tests)
+		march(scale, voxels[vox], props, s_tool, corner_tests, worker)
 
 	# Finalise the mesh and return.
 	s_tool.index()
@@ -41,11 +41,13 @@ func create_mesh(scale:Vector3, voxels:Dictionary, props:PlanetProperties, s_too
 		mesh.set_meta(meta_name, voxels[vox])
 	mesh.set_meta("voxel_size", props.voxel_size)
 	
+#	print("Marching cubes: %3d" % voxels.size(), "\tVoxel size: %3d" % props.voxel_size)
+	
 	s_tool.clear()
 	return mesh 
 
 # Add voxel to mesh
-func march(scale:Vector3, voxel:Voxel, props:PlanetProperties, s_tool:SurfaceTool, c_tests:Dictionary):
+func march(scale:Vector3, voxel:Voxel, props:PlanetProperties, s_tool:SurfaceTool, c_tests:Dictionary, worker:Worker=null):
 	
 	var debug:bool = scale.x > 32
 	if debug: print(scale)
@@ -68,7 +70,7 @@ func march(scale:Vector3, voxel:Voxel, props:PlanetProperties, s_tool:SurfaceToo
 		(offset + (Vector3(0,1,1) * offset_scale)),
 	]
 	# Get the Cube in Chunk Coords
-	var pos = voxel.pos - scale*0.5
+	var pos = Vector3(voxel.pos) - scale*0.5
 	var base_corners:Array = [
 		(pos),
 		(pos + Vector3(1,0,0) * scale),
@@ -111,20 +113,27 @@ func march(scale:Vector3, voxel:Voxel, props:PlanetProperties, s_tool:SurfaceToo
 	
 	# Look up triangulation for current cubeIndex.
 	# Each entry is the index of an edge.
-	var triangulation:Array = TriTable.triangulation[cubeIndex]
+	if worker: worker.mutex.lock()
+	var triangulation:Array = TriTable.triangulation[cubeIndex].duplicate()
+	if worker: worker.mutex.unlock()
 	
 	# Set a Color
-	s_tool.add_color(voxel.color)
+	s_tool.set_color(voxel.color)
 	
 	var i = -1
 	var vertices:Array = []
 	for edgeIndex in triangulation:
 		if edgeIndex >= 0:
 			# Lookup the indices of the corner points making up the current edge
+#			push_warning("Corner Lookup (", voxel, ")")
+			assert(edgeIndex < TriTable.cornerIndexAFromEdge.size() and edgeIndex < TriTable.cornerIndexBFromEdge.size())
+			if worker: worker.mutex.lock()
 			var indexA:int = TriTable.cornerIndexAFromEdge[edgeIndex]
 			var indexB:int = TriTable.cornerIndexBFromEdge[edgeIndex]
+			if worker: worker.mutex.unlock()
 			
 			# Densities, for convenience
+#			push_warning("Density Lookup (", voxel, ")")
 			var d1:float = base_densities[indexA]
 			var d2:float = base_densities[indexB]
 			
@@ -139,7 +148,8 @@ func march(scale:Vector3, voxel:Voxel, props:PlanetProperties, s_tool:SurfaceToo
 				int_vertexPos = interpolate_vertices(v1, v2, d1, d2, props.iso_level)
 #				prints("Midpoint vs Interpolation:", mid_vertexPos, "vs", int_vertexPos)
 			else:
-				prints("Not Interpolated");
+				pass
+#				prints("Not Interpolated");
 			
 			var vertexPos
 			if d1 < -1 or d2 < -1 or d1 == d2:
@@ -157,8 +167,10 @@ func march(scale:Vector3, voxel:Voxel, props:PlanetProperties, s_tool:SurfaceToo
 				var prev:Vector3 = vertices[0] - vertices[1]
 				var cur:Vector3 = vertices[1] - vertices[2]
 				var normal:Vector3 = prev.cross(cur).normalized()
+				if not normal.is_normalized():
+					normal = Vector3.UP
 				assert(normal.is_normalized())
-				s_tool.add_normal(normal)
+				s_tool.set_normal(normal)
 				for vertex in vertices:
 					s_tool.add_vertex(vertex)
 				vertices.clear()

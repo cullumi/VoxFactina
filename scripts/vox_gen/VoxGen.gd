@@ -50,7 +50,6 @@ var trail_parent:Node
 ### Initialization
 
 func _ready():
-	Tests.show_debug = debug
 	randomize()
 	VoxelFactory.VoxelSize = props.voxel_size
 	VoxelFactory.update_vertices()
@@ -169,11 +168,12 @@ func render():
 			if chunk and not chunk.in_render:
 				chunk.in_render = true
 				while true:
-					var res = ThreadPool.start_job(
+					var worker:Worker = ThreadPool.start_job(
 						render_chunk, [chunk],
 						finish_render
 					)
-					if res:
+					if worker:
+						chunk.worker = worker
 						break
 					else:
 						await ThreadPool.idling
@@ -181,6 +181,7 @@ func render():
 
 func finish_render(chunk:Chunk) -> Chunk:
 	assert(chunk)
+	chunk.worker = null
 	var deformed:Array = chunk.finish_render(lod_nodes[chunk.depth])
 	if chunk.instance != null and chunk.instance.get_surface_override_material_count() > 0:
 		Tests.leave_trail(trail_parent, chunk, props)
@@ -192,6 +193,7 @@ func finish_render(chunk:Chunk) -> Chunk:
 
 ### Chunk Rendering
 
+var rendered_chunks:Dictionary = {}
 func render_chunk(chunk:Chunk) -> Chunk:
 	var voxels:Dictionary = {}
 	add_voxels(chunk, props.relative_voxel_positions, voxels)
@@ -205,7 +207,7 @@ func render_chunk(chunk:Chunk) -> Chunk:
 
 func construct_instance(chunk, voxels):
 	var s_tool:SurfaceTool = SurfaceTool.new()
-	var mesh = MarchingCubes.create_mesh(chunk.scale, voxels, props, s_tool)
+	var mesh = MarchingCubes.create_mesh(chunk.scale, voxels, props, chunk.worker, s_tool)
 	chunk.new_instance = new_instance(chunk.offset, mesh)
 	chunk.render_collision = true
 	if chunk.render_collision and mesh.get_surface_count():
@@ -215,11 +217,10 @@ func construct_instance(chunk, voxels):
 
 func new_instance(offset, mesh):
 	var instance = MeshInstance3D.new()
-	instance = MeshInstance3D.new()
 	instance.position = offset
-	instance.use_in_baked_light = true
-	instance.generate_lightmap = true
-	instance.cast_shadow =GeometryInstance3D.SHADOW_CASTING_SETTING_DOUBLE_SIDED
+#	instance.use_in_baked_light = true
+#	instance.generate_lightmap = true
+	instance.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_DOUBLE_SIDED
 	instance.mesh = mesh
 	return instance
 
@@ -228,7 +229,7 @@ func new_instance(offset, mesh):
 func add_voxels(chunk:Chunk, vectors:Array=[], voxels:Dictionary={}):
 	for vector in vectors:
 		add_voxel(chunk, vector, voxels)
-	debug_prints(["Voxel count:", voxels.size(), "Vector count:", vectors.size()])
+	debug_prints(["Voxel count: %3d" % voxels.size(), "\tVector count:", vectors.size()])
 
 func add_voxel(chunk:Chunk, base_pos:Vector3i, voxels:Dictionary={}):
 	var scale_pos:Vector3i = base_pos * chunk.scale

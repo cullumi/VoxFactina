@@ -3,8 +3,9 @@ extends CharacterBody3D
 class_name Player
 
 @export var jump_length:float = 0.5
-@export var jump_power:float = 2000;
-@export var wall_jump_power:float = 2000;
+@export var jump_power:float = 2000
+@export var infini_jump:bool = false
+@export var wall_jump_power:float = 2000
 @export var gravity:float = 500
 @export var runspeed:float = 5
 @export var climbspeed:float = 2

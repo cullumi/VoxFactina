@@ -53,6 +53,13 @@ func octree_count(actual:Array, lods:Array, chunks:Dictionary):
 
 ### Chunk Rendering
 
+func repeated(object, cache:Dictionary):
+	if not cache.get(object, false):
+		cache[object] = true
+		print("New chunk: ", object, " (", cache.size(), ")")
+	else:
+		print("Repeat chunk. (", cache.size(), ")")
+
 func leave_trail(source:Node, chunk:Chunk, props):
 	if props.DEBUG:
 		var cookie:MeshInstance3D = MeshInstance3D.new()

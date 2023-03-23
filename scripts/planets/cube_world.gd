@@ -8,7 +8,7 @@ func _init(new_props=null):
 ## Content Queries
 func get_voxel_color(pos:Vector3) -> Color:
 	if voxel_is_air(pos):
-		return Color(0,0,0,0)
+		return AIR
 	else:
 		var rand = get_density(pos)
 		var max_height = props.surface_level * props.radius
@@ -17,7 +17,7 @@ func get_voxel_color(pos:Vector3) -> Color:
 			if pos.length() < max_height/2:
 				return Color.CORNFLOWER_BLUE
 			else:
-				return Color(0,0,0,0)
+				return AIR
 		else:
 			return Color.FOREST_GREEN if rand >= 0 else Color.DARK_OLIVE_GREEN
 

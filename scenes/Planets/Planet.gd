@@ -38,10 +38,13 @@ func _ready():
 	props.changed.connect(_on_Props_changed)
 	collider.shape.extents = props.world_dims * props.voxel_size
 
+var last_player_pos:Vector3
 func _physics_process(_delta):
 	if pivot and orbiting:
 		player_pos = xformed(pivot) #xformed(pivot.player)
-		prioritize()
+		if last_player_pos != player_pos:
+			prioritize()
+			last_player_pos = player_pos
 		if pivot:
 			reorient_player()
 

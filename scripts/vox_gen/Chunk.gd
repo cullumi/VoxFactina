@@ -16,6 +16,7 @@ var next
 var prev
 
 var props
+var worker:Worker
 
 var children:Array = []
 var parent:Chunk = null
@@ -71,7 +72,8 @@ func finish_render(source:Node) -> Array:
 				source.add_child(instance)
 				instance.visible = true
 				if props.DEBUG:
-					instance.add_child(debug_mask)
+					if debug_mask.get_parent():
+						debug_mask.reparent(instance)
 			else:
 				Count.push("0_surface")
 	in_render = false
