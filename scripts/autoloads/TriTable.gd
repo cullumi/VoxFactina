@@ -1,8 +1,34 @@
-extends RefCounted
+extends Node
 
-class_name TriTable
+#class_name TriTable
 
 # Values from http://paulbourke.net/geometry/polygonise/
+
+# Thread Safe Getters
+
+var t_mutex:Mutex = Mutex.new()
+func triangulate(idx:int):
+	t_mutex.lock()
+	var triangles:Array = triangulation[idx]
+	t_mutex.unlock()
+	return triangles
+
+var cia_mutex:Mutex = Mutex.new()
+func corner_index_a(idx:int):
+	cia_mutex.lock()
+	var cia = cornerIndexAFromEdge[idx]
+	cia_mutex.unlock()
+	return cia
+
+var cib_mutex:Mutex = Mutex.new()
+func corner_index_b(idx:int):
+	cib_mutex.lock()
+	var cib = cornerIndexBFromEdge[idx]
+	cib_mutex.unlock()
+	return cib
+
+
+# The Actual Data
 
 const edges:Array = [
 	0x0,

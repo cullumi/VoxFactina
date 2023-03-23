@@ -15,7 +15,7 @@ func _ready():
 	DefaultMaterial.flags_transparent = true
 
 # Starts the creation of the mesh
-func create_mesh(scale:Vector3, voxels:Dictionary, props:PlanetProperties, worker:Worker=null, s_tool:SurfaceTool=Surfacetool) -> ArrayMesh:
+func create_mesh(scale:Vector3, voxels:Dictionary, props:PlanetProperties, s_tool:SurfaceTool=Surfacetool) -> ArrayMesh:
 	
 	assert(s_tool)
 	s_tool.begin(Mesh.PRIMITIVE_TRIANGLES)
@@ -29,7 +29,7 @@ func create_mesh(scale:Vector3, voxels:Dictionary, props:PlanetProperties, worke
 	var corner_tests:Dictionary = {} # For reusing corner tests between voxels
 #	print("Creating Mesh...")
 	for vox in voxels:
-		march(scale, voxels[vox], props, s_tool, corner_tests, worker)
+		march(scale, voxels[vox], props, s_tool, corner_tests)
 
 	# Finalise the mesh and return.
 	s_tool.index()
@@ -47,7 +47,7 @@ func create_mesh(scale:Vector3, voxels:Dictionary, props:PlanetProperties, worke
 	return mesh 
 
 # Add voxel to mesh
-func march(scale:Vector3, voxel:Voxel, props:PlanetProperties, s_tool:SurfaceTool, c_tests:Dictionary, worker:Worker=null):
+func march(scale:Vector3, voxel:Voxel, props:PlanetProperties, s_tool:SurfaceTool, c_tests:Dictionary):
 	
 	var debug:bool = scale.x > 32
 	if debug: print(scale)
@@ -113,9 +113,9 @@ func march(scale:Vector3, voxel:Voxel, props:PlanetProperties, s_tool:SurfaceToo
 	
 	# Look up triangulation for current cubeIndex.
 	# Each entry is the index of an edge.
-	if worker: worker.mutex.lock()
-	var triangulation:Array = TriTable.triangulation[cubeIndex].duplicate()
-	if worker: worker.mutex.unlock()
+#	if worker: worker.mutex.lock()
+	var triangulation:Array = TriTable.triangulate(cubeIndex)
+#	if worker: worker.mutex.unlock()
 	
 	# Set a Color
 	s_tool.set_color(voxel.color)
@@ -127,10 +127,10 @@ func march(scale:Vector3, voxel:Voxel, props:PlanetProperties, s_tool:SurfaceToo
 			# Lookup the indices of the corner points making up the current edge
 #			push_warning("Corner Lookup (", voxel, ")")
 			assert(edgeIndex < TriTable.cornerIndexAFromEdge.size() and edgeIndex < TriTable.cornerIndexBFromEdge.size())
-			if worker: worker.mutex.lock()
-			var indexA:int = TriTable.cornerIndexAFromEdge[edgeIndex]
-			var indexB:int = TriTable.cornerIndexBFromEdge[edgeIndex]
-			if worker: worker.mutex.unlock()
+#			if worker: worker.mutex.lock()
+			var indexA:int = TriTable.corner_index_a(edgeIndex)
+			var indexB:int = TriTable.corner_index_b(edgeIndex)
+#			if worker: worker.mutex.unlock()
 			
 			# Densities, for convenience
 #			push_warning("Density Lookup (", voxel, ")")

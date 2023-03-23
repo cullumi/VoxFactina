@@ -23,6 +23,7 @@ MarchingCubes="*res://scripts/autoloads/MarchingCubes.gd"
 Count="*res://scripts/autoloads/Counters.gd"
 Tests="*res://scripts/autoloads/Tests.gd"
 Commands="*res://scripts/autoloads/Commands.gd"
+TriTable="*res://scripts/autoloads/TriTable.gd"
 
 [editor_plugins]
 

@@ -207,7 +207,7 @@ func render_chunk(chunk:Chunk) -> Chunk:
 
 func construct_instance(chunk, voxels):
 	var s_tool:SurfaceTool = SurfaceTool.new()
-	var mesh = MarchingCubes.create_mesh(chunk.scale, voxels, props, chunk.worker, s_tool)
+	var mesh = MarchingCubes.create_mesh(chunk.scale, voxels, props, s_tool)
 	chunk.new_instance = new_instance(chunk.offset, mesh)
 	chunk.render_collision = true
 	if chunk.render_collision and mesh.get_surface_count():
