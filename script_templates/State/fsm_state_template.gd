@@ -1,6 +1,6 @@
-class_name TemplateState # Replace this with your state's name
 extends State
 
+class_name TemplateState # Replace this with your state's name
 
 # Called when a state enters the finite state machine
 func _enter_state():

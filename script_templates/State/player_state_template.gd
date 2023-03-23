@@ -1,6 +1,6 @@
-class_name PlayerTemplateState # Replace this with your state's name
 extends State
 
+class_name PlayerTemplateState # Replace this with your state's name
 
 # player and finite state machine
 @onready var p:Player

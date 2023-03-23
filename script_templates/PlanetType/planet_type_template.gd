@@ -1,6 +1,6 @@
-extends RefCounted
+extends PlanetType
 
-class_name PlanetType
+class_name NewPlanetType
 
 func _init(new_props=null):
 	pass
