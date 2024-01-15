@@ -156,7 +156,7 @@ func _physics_process(delta):
 		
 		#cause climbing is a weird exception space, we do the movement and
 		# then return so we don't accidentally do regular movement as well
-		velocity = movement
+		velocity = basis_adjusted(movement)
 		move_and_slide()
 		return
 	
@@ -212,10 +212,13 @@ func _physics_process(delta):
 		else:
 			current_state = state.IDLE
 	
-		#do the actual movement
-	velocity = movement
+	#do the actual movement
+	velocity = basis_adjusted(movement)
 	move_and_slide()
 
+func basis_adjusted(movement:Vector3) -> Vector3:
+	return movement * Vector3(1, 0, 1) + up_direction * movement.y
+	#return global_basis.x * movement.x + global_basis.y * movement.y + global_basis.z * movement.z
 
 #function to allow other systems to prevent certain kinds of movement
 #that Array passed in needs to be string names of state enums eg "GLIDE"

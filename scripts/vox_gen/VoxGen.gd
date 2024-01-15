@@ -211,7 +211,7 @@ func construct_instance(chunk, voxels):
 	chunk.new_instance = new_instance(chunk.offset, mesh)
 	chunk.render_collision = true
 	if chunk.render_collision and mesh.get_surface_count():
-		chunk.new_instance.create_trimesh_collision()
+		chunk.new_instance.call_deferred("create_trimesh_collision")
 	chunk.all_air = false
 	chunk.has_air = voxels.size() < props.vox_count
 

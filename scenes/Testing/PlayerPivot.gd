@@ -42,6 +42,7 @@ func reorient_player(gravity):
 	if (gravity - cur_gravity).length() >= 0.001:
 		orient_player(gravity, cur_gravity)
 		cur_gravity = gravity
+		player.up_direction = -cur_gravity
 
 # Orient the Player based checked a given gravity vector
 func orient_player(gravity, last_gravity):
