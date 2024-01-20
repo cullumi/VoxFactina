@@ -35,6 +35,7 @@ func _init():
 	init_neighbors()
 
 func _ready():
+	props.init()
 	props.changed.connect(_on_Props_changed)
 	collider.shape.extents = props.world_dims * props.voxel_size
 
@@ -94,7 +95,7 @@ func prioritize():
 ### Player Spawn
 func spawn_player():
 	# Properties
-	var _player = pivot.player
+	#var _player = pivot.player
 	var spawn_axis = vox_gen.spawn_axis
 	var spawn_dir = vox_gen.spawn_dir
 	var dim:float = props.chunk_dims[spawn_axis]
@@ -109,8 +110,9 @@ func spawn_player():
 	spawn_cast.force_raycast_update()
 	if spawn_cast.is_colliding():
 		# Place player where the ray cast landed
-		pivot.global_position = spawn_cast.get_collision_point()
-		pivot.global_position[spawn_axis] += (spawn_buffer * spawn_dir)
+		if pivot:
+			pivot.global_position = spawn_cast.get_collision_point()
+			pivot.global_position[spawn_axis] += (spawn_buffer * spawn_dir)
 	spawn_cast.enabled = false
 	
 	reorient_player()
@@ -122,7 +124,8 @@ func spawn_player():
 var cur_gravity = Vector3()
 func reorient_player():
 	var _gravity = props.type().gravity_dir(player_pos).normalized()
-	pivot.reorient_player(_gravity)
+	if pivot:
+		pivot.reorient_player(_gravity)
 
 # Orient the Player based on a given gravity vector
 func orient_player(_gravity, last_gravity):
@@ -131,7 +134,8 @@ func orient_player(_gravity, last_gravity):
 	if axis!=Vector3() and axis.is_normalized(): # Vector3 and bool
 		if angle != 0 and angle != -0:
 			# Roll the basis
-			var _basis = pivot.target.basis.rotated(axis, angle)
-			pivot.target.basis = _basis.orthonormalized()
+			if pivot:
+				var _basis = pivot.target.basis.rotated(axis, angle)
+				pivot.target.basis = _basis.orthonormalized()
 	else:
 		prints("Axis not normalized...", axis, "[%.2f]" % angle)

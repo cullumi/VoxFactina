@@ -1,0 +1,63 @@
+[gd_scene load_steps=11 format=3 uid="uid://qn4q4njnv0k1"]
+
+[ext_resource type="Script" path="res://scenes/Main.gd" id="1_r86xs"]
+[ext_resource type="PackedScene" uid="uid://c60okswew4i4x" path="res://scenes/Planets/Planet.tscn" id="2_dxtoo"]
+[ext_resource type="Resource" uid="uid://d0lcqcqbga4te" path="res://resources/small_orb.tres" id="3_bouhc"]
+[ext_resource type="Material" uid="uid://byt7o771loaag" path="res://resources/preview_mat.tres" id="4_rxc12"]
+[ext_resource type="Script" path="res://scenes/Planets/PlanetPreview.gd" id="5_7t6m0"]
+[ext_resource type="PackedScene" uid="uid://dg870l0u1m2v8" path="res://scenes/Testing/SceneAxes.tscn" id="7_beanc"]
+[ext_resource type="PackedScene" uid="uid://dwgefoab8fmp1" path="res://scenes/Player/RBPlayer/rb_player.tscn" id="7_pbfe0"]
+[ext_resource type="Script" path="res://addons/g4climbnglide/CameraController.gd" id="8_5vtnl"]
+[ext_resource type="Resource" uid="uid://dy6skl3rixypo" path="res://resources/actions.tres" id="9_oayxo"]
+
+[sub_resource type="SphereMesh" id="SphereMesh_t3jt5"]
+material = ExtResource("4_rxc12")
+radius = 320.0
+height = 640.0
+
+[node name="Main" type="Node3D"]
+script = ExtResource("1_r86xs")
+
+[node name="Sun" type="Node3D" parent="."]
+
+[node name="Planet" parent="Sun" instance=ExtResource("2_dxtoo")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+spawn_buffer = 3.0
+use_spawn = true
+props = ExtResource("3_bouhc")
+
+[node name="PlanetPreview" type="MeshInstance3D" parent="Sun/Planet"]
+mesh = SubResource("SphereMesh_t3jt5")
+script = ExtResource("5_7t6m0")
+metadata/_edit_lock_ = true
+
+[node name="Axes" parent="." instance=ExtResource("7_beanc")]
+
+[node name="RBPlayer" parent="." node_paths=PackedStringArray("_camera") instance=ExtResource("7_pbfe0")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 240, 0)
+axis_lock_angular_x = true
+axis_lock_angular_y = true
+axis_lock_angular_z = true
+_camera = NodePath("")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+
+[node name="CameraRoot" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4.31405, 0)
+script = ExtResource("8_5vtnl")
+follow_object = NodePath("../RBPlayer")
+basis_target = NodePath("../RBPlayer/Collider/Mesh")
+follow_speed = 5.0
+actions = ExtResource("9_oayxo")
+
+[node name="SpringArm3d" type="SpringArm3D" parent="CameraRoot"]
+transform = Transform3D(1, 0, 0, 0, -0.887607, 0.460603, 0, -0.460603, -0.887607, 0, 0, 0)
+collision_mask = 2
+spring_length = 5.0
+
+[node name="Camera3d" type="Camera3D" parent="CameraRoot/SpringArm3d"]
+transform = Transform3D(-1, -4.30195e-15, -8.74228e-08, 9.39888e-10, -0.999942, -0.010751, -8.74178e-08, -0.010751, 0.999942, 0, 0, 0)
+
+[connection signal="props_changed" from="Sun/Planet" to="Sun/Planet/PlanetPreview" method="draw"]
+
+[editable path="RBPlayer"]

@@ -3,7 +3,7 @@ extends Node3D
 ### Properties
 
 ## Nodes
-@onready var pivot:PlayerPivot = get_node("%PlayerPivot")
+@export var pivot:PlayerPivot #get_node("%PlayerPivot")
 @onready var planets:Array = get_tree().get_nodes_in_group("Planet")
 var cur_planet:Planet
 
@@ -32,7 +32,8 @@ func _on_Planet_player_entered(planet:Planet):
 		cur_planet.orbiting = false
 	cur_planet = planet
 	cur_planet.orbiting = true
-	pivot.orbit = cur_planet
+	if (pivot):
+		pivot.orbit = cur_planet
 
 func _on_Planet_player_exited(planet:Planet):
 	assert(cur_planet == planet) # Should not exit when not current

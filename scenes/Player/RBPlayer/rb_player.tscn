@@ -1,0 +1,24 @@
+[gd_scene load_steps=4 format=3 uid="uid://dwgefoab8fmp1"]
+
+[ext_resource type="Script" path="res://scenes/Player/RBPlayer/rb_player.gd" id="1_jp5ii"]
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_s3rdj"]
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_t34cu"]
+
+[node name="RBPlayer" type="RigidBody3D" node_paths=PackedStringArray("_model")]
+max_contacts_reported = 1
+contact_monitor = true
+script = ExtResource("1_jp5ii")
+_model = NodePath("Collider/Mesh")
+move_speed = 50.0
+air_speed = 25.0
+rotation_speed = 50.0
+jump_initial_impulse = 1.0
+
+[node name="Collider" type="CollisionShape3D" parent="."]
+shape = SubResource("SphereShape3D_s3rdj")
+
+[node name="Mesh" type="MeshInstance3D" parent="Collider"]
+mesh = SubResource("CapsuleMesh_t34cu")
+skeleton = NodePath("../..")

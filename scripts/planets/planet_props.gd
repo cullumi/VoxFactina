@@ -21,13 +21,18 @@ enum TYPE {ORB, CUBE}
 @export var debug_material:StandardMaterial3D
 @export var cookie_material:StandardMaterial3D
 
+# Initialization
+func init():
+	initialize_type()
+
+func initialize_type():
+	if not _type:
+		_type = types[planet_type].new(self)
+
 # Types
 var types = {TYPE.ORB:OrbWorld, TYPE.CUBE:CubeWorld}
 var _type:PlanetType
-func type():
-	if not _type:
-		_type = types[planet_type].new(self)
-	return _type
+func type(): return _type
 
 func get_density(pos:Vector3) -> float:
 	return type().get_density(pos)

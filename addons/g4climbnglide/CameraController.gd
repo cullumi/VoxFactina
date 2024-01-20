@@ -1,11 +1,14 @@
 extends Node3D
 
 @export var follow_object:NodePath
+@export var basis_target:NodePath
 @export var follow_speed:float
-var follow:Node3D
 @export var invertX:bool = false
 @export var invertY:bool = false
 @export var actions:Actions
+
+@onready var follow:Node3D = get_node(follow_object)
+@onready var orient:Node3D = get_node(basis_target)
 
 var mousev:Vector2
 var joyv:Vector2
@@ -13,8 +16,6 @@ var mouse:bool
 
 func _ready():
 	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
-	follow = get_node(follow_object)
-
 
 func _input(event):
 	if event is InputEventMouseMotion:

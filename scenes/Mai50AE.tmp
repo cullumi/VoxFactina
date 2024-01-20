@@ -1,0 +1,36 @@
+[gd_scene load_steps=9 format=3 uid="uid://qn4q4njnv0k1"]
+
+[ext_resource type="Script" path="res://scenes/Main.gd" id="1_r86xs"]
+[ext_resource type="PackedScene" uid="uid://c60okswew4i4x" path="res://scenes/Planets/Planet.tscn" id="2_dxtoo"]
+[ext_resource type="Resource" uid="uid://d0lcqcqbga4te" path="res://resources/small_orb.tres" id="3_bouhc"]
+[ext_resource type="Material" uid="uid://byt7o771loaag" path="res://resources/preview_mat.tres" id="4_rxc12"]
+[ext_resource type="Script" path="res://scenes/Planets/PlanetPreview.gd" id="5_7t6m0"]
+[ext_resource type="PackedScene" uid="uid://dg870l0u1m2v8" path="res://scenes/Testing/SceneAxes.tscn" id="7_beanc"]
+[ext_resource type="PackedScene" uid="uid://dwgefoab8fmp1" path="res://scenes/Player/RBPlayer/rb_player.tscn" id="7_pbfe0"]
+
+[sub_resource type="SphereMesh" id="SphereMesh_t3jt5"]
+material = ExtResource("4_rxc12")
+radius = 320.0
+height = 640.0
+
+[node name="Main" type="Node3D"]
+script = ExtResource("1_r86xs")
+
+[node name="Sun" type="Node3D" parent="."]
+
+[node name="Planet" parent="Sun" instance=ExtResource("2_dxtoo")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+spawn_buffer = 3.0
+use_spawn = true
+props = ExtResource("3_bouhc")
+
+[node name="PlanetPreview" type="MeshInstance3D" parent="Sun/Planet"]
+mesh = SubResource("SphereMesh_t3jt5")
+script = ExtResource("5_7t6m0")
+metadata/_edit_lock_ = true
+
+[node name="Axes" parent="." instance=ExtResource("7_beanc")]
+
+[node name="RBPlayer" parent="." instance=ExtResource("7_pbfe0")]
+
+[connection signal="props_changed" from="Sun/Planet" to="Sun/Planet/PlanetPreview" method="draw"]

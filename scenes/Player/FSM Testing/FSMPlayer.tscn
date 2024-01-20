@@ -1,4 +1,4 @@
-[gd_scene load_steps=14 format=3]
+[gd_scene load_steps=14 format=3 uid="uid://ca0pos6dgm1sj"]
 
 [ext_resource type="Script" path="res://scenes/Player/FSM Testing/PlayerFSM.gd" id="1"]
 [ext_resource type="Script" path="res://addons/hexagon-fsm/fsm.gd" id="2"]
@@ -18,12 +18,12 @@ sky_horizon_color = Color(0.647059, 0.654902, 0.670588, 1)
 ground_bottom_color = Color(0, 0, 0, 1)
 ground_horizon_color = Color(0.458824, 0.458824, 0.458824, 1)
 
-[sub_resource type="Sky" id="Sky_2rajb"]
+[sub_resource type="Sky" id="Sky_duwpj"]
 sky_material = SubResource("ProceduralSkyMaterial_cawhy")
 
 [sub_resource type="Environment" id="Environment_im1sb"]
 background_mode = 2
-sky = SubResource("Sky_2rajb")
+sky = SubResource("Sky_duwpj")
 
 [node name="Player" type="CharacterBody3D"]
 script = ExtResource("1")
